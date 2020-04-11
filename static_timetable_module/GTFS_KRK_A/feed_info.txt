@@ -1,0 +1,2 @@
+feed_publisher_name,feed_publisher_url,feed_lang,feed_start_date,feed_end_date,feed_version
+"MPKBUS","http://www.mpk.krakow.pl/",pl,,,2020-04-11 01:18
