@@ -16,6 +16,11 @@ def parse_service_id(gtfs_service_id: str) -> int:
     return int(service_id)
 
 
+def parse_route_id(gtfs_route_id: str) -> int:
+    _, route_id = gtfs_route_id.split('_', 2)
+    return int(route_id)
+
+
 def parse_time(gtfs_time: str) -> int:
     h, m, s = gtfs_time.split(':', 3)
     return int(s) + 60*int(m) + 3600*int(h)

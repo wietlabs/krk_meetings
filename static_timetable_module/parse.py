@@ -14,6 +14,12 @@ class GtfsStaticParser:
         df.set_index('service_id', inplace=True)
         return df
 
+    def parse_routes_df(self, routes_txt_path: str) -> pd.DataFrame:
+        df = pd.read_csv(routes_txt_path, usecols=['route_id', 'route_short_name'])
+        df['route_id'] = df['route_id'].map(utils.parse_route_id)
+        df.set_index('route_id', inplace=True)
+        return df
+
     def parse_stops_df(self, stops_txt_path: str) -> Tuple[pd.DataFrame, pd.DataFrame]:
         df = pd.read_csv(stops_txt_path, usecols=['stop_id', 'stop_name', 'stop_lat', 'stop_lon'])
         df['stop_id'], df['peron_id'] = zip(*df['stop_id'].map(utils.parse_stop_id))  # TODO: consider df.apply
@@ -53,8 +59,9 @@ class GtfsStaticParser:
         return transfers_df[['start_stop_id', 'end_stop_id', 'duration']].groupby(['start_stop_id', 'end_stop_id']).mean()
 
 if __name__ == '__main__':
-    stops_txt_path = r'GTFS_KRK_A/stops.txt'
     calendar_txt_path = r'GTFS_KRK_A/calendar.txt'
+    routes_txt_path = r'GTFS_KRK_A/routes.txt'
+    stops_txt_path = r'GTFS_KRK_A/stops.txt'
     stop_times_txt_path = r'GTFS_KRK_A/stop_times.txt'
 
     parser = GtfsStaticParser()
@@ -62,6 +69,10 @@ if __name__ == '__main__':
     calendar_df = parser.parse_calendar_df(calendar_txt_path)
     calendar_df.to_pickle('tmp/calendar_df.pkl')
     print(calendar_df)
+
+    routes_df = parser.parse_routes_df(routes_txt_path)
+    routes_df.to_pickle('tmp/routes_df.pkl')
+    print(routes_df)
 
     stops_df, perons_df = parser.parse_stops_df(stops_txt_path)
     stops_df.to_pickle('tmp/stops_df.pkl')
