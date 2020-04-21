@@ -15,7 +15,7 @@ class GtfsStaticParser:
         return df
 
     def parse_routes_df(self, routes_txt_path: str) -> pd.DataFrame:
-        df = pd.read_csv(routes_txt_path, usecols=['route_id', 'route_short_name'])
+        df = pd.read_csv(routes_txt_path, usecols=['route_id', 'route_short_name'], dtype={'route_short_name': 'str'})
         df['route_id'] = df['route_id'].map(utils.parse_route_id)
         df.set_index('route_id', inplace=True)
         return df
