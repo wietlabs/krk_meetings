@@ -3,11 +3,11 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from math import cos, radians
 from pathlib import Path
-from GtfsStaticExtractedData import GtfsStaticExtractedData
+from ExtractedData import ExtractedData
 
 if __name__ == '__main__':
     path = Path(__file__).parent / 'tmp' / 'extracted_data.pickle'
-    extracted_data = GtfsStaticExtractedData.load(path)
+    extracted_data = ExtractedData.load(path)
 
     stops_df = extracted_data.stops_df
     avg_durations_df = extracted_data.avg_durations_df

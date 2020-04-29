@@ -4,7 +4,7 @@ from dataclasses import dataclass
 
 
 @dataclass
-class GtfsStaticData(ABC):
+class Data(ABC):
     def save(self, path: str):
         with open(path, 'wb') as f:
             pickle.dump(self, f)

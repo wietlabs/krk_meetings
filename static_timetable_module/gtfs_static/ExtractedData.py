@@ -1,10 +1,10 @@
 import pandas as pd
 from dataclasses import dataclass
-from GtfsStaticData import GtfsStaticData
+from Data import Data
 
 
 @dataclass
-class GtfsStaticExtractedData(GtfsStaticData):  # server has reference to its instance
+class ExtractedData(Data):  # server has reference to its instance
     stops_df: pd.DataFrame
     transfers_trips_df: pd.DataFrame
     stop_times_trips_df: pd.DataFrame

@@ -1,12 +1,12 @@
 import pandas as pd
 from abc import ABC
-import utils
 from pathlib import Path
 from typing import Tuple
-from GtfsStaticParsedData import GtfsStaticParsedData
+import utils
+from ParsedData import ParsedData
 
 
-class GtfsStaticParser:
+class Parser:
     def __init__(self):
         # configuration goes here
         pass
@@ -20,7 +20,7 @@ class GtfsStaticParser:
 
         transfers_df = self.create_transfers_df(stop_times_df)
 
-        return GtfsStaticParsedData(calendar_df, routes_df, trips_df, stops_df, perons_df, stop_times_df, transfers_df)
+        return ParsedData(calendar_df, routes_df, trips_df, stops_df, perons_df, stop_times_df, transfers_df)
 
     def parse_calendar_df(self, calendar_txt_path: str) -> pd.DataFrame:
         df = pd.read_csv(calendar_txt_path, usecols=['service_id', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'])
@@ -78,7 +78,7 @@ class GtfsStaticParser:
         return df
 
 if __name__ == '__main__':
-    parser = GtfsStaticParser()
+    parser = Parser()
     parsed_data = parser.parse(Path(__file__).parent / 'GTFS_KRK_A')
     parsed_data.save(Path(__file__).parent / 'tmp' / 'parsed_data.pickle')
     print(parsed_data)

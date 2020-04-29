@@ -1,16 +1,16 @@
 import pandas as pd
 from pathlib import Path
-from GtfsStaticParser import GtfsStaticParser
-from GtfsStaticParsedData import GtfsStaticParsedData
-from GtfsStaticExtractedData import GtfsStaticExtractedData
+from Parser import Parser
+from ParsedData import ParsedData
+from ExtractedData import ExtractedData
 
 
-class GtfsStaticExtractor:
+class Extractor:
     def __init__(self):
         # configuration goes here
         pass
 
-    def extract(self, parsed_data: GtfsStaticParsedData):
+    def extract(self, parsed_data: ParsedData):
         stops_df = parsed_data.stops_df
         transfers_df = parsed_data.transfers_df
         stop_times_df = parsed_data.stop_times_df
@@ -21,7 +21,7 @@ class GtfsStaticExtractor:
         avg_durations_df = self.create_avg_durations_df(transfers_df)
         frequency_df = self.create_frequency_df(transfers_df)
 
-        return GtfsStaticExtractedData(stops_df, transfers_trips_df, stop_times_trips_df, avg_durations_df, frequency_df)
+        return ExtractedData(stops_df, transfers_trips_df, stop_times_trips_df, avg_durations_df, frequency_df)
 
     def create_transfers_trips_df(self, transfers_df: pd.DataFrame, trips_df: pd.DataFrame) -> pd.DataFrame:
         df = transfers_df.join(trips_df, on=['service_id', 'block_id', 'trip_num'])
@@ -37,7 +37,7 @@ class GtfsStaticExtractor:
         return transfers_df[['start_stop_id', 'end_stop_id', 'duration']].groupby(['start_stop_id', 'end_stop_id']).mean()
 
     def create_frequency_df(self, stop_times_df: pd.DataFrame) -> pd.DataFrame:
-        return pd.DataFrame()
+        return pd.DataFrame()  # TODO: fill logic
         # stop_times_df = stop_times_df.reset_index()
         # routes_df = pd.read_pickle('tmp/routes_df.pkl').reset_index()
         # df = pd.merge(stop_times_df, routes_df, on=['block_id', 'service_id'])
@@ -53,8 +53,8 @@ class GtfsStaticExtractor:
 
 
 if __name__ == '__main__':
-    parsed_data = GtfsStaticParsedData.load(Path(__file__).parent / 'tmp' / 'parsed_data.pickle')
-    extractor = GtfsStaticExtractor()
+    parsed_data = ParsedData.load(Path(__file__).parent / 'tmp' / 'parsed_data.pickle')
+    extractor = Extractor()
     extracted_data = extractor.extract(parsed_data)
     extracted_data.save(Path(__file__).parent / 'tmp' / 'extracted_data.pickle')
     print(extracted_data)
