@@ -12,13 +12,15 @@ class MapExtractor:
         transfers_trips_df = extracted_data.transfers_trips_df
         stop_times_trips_df = extracted_data.stop_times_trips_df
         avg_durations_df = extracted_data.avg_durations_df
+        first_stops_df = extracted_data.first_stops_df
         frequency_df = extracted_data.frequency_df
 
-        G = self.extract_graph(stops_df, transfers_trips_df, frequency_df)
+        G = self.extract_graph(stops_df, transfers_trips_df, first_stops_df)
         K_G = self.kernelize_graph(G)
-        distances, paths = self.floyd_warshall(G)
 
-        return ExtractedMap(G, K_G, distances)
+        distances, paths = self.floyd_warshall(K_G)
+
+        return ExtractedMap(G, K_G, distances, paths)
 
 
     def floyd_warshall(self, G):
@@ -30,9 +32,9 @@ class MapExtractor:
                 return float("inf")
             return distances[(node_1, node_2)]
 
-        def get_edge_list(node, G):
+        def get_edge_list(node_1, G):
             def edges_inner():
-                for node_1, node_2 in G.get_edge_list(node):
+                for node_2 in G.neighbors(node_1):
                     for edge in G.get_edge_data(node_1, node_2).values():
                         yield node_2, edge['duration']
 
@@ -43,6 +45,7 @@ class MapExtractor:
                 distances[(node, neighbour)] = duration
                 paths[(node, neighbour)] = []
         for k in G.nodes():
+            print(".", end="")
             for i in G.nodes():
                 for j in G.nodes():
                     if distance(i, j) > distance(i, k) + distance(k, j):
@@ -59,11 +62,11 @@ class MapExtractor:
         self.generate_kernelized_edges(K_G, G)
         return K_G
 
-    def extract_graph(self, stops_df: pd.DataFrame, transfers_df: pd.DataFrame, frequency_df: pd.DataFrame):
+    def extract_graph(self, stops_df: pd.DataFrame, transfers_df: pd.DataFrame, first_stops_df: pd.DataFrame):
         G = nx.MultiDiGraph()
         self.generate_nodes(G, stops_df)
         self.set_node_degrees(G, transfers_df)
-        self.set_hubs(G, frequency_df)
+        self.set_hubs(G, first_stops_df)
         self.generate_edges(G, transfers_df)
         return G
 
@@ -81,7 +84,7 @@ class MapExtractor:
             for hub_id in K_G.nodes():
                 kernelized_duration = {}
                 for node_1, node_2 in G.edges([hub_id]):
-                    for edge in G.get_edge_data(node_1, node_2).values():  # TODO fix
+                    for edge in G.get_edge_data(node_1, node_2).values():
                         kernelized_duration[edge['route_id']] = edge['duration']
                     result = self.get_neighbour_hub_distances(G, [node_1], node_2, kernelized_duration)
                     if result is not None:
@@ -97,9 +100,9 @@ class MapExtractor:
             neighbour_node = self.get_single_neighbour(G, already_visited, current_node)
             if neighbour_node is None:
                 return None
-            for edge in G.get_edge_data(current_node, neighbour_node).values():  # TODO fix
+            for edge in G.get_edge_data(current_node, neighbour_node).values():
                 if edge['route_id'] not in kernelized_duration.keys():
-                    kernelized_duration[edge['route_id']] = 0  # TODO Bledne dane... :(
+                    kernelized_duration[edge['route_id']] = 0
                     print(edge['route_id'])
                 kernelized_duration[edge['route_id']] += edge['duration']
             already_visited.append(current_node)
@@ -132,9 +135,8 @@ class MapExtractor:
 
         G.add_edges_from(edge_generator())
 
-    def set_hubs(self, G, first_stop_df):
-        print(first_stop_df)
-        first_stop_df = first_stop_df[['stop_id']].drop_duplicates()
+    def set_hubs(self, G, first_stops_df):
+        first_stop_df = first_stops_df[['stop_id']]
         for node_id in G.nodes:
             stop = G.nodes[node_id]
             if node_id in first_stop_df.values and stop['degree'] > 1:
@@ -153,16 +155,6 @@ class MapExtractor:
             stop = G.nodes[node_id]
             row = transfers_df.loc[transfers_df['stop_id'] == node_id]
             stop['degree'] = row.iloc[0]['degree']
-
-
-if __name__ == '__main__':
-    """extractor = MapExtractor()
-    G = extractor.load_graph()
-    K_G = extractor.kernelize_graph(G)
-    distances = extractor.floyd(G)
-    print(distances)"""
-    routes_df = pd.read_pickle('tmp/trips_df.pkl').reset_index()
-    print(routes_df.columns)
 
 
 

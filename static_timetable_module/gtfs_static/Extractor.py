@@ -1,8 +1,8 @@
 import pandas as pd
 from pathlib import Path
-from Parser import Parser
-from ParsedData import ParsedData
-from ExtractedData import ExtractedData
+from static_timetable_module.gtfs_static.Parser import Parser
+from static_timetable_module.gtfs_static.ParsedData import ParsedData
+from static_timetable_module.gtfs_static.ExtractedData import ExtractedData
 
 
 class Extractor:
@@ -19,9 +19,9 @@ class Extractor:
         transfers_trips_df = self.create_transfers_trips_df(transfers_df, trips_df)
         stop_times_trips_df = self.create_stop_times_trips_df_for_service_id(stop_times_df, trips_df)
         avg_durations_df = self.create_avg_durations_df(transfers_df)
-        frequency_df = self.create_frequency_df(transfers_df)
-
-        return ExtractedData(stops_df, transfers_trips_df, stop_times_trips_df, avg_durations_df, frequency_df)
+        frequency_df = self.create_frequency_df(stop_times_df, trips_df)
+        first_stops_df = self.create_first_stops_df(stop_times_df, trips_df)
+        return ExtractedData(stops_df, transfers_trips_df, stop_times_trips_df, avg_durations_df, frequency_df, first_stops_df)
 
     def create_transfers_trips_df(self, transfers_df: pd.DataFrame, trips_df: pd.DataFrame) -> pd.DataFrame:
         df = transfers_df.join(trips_df, on=['service_id', 'block_id', 'trip_num'])
@@ -36,25 +36,35 @@ class Extractor:
     def create_avg_durations_df(self, transfers_df: pd.DataFrame) -> pd.DataFrame:
         return transfers_df[['start_stop_id', 'end_stop_id', 'duration']].groupby(['start_stop_id', 'end_stop_id']).mean()
 
-    def create_frequency_df(self, stop_times_df: pd.DataFrame) -> pd.DataFrame:
-        return pd.DataFrame()  # TODO: fill logic
-        # stop_times_df = stop_times_df.reset_index()
-        # routes_df = pd.read_pickle('tmp/routes_df.pkl').reset_index()
-        # df = pd.merge(stop_times_df, routes_df, on=['block_id', 'service_id'])
-        # is_first = df['stop_sequence'] == 1
-        # df = df[is_first]
-        # df = df[['route_id', 'stop_id', 'departure_time']]
-        # df = df.groupby(['route_id', 'stop_id']).agg({'departure_time': ['count', 'min', 'max']})
-        # df.columns = ['mean', 'min', 'max']
-        # df['frequency'] = ((df['max'] - df['min']) / df['mean']).astype(int)
-        # df = df.reset_index()
-        # df = df[['route_id', 'stop_id', 'frequency']]
-        # return df
+    def create_frequency_df(self, stop_times_df: pd.DataFrame, trips_df: pd.DataFrame) -> pd.DataFrame:
+        # return pd.DataFrame()  # TODO: fill logic
+        stop_times_df = stop_times_df.reset_index()
+        df = pd.merge(stop_times_df, trips_df, on=['block_id', 'service_id'])
+        is_first = df['stop_sequence'] == 1
+        df = df[is_first]
+        df = df[['route_id', 'departure_time']]
+        df = df.groupby(['route_id']).agg({'departure_time': ['count', 'min', 'max']})
+        df.columns = ['mean', 'min', 'max']
+        df['frequency'] = ((df['max'] - df['min']) / df['mean'] * 2).astype(int)
+        df = df.reset_index()
+        df = df[['route_id', 'frequency']]
+        return df
+
+    def create_first_stops_df(self, stop_times_df: pd.DataFrame, trips_df: pd.DataFrame) -> pd.DataFrame:
+        stop_times_df = stop_times_df.reset_index()
+        df = pd.merge(stop_times_df, trips_df, on=['block_id', 'service_id'])
+        is_first = df['stop_sequence'] == 1
+        df = df[is_first]
+        df = df.drop_duplicates().reset_index()
+        df = df[['stop_id']]
+        return df
+
 
 
 if __name__ == '__main__':
     parsed_data = ParsedData.load(Path(__file__).parent / 'tmp' / 'parsed_data.pickle')
     extractor = Extractor()
-    extracted_data = extractor.extract(parsed_data)
-    extracted_data.save(Path(__file__).parent / 'tmp' / 'extracted_data.pickle')
-    print(extracted_data)
+    stops_df = parsed_data.stops_df
+    transfers_df = parsed_data.transfers_df
+    stop_times_df = parsed_data.stop_times_df
+    trips_df = parsed_data.trips_df

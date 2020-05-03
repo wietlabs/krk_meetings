@@ -1,0 +1,32 @@
+Static map created
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# On branch static_map_module
+# Changes to be committed:
+#	new file:   config.py
+#	new file:   main.py
+#	new file:   static_map_module/ExtractedMap.py
+#	new file:   static_map_module/MapExtractor.py
+#	new file:   static_timetable_module/gtfs_static/DataProvider.py
+#
+# Changes not staged for commit:
+#	modified:   main.py
+#	modified:   requirements.txt
+#	modified:   static_map_module/ExtractedMap.py
+#	modified:   static_map_module/MapExtractor.py
+#	modified:   static_timetable_module/gtfs_static/Data.py
+#	modified:   static_timetable_module/gtfs_static/DataProvider.py
+#	modified:   static_timetable_module/gtfs_static/ExtractedData.py
+#	modified:   static_timetable_module/gtfs_static/Extractor.py
+#	modified:   static_timetable_module/gtfs_static/ParsedData.py
+#	modified:   static_timetable_module/gtfs_static/Parser.py
+#	modified:   static_timetable_module/gtfs_static/max_number_of_changes.py
+#	modified:   static_timetable_module/gtfs_static/tmp/extracted_data.pickle
+#	modified:   static_timetable_module/gtfs_static/visualization.py
+#
+# Untracked files:
+#	.idea/
+#	tmp/
+#

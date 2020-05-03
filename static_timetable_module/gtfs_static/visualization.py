@@ -3,7 +3,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from math import cos, radians
 from pathlib import Path
-from ExtractedData import ExtractedData
+from static_timetable_module.gtfs_static.ExtractedData import ExtractedData
 
 if __name__ == '__main__':
     path = Path(__file__).parent / 'tmp' / 'extracted_data.pickle'

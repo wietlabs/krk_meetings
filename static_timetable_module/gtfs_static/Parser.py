@@ -1,9 +1,8 @@
 import pandas as pd
-from abc import ABC
 from pathlib import Path
 from typing import Tuple
-import utils
-from ParsedData import ParsedData
+import static_timetable_module.gtfs_static.utils as utils
+from static_timetable_module.gtfs_static.ParsedData import ParsedData
 
 
 class Parser:
@@ -11,7 +10,7 @@ class Parser:
         # configuration goes here
         pass
 
-    def parse(self, gtfs_dir: str):
+    def parse(self, gtfs_dir: Path):
         calendar_df = self.parse_calendar_df(gtfs_dir / 'calendar.txt')
         routes_df = self.parse_routes_df(gtfs_dir / 'routes.txt')
         trips_df = self.parse_trips_df(gtfs_dir / 'trips.txt')
@@ -76,6 +75,7 @@ class Parser:
                                           'start_stop_id', 'end_stop_id', 'start_peron_id', 'end_peron_id'])
         df['duration'] = df['end_time'] - df['start_time']
         return df
+
 
 if __name__ == '__main__':
     parser = Parser()
