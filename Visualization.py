@@ -6,6 +6,7 @@ from pathlib import Path
 
 from static_timetable_module.gtfs_static.ExtractedData import ExtractedData
 
+
 class Visualization:
     def __init__(self, fix_scaling=True):
         if fix_scaling:
@@ -41,7 +42,7 @@ class Visualization:
         self.fig.savefig(path)
 
     def show(self) -> None:
-        plt.show()
+        self.fig.show()
 
 
 if __name__ == '__main__':
