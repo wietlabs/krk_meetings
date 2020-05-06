@@ -1,20 +1,19 @@
 import time
 from pathlib import Path
 
-from Visualization import Visualization
 from static_timetable_module.gtfs_static.ParsedData import ParsedData
 from static_timetable_module.gtfs_static.utils import parse_time
 from solvers.BasicSolver import BasicSolver
 from solvers.Query import Query
 from utils import format_time
-
+from Visualization import Visualization
 
 if __name__ == '__main__':
-    path = Path(__file__).parent / 'static_timetable_module' / 'gtfs_static' / 'tmp' / 'parsed_data.pickle'
-    parsed_data = ParsedData.load(path)
+    tmp_dir = Path(__file__).parent / 'static_timetable_module' / 'gtfs_static' / 'tmp'
+    parsed_data = ParsedData.load(tmp_dir / 'parsed_data.pickle')
+    extracted_data = ParsedData.load(tmp_dir / 'extracted_data.pickle')
 
-    path = Path(__file__).parent / 'static_timetable_module' / 'gtfs_static' / 'tmp' / 'extracted_data.pickle'
-    extracted_data = ParsedData.load(path)
+    solver = BasicSolver(parsed_data)
 
     stops_df = parsed_data.stops_df
 
@@ -24,13 +23,19 @@ if __name__ == '__main__':
         except IndexError:
             raise Exception('Stop not found')
 
-    start_time = parse_time('06:03:00')
-    start_stop_id = get_stop_id_by_name('Miasteczko Studenckie AGH')
-    end_stop_id = get_stop_id_by_name('Dworzec Główny Wschód')
+    # start_time = parse_time('06:03:00')
+    # start_stop_id = get_stop_id_by_name('Miasteczko Studenckie AGH')
+    # end_stop_id = get_stop_id_by_name('Dworzec Główny Wschód')
+
+    # start_time = parse_time('21:20:00')
+    # start_stop_id = get_stop_id_by_name('Brzeźnica Dworzec')
+    # end_stop_id = get_stop_id_by_name('Słomniki Osiedle')
+
+    start_time = parse_time('06:58:00')
+    start_stop_id = get_stop_id_by_name('Wieliczka Miasto')
+    end_stop_id = get_stop_id_by_name('Górka Narodowa Wschód')
 
     query = Query(start_time, start_stop_id, end_stop_id)
-
-    solver = BasicSolver(parsed_data)
 
     t1 = time.time()
     result = solver.find_connection(query)
