@@ -46,6 +46,7 @@ if __name__ == '__main__':
     t2 = time.time()
     print(f'\nFound in {t2-t1:.3f} s')
 
+    result = result.join(stops_df, on='stop_id')
     result['time_formatted'] = result['time'].apply(format_time)
     result = result[['time_formatted', 'stop_name', 'stop_lat', 'stop_lon']]
 

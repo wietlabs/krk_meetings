@@ -94,5 +94,5 @@ class BasicSolver(ISolver):
         shortest_inverted_path = nx.shortest_path(self.G_R, source, target, 'weight')
         path = shortest_inverted_path[:-1][::-1]
 
-        result_df = pd.DataFrame(path, columns=['stop_id', 'time']).join(self.stops_df, on='stop_id')
+        result_df = pd.DataFrame(path, columns=['stop_id', 'time'])
         return result_df
