@@ -22,10 +22,11 @@ class BasicSolver(ISolver):
 
         transfers_df = transfers_df[['start_time', 'end_time', 'start_stop_id', 'end_stop_id', 'duration']]
 
-        unique_stop_times_df = stop_times_df.reset_index()[['stop_id', 'departure_time']]\
-            .drop_duplicates()\
-            .set_index(['stop_id', 'departure_time'])\
-            .sort_index()
+        unique_stop_times_df = stop_times_df.reset_index()[['stop_id', 'departure_time']]
+        unique_stop_times_df['departure_time'] %= 24 * 60 * 60
+        unique_stop_times_df.drop_duplicates(inplace=True)
+        unique_stop_times_df.set_index(['stop_id', 'departure_time'], inplace=True)
+        unique_stop_times_df.sort_index(inplace=True)
 
         G.add_nodes_from(unique_stop_times_df.index)
 
@@ -77,6 +78,8 @@ class BasicSolver(ISolver):
 
         unique_stop_times = self.unique_stop_times_df.xs(start_stop_id).index
         idx = unique_stop_times.searchsorted(start_time)
+        if idx == len(unique_stop_times):
+            idx = 0
         start_time = unique_stop_times[idx]
 
         source = (start_stop_id, start_time)

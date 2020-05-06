@@ -23,9 +23,13 @@ if __name__ == '__main__':
         except IndexError:
             raise Exception('Stop not found')
 
-    start_time = parse_time('06:03:00')
-    start_stop_id = get_stop_id_by_name('Miasteczko Studenckie AGH')
-    end_stop_id = get_stop_id_by_name('Dworzec Główny Wschód')
+    start_time = parse_time(input('Godzina odjazdu: '))
+    start_stop_id = get_stop_id_by_name(input('Przystanek początkowy: '))
+    end_stop_id = get_stop_id_by_name(input('Przystanek końcowy: '))
+
+    # start_time = parse_time('06:03:00')
+    # start_stop_id = get_stop_id_by_name('Miasteczko Studenckie AGH')
+    # end_stop_id = get_stop_id_by_name('Dworzec Główny Wschód')
 
     # start_time = parse_time('21:20:00')
     # start_stop_id = get_stop_id_by_name('Brzeźnica Dworzec')
@@ -54,5 +58,3 @@ if __name__ == '__main__':
     visualization.draw_stops(extracted_data, node_color='gray', edge_color='gray')
     visualization.draw_result_path(result, color='blue')
     visualization.show()
-
-    pass  # set breakpoint here
