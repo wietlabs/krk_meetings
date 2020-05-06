@@ -4,16 +4,16 @@ from static_timetable_module.gtfs_static.ParsedData import ParsedData
 from static_timetable_module.gtfs_static.utils import parse_time
 from solvers.BasicSolver import BasicSolver
 from solvers.Query import Query
-
+from utils import format_time
 
 if __name__ == '__main__':
     path = Path(__file__).parent / 'static_timetable_module' / 'gtfs_static' / 'tmp' / 'parsed_data.pickle'
     parsed_data = ParsedData.load(path)
+    stops_df = parsed_data.stops_df
 
     def get_stop_id_by_name(stop_name: str) -> int:
-        df = parsed_data.stops_df
         try:
-            return df.index[df['stop_name'] == stop_name][0]
+            return stops_df.index[stops_df['stop_name'] == stop_name][0]
         except IndexError:
             raise Exception('Stop not found')
 
@@ -29,14 +29,8 @@ if __name__ == '__main__':
     result = solver.find_connection(query)
     t2 = time.time()
 
-    def format_time(time_int: int) -> str:
-        mm = time_int // 60 % 60
-        hh = (time_int // (60 * 60)) % 24
-        return f'{hh:02d}:{mm:02d}'
-
-    for stop_id, time in result:
-        time_str = format_time(time)
-        stop_name = parsed_data.stops_df.loc[stop_id, 'stop_name']
-        print(time_str, stop_name)
+    result['time_formatted'] = result['time'].apply(format_time)
+    result = result[['time_formatted', 'stop_name', 'stop_lat', 'stop_lon']]
 
     print(f'\nFound in {t2-t1:.3f} s')
+    print(result)

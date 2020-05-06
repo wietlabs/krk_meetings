@@ -1,3 +1,4 @@
+import pandas as pd
 import networkx as nx
 
 from solvers.ISolver import ISolver
@@ -7,9 +8,10 @@ from static_timetable_module.gtfs_static.ParsedData import ParsedData
 
 class BasicSolver(ISolver):
     def __init__(self, parsed_data: ParsedData):
-        # self.G = nx.read_gpickle('G.gpickle')
-        # self.G_R = nx.read_gpickle('G_R.gpickle')
-        # return
+        self.G = nx.read_gpickle('G.gpickle')
+        self.G_R = nx.read_gpickle('G_R.gpickle')
+        self.stops_df = parsed_data.stops_df
+        return
 
         G = nx.MultiDiGraph()  # or DiGraph
 
@@ -65,6 +67,7 @@ class BasicSolver(ISolver):
 
         self.G = G
         self.G_R = G_R
+        self.stops_df = parsed_data.stops_df
 
     def find_connection(self, query: Query):
         start_time = query.start_time
@@ -82,7 +85,9 @@ class BasicSolver(ISolver):
         start_node = (end_stop_id, (start_time + shortest_path_length) % (24 * 60 * 60))
         end_node = (start_stop_id, None)
 
-        shortest_path_inverted = nx.shortest_path(self.G_R, start_node, end_node, 'weight')
+        shortest_inverted_path = nx.shortest_path(self.G_R, start_node, end_node, 'weight')
 
-        shortest_path = shortest_path_inverted[:-1][::-1]
-        return shortest_path
+        result_path = shortest_inverted_path[:-1][::-1]
+
+        result_df = pd.DataFrame(result_path, columns=['stop_id', 'time']).join(self.stops_df, on='stop_id')
+        return result_df
