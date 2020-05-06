@@ -23,17 +23,21 @@ if __name__ == '__main__':
         except IndexError:
             raise Exception('Stop not found')
 
-    # start_time = parse_time('06:03:00')
-    # start_stop_id = get_stop_id_by_name('Miasteczko Studenckie AGH')
-    # end_stop_id = get_stop_id_by_name('Dworzec Główny Wschód')
+    start_time = parse_time('06:03:00')
+    start_stop_id = get_stop_id_by_name('Miasteczko Studenckie AGH')
+    end_stop_id = get_stop_id_by_name('Dworzec Główny Wschód')
 
     # start_time = parse_time('21:20:00')
     # start_stop_id = get_stop_id_by_name('Brzeźnica Dworzec')
     # end_stop_id = get_stop_id_by_name('Słomniki Osiedle')
 
-    start_time = parse_time('06:58:00')
-    start_stop_id = get_stop_id_by_name('Wieliczka Miasto')
-    end_stop_id = get_stop_id_by_name('Górka Narodowa Wschód')
+    # start_time = parse_time('06:58:00')
+    # start_stop_id = get_stop_id_by_name('Wieliczka Miasto')
+    # end_stop_id = get_stop_id_by_name('Górka Narodowa Wschód')
+
+    # start_time = parse_time('22:10:00')
+    # start_stop_id = get_stop_id_by_name('Goszcza Dworek')
+    # end_stop_id = get_stop_id_by_name('Grabie Pętla')
 
     query = Query(start_time, start_stop_id, end_stop_id)
 
