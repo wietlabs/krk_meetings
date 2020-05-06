@@ -11,6 +11,7 @@ class BasicSolver(ISolver):
         self.G = nx.read_gpickle('G.gpickle')
         self.G_R = nx.read_gpickle('G_R.gpickle')
         self.stops_df = parsed_data.stops_df
+        self.unique_stop_times_df = pd.read_pickle('unique_stop_times_df.pickle')
         return
 
         G = nx.MultiDiGraph()  # or DiGraph
@@ -19,16 +20,14 @@ class BasicSolver(ISolver):
         stop_times_df = parsed_data.stop_times_df
         transfers_df = parsed_data.transfers_df
 
-        unique_stop_times_df = stop_times_df.reset_index()[['stop_id', 'departure_time']]
-        unique_stop_times_df['dummy'] = None  # TODO: refactor to remove this dummy column
-        unique_stop_times_df = unique_stop_times_df.groupby(['stop_id', 'departure_time']).first().sort_index()
-
         transfers_df = transfers_df[['start_time', 'end_time', 'start_stop_id', 'end_stop_id', 'duration']]
 
-        G.add_nodes_from(
-            (stop_id, time)
-            for stop_id, time in unique_stop_times_df.index
-        )
+        unique_stop_times_df = stop_times_df.reset_index()[['stop_id', 'departure_time']]\
+            .drop_duplicates()\
+            .set_index(['stop_id', 'departure_time'])\
+            .sort_index()
+
+        G.add_nodes_from(unique_stop_times_df.index)
 
         G.add_weighted_edges_from(
             ((start_stop_id, start_time), (end_stop_id, end_time), duration)
@@ -64,30 +63,36 @@ class BasicSolver(ISolver):
 
         nx.write_gpickle(G, 'G.gpickle')
         nx.write_gpickle(G_R, 'G_R.gpickle')
+        unique_stop_times_df.to_pickle('unique_stop_times_df.pickle')
 
         self.G = G
         self.G_R = G_R
         self.stops_df = parsed_data.stops_df
+        self.unique_stop_times_df = unique_stop_times_df
 
     def find_connection(self, query: Query):
         start_time = query.start_time
         start_stop_id = query.start_stop_id
         end_stop_id = query.end_stop_id
 
-        start_node = (start_stop_id, start_time)  # TODO: find first existing start node
-        end_node = (end_stop_id, None)
+        unique_stop_times = self.unique_stop_times_df.xs(start_stop_id).index
+        idx = unique_stop_times.searchsorted(start_time)
+        start_time = unique_stop_times[idx]
 
-        # shortest_path = nx.shortest_path(self.G, start_node, end_node)
-        # return shortest_path
+        source = (start_stop_id, start_time)
+        target = (end_stop_id, None)
 
-        shortest_path_length = nx.shortest_path_length(self.G, start_node, end_node, 'weight')
+        # shortest_path = nx.shortest_path(self.G, source, target)
+        # path = shortest_path[:-1]
 
-        start_node = (end_stop_id, (start_time + shortest_path_length) % (24 * 60 * 60))
-        end_node = (start_stop_id, None)
+        shortest_path_length = nx.shortest_path_length(self.G, source, target, 'weight')
+        end_time = (start_time + shortest_path_length) % (24 * 60 * 60)
 
-        shortest_inverted_path = nx.shortest_path(self.G_R, start_node, end_node, 'weight')
+        source = (end_stop_id, end_time)
+        target = (start_stop_id, None)
 
-        result_path = shortest_inverted_path[:-1][::-1]
+        shortest_inverted_path = nx.shortest_path(self.G_R, source, target, 'weight')
+        path = shortest_inverted_path[:-1][::-1]
 
-        result_df = pd.DataFrame(result_path, columns=['stop_id', 'time']).join(self.stops_df, on='stop_id')
+        result_df = pd.DataFrame(path, columns=['stop_id', 'time']).join(self.stops_df, on='stop_id')
         return result_df
