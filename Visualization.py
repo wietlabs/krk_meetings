@@ -17,8 +17,8 @@ class Visualization:
                 ctypes.OleDLL('shcore').SetProcessDpiAwareness(PROCESS_SYSTEM_DPI_AWARE)
 
         self.fig, self.ax = plt.subplots(figsize=(10, 7))
-        self.ax.set_aspect(aspect=1 / cos(radians(50)))
         self.fig.tight_layout()
+        self.ax.set_aspect(aspect=1 / cos(radians(50)))
 
     def draw_stops(self, extracted_data: ExtractedData, draw_transfers=True, **kwargs) -> None:
         stops_df = extracted_data.stops_df
@@ -29,8 +29,10 @@ class Visualization:
         if draw_transfers:
             G.add_edges_from(avg_durations_df.index)
 
-        pos = dict(stops_df[['stop_lon', 'stop_lat']].iterrows())
-
+        pos = {
+            stop_id: (stop_lon, stop_lat)
+            for stop_id, stop_lat, stop_lon in stops_df[['stop_lat', 'stop_lon']].itertuples()
+        }
         params = {'node_size': 4, 'edge_width': 2, **kwargs}
         nx.draw(G, pos, self.ax, **params)
 

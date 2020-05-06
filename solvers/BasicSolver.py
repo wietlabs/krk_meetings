@@ -32,7 +32,7 @@ class BasicSolver(ISolver):
 
         G.add_weighted_edges_from(
             ((start_stop_id, start_time), (end_stop_id, end_time), duration)
-            for _, (start_time, end_time, start_stop_id, end_stop_id, duration) in transfers_df.iterrows()
+            for _, start_time, end_time, start_stop_id, end_stop_id, duration in transfers_df.itertuples()
         )
         # TODO: include weekdays using service_id
 
