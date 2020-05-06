@@ -12,7 +12,10 @@ if __name__ == '__main__':
 
     def get_stop_id_by_name(stop_name: str) -> int:
         df = parsed_data.stops_df
-        return df.index[df['stop_name'] == stop_name][0]
+        try:
+            return df.index[df['stop_name'] == stop_name][0]
+        except IndexError:
+            raise Exception('Stop not found')
 
     start_time = parse_time('06:03:00')
     start_stop_id = get_stop_id_by_name('Miasteczko Studenckie AGH')
