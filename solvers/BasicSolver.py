@@ -14,7 +14,7 @@ class BasicSolver(ISolver):
         self.unique_stop_times_df = pd.read_pickle('unique_stop_times_df.pickle')
         return
 
-        G = nx.MultiDiGraph()  # or DiGraph
+        G = nx.DiGraph()
 
         stops_df = parsed_data.stops_df
         stop_times_df = parsed_data.stop_times_df
@@ -27,6 +27,7 @@ class BasicSolver(ISolver):
         unique_stop_times_df.drop_duplicates(inplace=True)
         unique_stop_times_df.set_index(['stop_id', 'departure_time'], inplace=True)
         unique_stop_times_df.sort_index(inplace=True)
+        # TODO: move to extractor?
 
         G.add_nodes_from(unique_stop_times_df.index)
 

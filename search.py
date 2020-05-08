@@ -48,7 +48,7 @@ if __name__ == '__main__':
     t1 = time.time()
     result = solver.find_connection(query)
     t2 = time.time()
-    print(f'\nFound in {t2-t1:.3f} s')
+    print(f'{t2-t1:.3f} s')
 
     result = result.join(stops_df, on='stop_id')
     result['time_formatted'] = result['time'].apply(format_time)
