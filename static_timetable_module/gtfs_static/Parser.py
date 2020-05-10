@@ -1,9 +1,8 @@
 import pandas as pd
-from abc import ABC
 from pathlib import Path
 from typing import Tuple
 import utils
-from ParsedData import ParsedData
+from static_timetable_module.gtfs_static.ParsedData import ParsedData
 
 
 class Parser:

@@ -1,6 +1,6 @@
 import pandas as pd
 from dataclasses import dataclass
-from Data import Data
+from static_timetable_module.gtfs_static.Data import Data
 
 
 @dataclass
