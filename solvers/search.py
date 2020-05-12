@@ -1,6 +1,7 @@
 import time
 from pathlib import Path
 
+from static_timetable_module.gtfs_static.DataProvider import DataProvider
 from static_timetable_module.gtfs_static.ParsedData import ParsedData
 from static_timetable_module.gtfs_static.utils import parse_time
 from solvers.BasicSolver import BasicSolver
@@ -9,9 +10,10 @@ from utils import format_time
 from Visualization import Visualization
 
 if __name__ == '__main__':
-    tmp_dir = Path(__file__).parent / 'static_timetable_module' / 'gtfs_static' / 'tmp'
-    parsed_data = ParsedData.load(tmp_dir / 'parsed_data.pickle')
-    extracted_data = ParsedData.load(tmp_dir / 'extracted_data.pickle')
+    # parsed_data = DataProvider.parse_data()
+    parsed_data = DataProvider.load_parsed_data()
+    # extracted_data = DataProvider.extract_data()
+    extracted_data = DataProvider.load_extracted_data()
 
     solver = BasicSolver(parsed_data)
 
@@ -23,13 +25,13 @@ if __name__ == '__main__':
         except IndexError:
             raise Exception('Stop not found')
 
-    start_time = parse_time(input('Godzina odjazdu: '))
-    start_stop_id = get_stop_id_by_name(input('Przystanek początkowy: '))
-    end_stop_id = get_stop_id_by_name(input('Przystanek końcowy: '))
+    # start_time = parse_time(input('Godzina odjazdu: '))
+    # start_stop_id = get_stop_id_by_name(input('Przystanek początkowy: '))
+    # end_stop_id = get_stop_id_by_name(input('Przystanek końcowy: '))
 
-    # start_time = parse_time('06:03:00')
-    # start_stop_id = get_stop_id_by_name('Miasteczko Studenckie AGH')
-    # end_stop_id = get_stop_id_by_name('Dworzec Główny Wschód')
+    start_time = parse_time('06:03:00')
+    start_stop_id = get_stop_id_by_name('Miasteczko Studenckie AGH')
+    end_stop_id = get_stop_id_by_name('Dworzec Główny Wschód')
 
     # start_time = parse_time('21:20:00')
     # start_stop_id = get_stop_id_by_name('Brzeźnica Dworzec')

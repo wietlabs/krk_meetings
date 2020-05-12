@@ -75,10 +75,3 @@ class Parser:
                                           'start_stop_id', 'end_stop_id', 'start_peron_id', 'end_peron_id', 'stop_sequence'])
         df['duration'] = df['end_time'] - df['start_time']
         return df
-
-
-if __name__ == '__main__':
-    parser = Parser()
-    parsed_data = parser.parse(Path(__file__).parent / 'GTFS_KRK_A')
-    parsed_data.save(Path(__file__).parent / 'tmp' / 'parsed_data.pickle')
-    print(parsed_data)
