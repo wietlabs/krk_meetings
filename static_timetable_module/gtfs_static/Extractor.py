@@ -1,6 +1,5 @@
 import pandas as pd
 from pathlib import Path
-from static_timetable_module.gtfs_static.Parser import Parser
 from static_timetable_module.gtfs_static.ParsedData import ParsedData
 from static_timetable_module.gtfs_static.ExtractedData import ExtractedData
 
