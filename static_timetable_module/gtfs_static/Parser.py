@@ -1,7 +1,7 @@
 import pandas as pd
 from pathlib import Path
 from typing import Tuple
-import utils
+import static_timetable_module.gtfs_static.utils as utils
 from static_timetable_module.gtfs_static.ParsedData import ParsedData
 
 
@@ -10,7 +10,7 @@ class Parser:
         # configuration goes here
         pass
 
-    def parse(self, gtfs_dir: str):
+    def parse(self, gtfs_dir: Path):
         calendar_df = self.parse_calendar_df(gtfs_dir / 'calendar.txt')
         routes_df = self.parse_routes_df(gtfs_dir / 'routes.txt')
         trips_df = self.parse_trips_df(gtfs_dir / 'trips.txt')
@@ -68,13 +68,14 @@ class Parser:
             for _, end in stop_times_df.iterrows():
                 if start['trip_num'] == end['trip_num'] and start['block_id'] == end['block_id'] and start['service_id'] == end['service_id']:
                     yield start['block_id'], start['trip_num'], start['service_id'], start['departure_time'], end['departure_time'], \
-                          start['stop_id'], end['stop_id'], start['peron_id'], end['peron_id']
+                          start['stop_id'], end['stop_id'], start['peron_id'], end['peron_id'], start['stop_sequence']
                 start = end
 
         df = pd.DataFrame(gen(), columns=['block_id', 'trip_num', 'service_id', 'start_time', 'end_time',
-                                          'start_stop_id', 'end_stop_id', 'start_peron_id', 'end_peron_id'])
+                                          'start_stop_id', 'end_stop_id', 'start_peron_id', 'end_peron_id', 'stop_sequence'])
         df['duration'] = df['end_time'] - df['start_time']
         return df
+
 
 if __name__ == '__main__':
     parser = Parser()

@@ -1,6 +1,5 @@
 import networkx as nx
 from pathlib import Path
-# from itertools import combinations
 from static_timetable_module.gtfs_static.ParsedData import ParsedData
 
 
