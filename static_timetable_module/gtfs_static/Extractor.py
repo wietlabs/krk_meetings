@@ -47,7 +47,7 @@ class Extractor:
         df['period'] = ((df['max'] - df['min']) / df['count'] * 2).astype(int)
         df = df.reset_index()
         df = df[['route_id', 'period']]
-        # df = df.set_index('route_id')
+        df = df.set_index('route_id')
         return df
 
     def create_first_stops_df(self, stop_times_df: pd.DataFrame, trips_df: pd.DataFrame) -> pd.DataFrame:
@@ -80,17 +80,3 @@ class Extractor:
         stops_df = stops_df.set_index('stop_id')
 
         return stops_df
-
-if __name__ == '__main__':
-    parsed_data = ParsedData.load(Path(__file__).parent / 'tmp' / 'parsed_data.pickle')
-    extractor = Extractor()
-    stops_df = parsed_data.stops_df
-    transfers_df = parsed_data.transfers_df
-    stop_times_df = parsed_data.stop_times_df
-    trips_df = parsed_data.trips_df
-    period_df = extractor.create_period_df(stop_times_df, trips_df)
-    is_583 = period_df['route_id'] == 583
-    period_df = period_df[is_583]
-    period_df = period_df.set_index('route_id')
-    r_583 = int(period_df.loc[[583]]['period'])
-    print(r_583)
