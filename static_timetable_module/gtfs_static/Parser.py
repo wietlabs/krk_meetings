@@ -68,11 +68,11 @@ class Parser:
             for _, end in stop_times_df.iterrows():
                 if start['trip_num'] == end['trip_num'] and start['block_id'] == end['block_id'] and start['service_id'] == end['service_id']:
                     yield start['block_id'], start['trip_num'], start['service_id'], start['departure_time'], end['departure_time'], \
-                          start['stop_id'], end['stop_id'], start['peron_id'], end['peron_id']
+                          start['stop_id'], end['stop_id'], start['peron_id'], end['peron_id'], start['stop_sequence']
                 start = end
 
         df = pd.DataFrame(gen(), columns=['block_id', 'trip_num', 'service_id', 'start_time', 'end_time',
-                                          'start_stop_id', 'end_stop_id', 'start_peron_id', 'end_peron_id'])
+                                          'start_stop_id', 'end_stop_id', 'start_peron_id', 'end_peron_id', 'stop_sequence'])
         df['duration'] = df['end_time'] - df['start_time']
         return df
 
