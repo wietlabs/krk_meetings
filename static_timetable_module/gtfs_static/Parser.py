@@ -2,7 +2,7 @@ import pandas as pd
 from pathlib import Path
 from typing import Tuple
 import static_timetable_module.gtfs_static.utils as utils
-from static_timetable_module.gtfs_static.ParsedData import ParsedData
+from DataClasses.ParsedData import ParsedData
 
 
 class Parser:

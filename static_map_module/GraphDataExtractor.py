@@ -1,55 +1,53 @@
-import itertools
-import time
 from functools import reduce
-from static_map_module.GraphData import GraphData
+from DataClasses.GraphData import GraphData
 
 import pandas as pd
 import networkx as nx
 
 #To draw
-import matplotlib.pyplot as plt
-from math import cos, radians
 
-from static_timetable_module.gtfs_static import ExtractedData
+from DataClasses import ExtractedData
 
 
 class GraphDataExtractor:
     def extract(self, extracted_data: ExtractedData):
         stops_df = extracted_data.stops_df
-        transfers_trips_df = extracted_data.transfers_trips_df
-        stop_times_trips_df = extracted_data.stop_times_trips_df
+        transfers_df = extracted_data.transfers_df
+        stop_times_df = extracted_data.stop_times_df
         first_stops_df = extracted_data.first_stops_df
         period_df = extracted_data.period_df
 
-        hubs_df = stops_df[stops_df['hub']]
-        hubs_df = hubs_df.reset_index()
-        hub_list = list(hubs_df['stop_id'].drop_duplicates())
+        # hubs_df = stops_df[stops_df['hub']]
+        # hubs_df = hubs_df.reset_index()
+        # hub_list = list(hubs_df['stop_id'].drop_duplicates())
 
-        graph = self.extract_graph(stops_df, transfers_trips_df, first_stops_df)
+        graph = self.extract_graph(stops_df, transfers_df, first_stops_df, period_df)
 
-        kernelized_graph = self.kernelize_graph(graph, period_df, stops_df, hub_list)
+        # kernelized_graph = self.kernelize_graph(graph, period_df, stops_df, hub_list)
 
-        node_to_hub_df = self.create_egdes_to_hubs_df(graph, period_df, stops_df, hub_list)
-        first_hubs_df = self.create_first_hubs_df(first_stops_df, node_to_hub_df, stops_df)
-        extended_graph = self.extend_graph(kernelized_graph, first_hubs_df)
+        # node_to_hub_df = self.create_egdes_to_hubs_df(graph, period_df, stops_df, hub_list)
+        # first_hubs_df = self.create_first_hubs_df(first_stops_df, node_to_hub_df, stops_df)
+        # extended_graph = self.extend_graph(graph, first_hubs_df)
+        extended_graph = self.extend_graph(graph, first_stops_df)
         extended_transfers_df = self.create_extended_kernelized_transfers_df(extended_graph)
-        extended_transfers_df = extended_transfers_df
 
-        def hermonic_mean(series):
+        def harmonic_sum(series):
             return int(reduce(lambda x, y: (x*y) / (x+y), series))
-        extended_transfers_df = extended_transfers_df.groupby(['start_stop_id', 'end_stop_id']).agg({'duration': 'mean', 'period': hermonic_mean})
+        extended_transfers_df = extended_transfers_df.groupby(['start_stop_id', 'end_stop_id', 'path'])\
+            .agg({'duration': 'mean', 'period': harmonic_sum, 'route_id': lambda r: tuple(r)})
         extended_transfers_df = extended_transfers_df.reset_index()
 
-        floyd_graph = nx.Graph()
-        self.generate_floyd_nodes(floyd_graph, hubs_df)
+        floyd_graph = nx.DiGraph()
+        self.generate_floyd_nodes(floyd_graph, stops_df)
         self.generate_floyd_edges(floyd_graph, extended_transfers_df)
         distances = nx.floyd_warshall(floyd_graph)
         for key in distances.keys():
             distances[key] = dict(distances[key])
 
-        return GraphData(floyd_graph, distances, stop_times_trips_df, node_to_hub_df)
+        return GraphData(floyd_graph, distances, stop_times_df, stops_df)
 
     def generate_floyd_nodes(self, graph, stops_df):
+        stops_df = stops_df.reset_index()
         def node_generator():
             for _, row in stops_df.iterrows():
                 yield row['stop_id'], {'stop_name': row['stop_name'], 'stop_lat': row['stop_lat'],
@@ -61,41 +59,9 @@ class GraphDataExtractor:
         def edge_generator():
             for _, row in transfers_df.iterrows():
                 yield int(row['start_stop_id']), int(row['end_stop_id']), \
-                        {'weight': int(row['duration'] + row['period'] / 2)}
+                        {'weight': int(row['duration'] + row['period'] / 2), 'route_ids': row['route_id'], 'path': row['path']}
 
         graph.add_edges_from(edge_generator())
-
-    def test_extending(self):
-        graph = self.generate_test_graph()
-        df_data={'stop_id': [0],'route_id': [1]
-        }
-        first_hubs_df = pd.DataFrame(df_data, columns=['stop_id', 'route_id'])
-        graph = self.extend_graph(graph, first_hubs_df)
-        print(graph.edges)
-
-    def generate_test_graph(self):
-        def edge_generator():
-            for i in range(10):
-                yield i, i+1, 1, {
-                    'duration': 1,
-                    'period': 10,
-                    'route_id': 1
-                }
-        graph = nx.MultiDiGraph()
-        graph.add_edges_from(edge_generator())
-        return graph
-
-    def draw_graph(self, graph, stops_df):
-        pos = dict(stops_df[['stop_lon', 'stop_lat']].iterrows())
-
-        fig, ax = plt.subplots()
-        ax.set_aspect(aspect=1 / cos(radians(50)))
-        nx.draw(graph, pos, ax, node_size=8, width=2)
-
-        fig.tight_layout()
-
-        # fig.savefig('map.svg')
-        plt.show()
 
     def create_extended_kernelized_transfers_df(self, extended_graph: nx.MultiDiGraph):
         graph = extended_graph
@@ -104,8 +70,9 @@ class GraphDataExtractor:
             for strat_stop, end_stop, route_id in graph.edges(keys=True):
                 duration = graph.edges[strat_stop, end_stop, route_id]['duration']
                 period = graph.edges[strat_stop, end_stop, route_id]['period']
-                yield strat_stop, end_stop, route_id, int(duration), int(period)
-        df = pd.DataFrame(generator(), columns=['start_stop_id', 'end_stop_id', 'route_id', 'duration', 'period'])
+                path = graph.edges[strat_stop, end_stop, route_id]['path']
+                yield strat_stop, end_stop, route_id, int(duration), int(period), tuple(path)
+        df = pd.DataFrame(generator(), columns=['start_stop_id', 'end_stop_id', 'route_id', 'duration', 'period', 'path'])
         return df
 
     def kernelize_graph(self, G, period_df, stops_df, hub_list):
@@ -114,12 +81,12 @@ class GraphDataExtractor:
         self.generate_kernelized_edges(K_G, G, period_df, hub_list)
         return K_G
 
-    def extract_graph(self, stops_df: pd.DataFrame, transfers_df: pd.DataFrame, first_stops_df: pd.DataFrame):
+    def extract_graph(self, stops_df: pd.DataFrame, transfers_df: pd.DataFrame, first_stops_df: pd.DataFrame, period_df: pd.DataFrame):
         G = nx.MultiDiGraph()
         self.generate_nodes(G, stops_df)
         self.set_node_degrees(G, transfers_df)
         self.set_hubs(G, first_stops_df)
-        self.generate_edges(G, transfers_df)
+        self.generate_edges(G, transfers_df, period_df)
         return G
 
     def extend_graph(self, G: nx.MultiDiGraph, first_hubs_df: pd.DataFrame):
@@ -152,13 +119,16 @@ class GraphDataExtractor:
 
         for first_index in range(len(edges)):
             first_node, _, current_duration = edges[first_index]
+            path = []
             for last_index in range(first_index + 1, len(edges)):
-                _, last_node, duration = edges[last_index]
+                node_from, node_to, duration = edges[last_index]
                 current_duration += duration
-                yield first_node, last_node, route_id, {
+                path.append(node_from)
+                yield first_node, node_to, route_id, {
                     'duration': current_duration,
                     'period': period,
-                    'route_id': route_id
+                    'route_id': route_id,
+                    'path': path
                 }
 
     def get_next_stop(self, G: nx.MultiDiGraph, node_id: int, route_id: int, already_visited: list):
@@ -234,7 +204,8 @@ class GraphDataExtractor:
                                 yield hub_id, neighbour_hub, int(route_id), {
                                     'duration': neighbour_distances[route_id],
                                     'period': int(period_df.loc[[int(route_id)]]['period']),
-                                    'route_id': route_id
+                                    'route_id': route_id,
+                                    'path': []
                                 }
 
         K_G.add_edges_from(edge_generator())
@@ -247,7 +218,10 @@ class GraphDataExtractor:
             for route_id in kernelized_duration.keys():
                 if graph.has_edge(node_id, neighbour_id, route_id):
                     duration = graph.edges[node_id, neighbour_id, route_id]['duration']
-                    kernelized_duration[route_id] += duration
+                    if kernelized_duration[route_id] is not None:
+                        kernelized_duration[route_id] += duration
+                    else:
+                        print("NONE")
                 else:
                     kernelized_duration[route_id] = None
             already_visited.append(node_id)
@@ -268,15 +242,20 @@ class GraphDataExtractor:
                                 'stop_lon': row['stop_lon'], 'hub': row['hub']}
         G.add_nodes_from(node_generator())
 
-    def generate_edges(self, G, transfers_df):
+    def generate_edges(self, G, transfers_df, period_df):
         map_df = transfers_df[[
             'route_id', 'start_stop_id', 'end_stop_id', 'duration']]
         avg_map_df = map_df.groupby(['route_id', 'start_stop_id', 'end_stop_id']).mean().reset_index()
 
         def edge_generator():
             for _, row in avg_map_df.iterrows():
-                yield int(row['start_stop_id']), int(row['end_stop_id']) , int(row['route_id']), \
-                      {'duration': row['duration'], 'route_id': row['route_id']}
+                start_node = int(row['start_stop_id'])
+                end_node = int(row['end_stop_id'])
+                route_id =  row['route_id']
+                duration = row['duration']
+                period = int(period_df.loc[[int(route_id)]]['period'])
+                yield start_node, end_node, route_id, \
+                    {'route_id': route_id, 'duration': duration, 'period': period, 'path': []}
 
         G.add_edges_from(edge_generator())
 

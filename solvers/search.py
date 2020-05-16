@@ -1,19 +1,17 @@
 import time
-from pathlib import Path
 
-from static_timetable_module.gtfs_static.DataProvider import DataProvider
-from static_timetable_module.gtfs_static.ParsedData import ParsedData
+from DataProviders.GtfsStaticDataProvider import GtfsStaticDataProvider
 from static_timetable_module.gtfs_static.utils import parse_time
-from solvers.BasicSolver import BasicSolver
-from solvers.Query import Query
+from solvers.BfsSolver.BasicSolver import BasicSolver
+from DataClasses.Query import Query
 from utils import format_time
 from Visualization import Visualization
 
 if __name__ == '__main__':
     # parsed_data = DataProvider.parse_data()
-    parsed_data = DataProvider.load_parsed_data()
+    parsed_data = GtfsStaticDataProvider.load_parsed_data()
     # extracted_data = DataProvider.extract_data()
-    extracted_data = DataProvider.load_extracted_data()
+    extracted_data = GtfsStaticDataProvider.load_extracted_data()
 
     solver = BasicSolver(parsed_data)
 

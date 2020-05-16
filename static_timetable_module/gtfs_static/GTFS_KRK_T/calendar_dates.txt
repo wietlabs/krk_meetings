@@ -1,7 +1,0 @@
-service_id,date,exception_type
-service_3,20200413,1
-service_3,20200501,1
-service_3,20200611,1
-service_1,20200413,2
-service_5,20200611,2
-service_4,20200501,2

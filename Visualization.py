@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from math import cos, radians
 from pathlib import Path
 
-from static_timetable_module.gtfs_static.ExtractedData import ExtractedData
+from DataClasses.ExtractedData import ExtractedData
 
 
 class Visualization:

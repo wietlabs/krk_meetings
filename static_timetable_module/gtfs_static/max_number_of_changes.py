@@ -1,6 +1,6 @@
 import networkx as nx
 from pathlib import Path
-from static_timetable_module.gtfs_static.ParsedData import ParsedData
+from DataClasses.ParsedData import ParsedData
 
 
 if __name__ == '__main__':
