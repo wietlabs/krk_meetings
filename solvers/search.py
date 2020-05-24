@@ -3,7 +3,7 @@ import time
 from DataProviders.GtfsStaticDataProvider import GtfsStaticDataProvider
 from static_timetable_module.gtfs_static.utils import parse_time
 from solvers.BfsSolver.BasicSolver import BasicSolver
-from DataClasses.Query import Query
+from DataClasses.TransferQuery import Query
 from utils import format_time
 from Visualization import Visualization
 

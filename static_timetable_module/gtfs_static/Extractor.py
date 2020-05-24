@@ -23,7 +23,8 @@ class Extractor:
         period_df = self.create_period_df(stop_times_df, route_ids_df)
         first_stops_df = self.create_first_stops_df(stop_times_df, route_ids_df)
         extended_stops_df = self.extend_stops_df(transfers_df, first_stops_df, stops_df)
-        return ExtractedData(extended_stops_df, transfers_route_ids_df, stop_times_route_ids_df, avg_durations_df, period_df, first_stops_df, routes_trips_df)
+        stops_df_by_name = stops_df.reset_index().set_index('stop_name')
+        return ExtractedData(extended_stops_df, transfers_route_ids_df, stop_times_route_ids_df, avg_durations_df, period_df, first_stops_df, routes_trips_df, stops_df_by_name)
 
     def create_route_ids_df(self, stop_times_df):
         routes_path_df = stop_times_df.groupby(['block_id', 'trip_num', 'service_id']).agg(

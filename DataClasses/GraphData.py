@@ -10,3 +10,5 @@ class GraphData(Data):  # server has reference to its instance
     distances: dict
     stop_times_df: pd.DataFrame
     stops_df: pd.DataFrame
+    routes_df: pd.DataFrame
+    stops_df_by_name: pd.DataFrame

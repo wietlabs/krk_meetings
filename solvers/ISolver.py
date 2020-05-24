@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from DataClasses.Query import Query
+from DataClasses.TransferQuery import Query
 from typing import List
 
 
