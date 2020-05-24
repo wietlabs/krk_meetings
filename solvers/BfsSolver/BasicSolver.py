@@ -4,7 +4,7 @@ import pandas as pd
 import networkx as nx
 
 from solvers.ISolver import ISolver
-from DataClasses.Query import Query
+from DataClasses.TransferQuery import Query
 from DataClasses.ParsedData import ParsedData
 
 

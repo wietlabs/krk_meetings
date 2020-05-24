@@ -16,6 +16,8 @@ class GraphDataExtractor:
         stop_times_df = extracted_data.stop_times_df
         first_stops_df = extracted_data.first_stops_df
         period_df = extracted_data.period_df
+        routes_df = extracted_data.routes_df.set_index(['service_id', 'block_id', 'trip_num'])
+        stops_df_by_name = extracted_data.stops_df_by_name
 
         # hubs_df = stops_df[stops_df['hub']]
         # hubs_df = hubs_df.reset_index()
@@ -44,7 +46,7 @@ class GraphDataExtractor:
         for key in distances.keys():
             distances[key] = dict(distances[key])
 
-        return GraphData(floyd_graph, distances, stop_times_df, stops_df)
+        return GraphData(floyd_graph, distances, stop_times_df, stops_df, routes_df, stops_df_by_name)
 
     def generate_floyd_nodes(self, graph, stops_df):
         stops_df = stops_df.reset_index()
