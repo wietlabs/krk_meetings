@@ -6,5 +6,5 @@ from dataclasses import dataclass
 class TransferQuery:
     start_date: date  # TODO: use datetime?
     start_time: time
-    start_stop: str  # TODO: use class IPosition (Stop or Coordinates)?
-    end_stop: str
+    start_stop_name: str  # TODO: use class IPosition (Stop or Coordinates)?
+    end_stop_name: str

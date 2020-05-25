@@ -76,8 +76,8 @@ class BfsSolver(ISolver):
 
     def find_connections(self, query: TransferQuery):
         start_time = query.start_time.hour * 3600 + query.start_time.minute * 60 + query.start_time.second
-        start_stop_id = self.stops_df_by_name.loc[query.start_stop]['stop_id']
-        end_stop_id = self.stops_df_by_name.loc[query.end_stop]['stop_id']
+        start_stop_id = self.stops_df_by_name.loc[query.start_stop_name]['stop_id']
+        end_stop_id = self.stops_df_by_name.loc[query.end_stop_name]['stop_id']
 
         unique_stop_times = self.unique_stop_times_df.xs(start_stop_id).index
         idx = unique_stop_times.searchsorted(start_time)

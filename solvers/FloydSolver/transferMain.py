@@ -24,23 +24,3 @@ if __name__ == "__main__":
         for transfer in connection:
             print(str(transfer))
         print("------------------------------")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
