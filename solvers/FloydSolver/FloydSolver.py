@@ -1,11 +1,13 @@
-import copy
+from copy import copy
 from queue import PriorityQueue
+
 from utils import *
 import pandas as pd
 from solvers.ISolver import ISolver
 from DataClasses.Transfer import Transfer
 from DataClasses.TransferQuery import TransferQuery
 from DataClasses.MeetingQuery import MeetingQuery
+from DataClasses.SequenceQuery import SequenceQuery
 
 
 class FloydSolver(ISolver):
@@ -23,8 +25,8 @@ class FloydSolver(ISolver):
     def find_connections(self, query: TransferQuery):
         current_time = time_to_int(query.start_time)
         current_date = query.start_date
-        start_stop_id = self.stops_df_by_name.loc[query.start_stop]['stop_id']
-        end_stop_id = self.stops_df_by_name.loc[query.end_stop]['stop_id']
+        start_stop_id = self.stops_df_by_name.loc[query.start_stop_name]['stop_id']
+        end_stop_id = self.stops_df_by_name.loc[query.end_stop_name]['stop_id']
 
         paths = self.get_paths(start_stop_id, end_stop_id)
         connections = []
@@ -68,8 +70,29 @@ class FloydSolver(ISolver):
         meeting_points = list(map(lambda x: self.stops_df.loc[x[0]]['stop_name'], meeting_metrics[0:10]))
         return meeting_points
 
-    def find_optimal_sequence(self, SequenceQuery):
-        pass
+    def find_optimal_sequence(self, query: SequenceQuery):
+        def gen(stop_ids: list, current_stop_id, last_stop_id, sequence: list, weight: int):
+            if stop_ids:
+                for next_stop_id in stop_ids:
+                    next_stop_ids = copy(stop_ids)
+                    next_stop_ids.remove(next_stop_id)
+                    next_sequence = copy(sequence)
+                    next_sequence.append(next_stop_id)
+                    next_weight = weight + self.distances[current_stop_id][next_stop_id]
+                    yield from gen(next_stop_ids, next_stop_id, last_stop_id, next_sequence, next_weight)
+            else:
+                sequence.append(last_stop_id)
+                weight = weight + self.distances[current_stop_id][last_stop_id]
+                yield sequence, weight
+
+        stops_to_visit_ids = list(map(lambda x: int(self.stops_df_by_name.loc[x]['stop_id']), query.stops_to_visit))
+        start_stop_id = int(self.stops_df_by_name.loc[query.start_stop_name]['stop_id'])
+        end_stop_id = int(self.stops_df_by_name.loc[query.end_stop_name]['stop_id'])
+        sequences = list(gen(stops_to_visit_ids, start_stop_id, end_stop_id, [start_stop_id], 0))
+        optimal_order = min(sequences, key=lambda x: x[1])
+        print(optimal_order[1])
+        optimal_order = list(map(lambda x: self.stops_df.loc[x]['stop_name'], optimal_order[0]))
+        return optimal_order
 
     def find_routes(self, path, time):
         # TODO smart join could return paths for all hours at once

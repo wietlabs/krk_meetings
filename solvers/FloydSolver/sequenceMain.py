@@ -1,4 +1,4 @@
-from DataClasses.MeetingQuery import MeetingQuery
+from DataClasses.SequenceQuery import SequenceQuery
 from DataProviders.GraphDataProvider import GraphDataProvider
 from DataProviders.GtfsStaticDataProvider import GtfsStaticDataProvider
 from solvers.FloydSolver.FloydSolver import FloydSolver
@@ -10,7 +10,9 @@ if __name__ == "__main__":
     #print("GRAPH DATA EXTRACTED")
     graph_data = GraphDataProvider.load_data()
     solver = FloydSolver(graph_data)
-    start_stop_names = ['Azory', 'Kawiory', 'Rondo Mogilskie']
-    query = MeetingQuery(start_stop_names, 'square')
-    meeting_points = solver.find_meeting_points(query)
-    print(meeting_points)
+    stops_to_visit = ['Biprostal', 'Kawiory', 'Czarnowiejska']
+    start_stop_name = 'Wrocławska'
+    end_stop_name = 'AGH / UR'
+    query = SequenceQuery(start_stop_name, end_stop_name, stops_to_visit)
+    sequence = solver.find_optimal_sequence(query)
+    print(sequence)
