@@ -4,11 +4,11 @@ import pandas as pd
 import networkx as nx
 
 from solvers.ISolver import ISolver
-from DataClasses.TransferQuery import Query
+from DataClasses.TransferQuery import TransferQuery
 from DataClasses.ParsedData import ParsedData
 
 
-class BasicSolver(ISolver):
+class BfsSolver(ISolver):
     def __init__(self, parsed_data: ParsedData):
         # self.G = nx.read_gpickle(Path(__file__).parent / 'tmp' / 'G.gpickle')
         # self.G_R = nx.read_gpickle(Path(__file__).parent / 'tmp' / 'G_R.gpickle')
@@ -74,10 +74,10 @@ class BasicSolver(ISolver):
         self.stops_df = parsed_data.stops_df
         self.unique_stop_times_df = unique_stop_times_df
 
-    def find_connection(self, query: Query):
-        start_time = query.start_time
-        start_stop_id = query.start_stop_id
-        end_stop_id = query.end_stop_id
+    def find_connections(self, query: TransferQuery):
+        start_time = query.start_time.hour * 3600 + query.start_time.minute * 60 + query.start_time.second
+        start_stop_id = self.stops_df_by_name.loc[query.start_stop]['stop_id']
+        end_stop_id = self.stops_df_by_name.loc[query.end_stop]['stop_id']
 
         unique_stop_times = self.unique_stop_times_df.xs(start_stop_id).index
         idx = unique_stop_times.searchsorted(start_time)
