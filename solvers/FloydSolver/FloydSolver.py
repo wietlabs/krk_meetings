@@ -2,12 +2,13 @@ import copy
 from queue import PriorityQueue
 from utils import *
 import pandas as pd
-
+from solvers.ISolver import ISolver
 from DataClasses.Transfer import Transfer
 from DataClasses.TransferQuery import TransferQuery
+from DataClasses.MeetingQuery import MeetingQuery
 
 
-class FloydSolver:
+class FloydSolver(ISolver):
     def __init__(self, graph_data):
         self.graph = graph_data.graph
         self.distances = graph_data.distances
@@ -19,7 +20,7 @@ class FloydSolver:
         for node in self.graph.nodes():
             self.paths[node] = {}
 
-    def get_connections(self, query: TransferQuery):
+    def find_connections(self, query: TransferQuery):
         current_time = time_to_int(query.start_time)
         current_date = query.start_date
         start_stop_id = self.stops_df_by_name.loc[query.start_stop]['stop_id']
@@ -43,9 +44,32 @@ class FloydSolver:
                     end_time = int_to_time(arrival_time)
                     end_date = shift_date(current_date, arrival_time)
 
-                    connection.append(Transfer(route_name, current_stop_name, next_stop_name, start_date, start_time, end_date, end_time))
+                    connection.append(
+                        Transfer(route_name, current_stop_name, next_stop_name, start_date, start_time, end_date,
+                                 end_time))
                 connections.append(connection)
         return connections
+
+    def find_meeting_points(self, query: MeetingQuery):
+        start_stop_ids = list(map(lambda x: int(self.stops_df_by_name.loc[x]['stop_id']), query.start_stop_names))
+        if query.metric == 'square':
+            metric = lambda l: sum(map(lambda i: i * i, l))
+        elif query.metric == 'sum':
+            metric = lambda l: sum(l)
+        elif query.metric == 'max':
+            metric = lambda l: max(l)
+        else:
+            return None
+        meeting_metrics = []
+        for end_stop_id in self.distances:
+            distances_to_destination = list(map(lambda stop_id: self.distances[stop_id][end_stop_id], start_stop_ids))
+            meeting_metrics.append((end_stop_id, metric(distances_to_destination)))
+        meeting_metrics.sort(key=lambda x: x[1])
+        meeting_points = list(map(lambda x: self.stops_df.loc[x[0]]['stop_name'], meeting_metrics[0:10]))
+        return meeting_points
+
+    def find_optimal_sequence(self, SequenceQuery):
+        pass
 
     def find_routes(self, path, time):
         # TODO smart join could return paths for all hours at once
@@ -55,8 +79,12 @@ class FloydSolver:
         for index in range(len(path) - 1):
             current_stop = path[index]
             next_stop = path[index + 1]
-            current_stop_times_df = self.stop_times_df[self.stop_times_df['stop_id'] == current_stop].reset_index('stop_sequence')[['departure_time']]
-            next_stop_times_df = self.stop_times_df[self.stop_times_df['stop_id'] == next_stop].reset_index('stop_sequence')[['departure_time']]
+            current_stop_times_df = \
+                self.stop_times_df[self.stop_times_df['stop_id'] == current_stop].reset_index('stop_sequence')[
+                    ['departure_time']]
+            next_stop_times_df = \
+                self.stop_times_df[self.stop_times_df['stop_id'] == next_stop].reset_index('stop_sequence')[
+                    ['departure_time']]
             transfers_df = current_stop_times_df.join(next_stop_times_df, how='inner', lsuffix='_current',
                                                       rsuffix='_next')
             transfers_df = transfers_df[transfers_df.departure_time_current > time]

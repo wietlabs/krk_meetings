@@ -2,8 +2,8 @@ import time
 
 from DataProviders.GtfsStaticDataProvider import GtfsStaticDataProvider
 from static_timetable_module.gtfs_static.utils import parse_time
-from solvers.BfsSolver.BasicSolver import BasicSolver
-from DataClasses.TransferQuery import Query
+from solvers.BfsSolver.BfsSolver import BfsSolver
+from DataClasses.TransferQuery import TransferQuery
 from utils import format_time
 from Visualization import Visualization
 
@@ -13,7 +13,7 @@ if __name__ == '__main__':
     # extracted_data = DataProvider.extract_data()
     extracted_data = GtfsStaticDataProvider.load_extracted_data()
 
-    solver = BasicSolver(parsed_data)
+    solver = BfsSolver(parsed_data)
 
     stops_df = parsed_data.stops_df
 
@@ -43,10 +43,10 @@ if __name__ == '__main__':
     # start_stop_id = get_stop_id_by_name('Goszcza Dworek')
     # end_stop_id = get_stop_id_by_name('Grabie Pętla')
 
-    query = Query(start_time, start_stop_id, end_stop_id)
+    query = TransferQuery(start_time, start_stop_id, end_stop_id)
 
     t1 = time.time()
-    result = solver.find_connection(query)
+    result = solver.find_connections(query)
     t2 = time.time()
     print(f'{t2-t1:.3f} s')
 
