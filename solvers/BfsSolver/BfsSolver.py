@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import pandas as pd
 import networkx as nx
 
@@ -8,11 +10,11 @@ from DataClasses.ParsedData import ParsedData
 
 class BfsSolver(ISolver):
     def __init__(self, parsed_data: ParsedData):
-        self.G = nx.read_gpickle('G.gpickle')
-        self.G_R = nx.read_gpickle('G_R.gpickle')
-        self.stops_df = parsed_data.stops_df
-        self.stops_df_by_name = self.stops_df.reset_index().set_index('stop_name')
-        self.unique_stop_times_df = pd.read_pickle('unique_stop_times_df.pickle')
+        # self.G = nx.read_gpickle(Path(__file__).parent / 'tmp' / 'G.gpickle')
+        # self.G_R = nx.read_gpickle(Path(__file__).parent / 'tmp' / 'G_R.gpickle')
+        # self.stops_df = parsed_data.stops_df
+        # self.unique_stop_times_df = pd.read_pickle(Path(__file__).parent / 'tmp' / 'unique_stop_times_df.pickle')
+        # return
 
         G = nx.DiGraph()
 
@@ -63,9 +65,9 @@ class BfsSolver(ISolver):
             for stop_id, time in unique_stop_times_df.index
         ), weight=0)
 
-        nx.write_gpickle(G, 'G.gpickle')
-        nx.write_gpickle(G_R, 'G_R.gpickle')
-        unique_stop_times_df.to_pickle('unique_stop_times_df.pickle')
+        nx.write_gpickle(G, Path(__file__).parent / 'tmp' / 'G.gpickle')
+        nx.write_gpickle(G_R, Path(__file__).parent / 'tmp' / 'G_R.gpickle')
+        unique_stop_times_df.to_pickle(Path(__file__).parent / 'tmp' / 'unique_stop_times_df.pickle')
 
         self.G = G
         self.G_R = G_R

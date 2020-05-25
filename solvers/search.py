@@ -8,9 +8,9 @@ from utils import format_time
 from Visualization import Visualization
 
 if __name__ == '__main__':
-    # parsed_data = DataProvider.parse_data()
+    # parsed_data = GtfsStaticDataProvider.parse_data()
+    # extracted_data = GtfsStaticDataProvider.extract_data()
     parsed_data = GtfsStaticDataProvider.load_parsed_data()
-    # extracted_data = DataProvider.extract_data()
     extracted_data = GtfsStaticDataProvider.load_extracted_data()
 
     solver = BfsSolver(parsed_data)
