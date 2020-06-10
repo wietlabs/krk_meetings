@@ -3,7 +3,7 @@ import networkx as nx
 from development.DataProviders.GtfsStaticDataProvider import GtfsStaticDataProvider
 
 if __name__ == '__main__':
-    # GtfsStaticDataProvider.parse_data()
+    # parsed_data = GtfsStaticDataProvider.parse_data()
     parsed_data = GtfsStaticDataProvider.load_parsed_data()
 
     trips_df = parsed_data.trips_df

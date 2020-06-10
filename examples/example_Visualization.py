@@ -2,7 +2,7 @@ from development.DataProviders.GtfsStaticDataProvider import GtfsStaticDataProvi
 from development.Visualization import Visualization
 
 if __name__ == '__main__':
-    # GtfsStaticDataProvider.extract_data()
+    # extracted_data = GtfsStaticDataProvider.extract_data()
     extracted_data = GtfsStaticDataProvider.load_extracted_data()
 
     visualization = Visualization()
