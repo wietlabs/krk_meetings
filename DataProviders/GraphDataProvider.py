@@ -9,7 +9,6 @@ class GraphDataProvider:
         extractor = GraphDataExtractor()
         extracted_data = extractor.extract(gtfs_extracted_data)
         extracted_data.save(Path(__file__).parent / 'tmp' / 'graph_data.pickle')
-
         return extracted_data
 
     @staticmethod

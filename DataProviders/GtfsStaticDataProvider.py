@@ -1,5 +1,5 @@
 from gtfs_static.Parser import Parser
-from static_timetable_module.gtfs_static.Extractor import Extractor
+from gtfs_static.Extractor import Extractor
 from DataClasses.ExtractedData import ExtractedData
 from pathlib import Path
 
@@ -13,7 +13,6 @@ class GtfsStaticDataProvider:
         parsed_data.save(Path(__file__).parent / 'tmp' / 'parsed_data.pickle')
         extracted_data = extractor.extract(parsed_data)
         extracted_data.save(Path(__file__).parent / 'tmp' / 'extracted_data.pickle')
-
         return extracted_data
 
     @staticmethod
