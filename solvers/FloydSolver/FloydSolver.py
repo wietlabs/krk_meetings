@@ -149,9 +149,9 @@ class FloydSolver(ISolver):
             for neighbor_id in self.graph.neighbors(node_id):
                 n_weight = weight + self.graph.edges[node_id, neighbor_id]['weight']
                 n_priority = n_weight + self.distances[neighbor_id][end_node]
-                n_path = copy.copy(path)
+                n_path = copy(path)
                 n_path.append(neighbor_id)
-                n_routes = copy.copy(routes)
+                n_routes = copy(routes)
                 route = self.graph.edges[node_id, neighbor_id]['route_ids']
                 if self.is_redundant(n_routes, route):
                     continue
