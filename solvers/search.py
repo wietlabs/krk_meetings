@@ -1,11 +1,11 @@
 import time
 
-from DataProviders.GtfsStaticDataProvider import GtfsStaticDataProvider
+from development.DataProviders.GtfsStaticDataProvider import GtfsStaticDataProvider
 from gtfs_static.utils import parse_time
 from solvers.BfsSolver.BfsSolver import BfsSolver
 from DataClasses.TransferQuery import TransferQuery
 from utils import format_time
-from Visualization import Visualization
+from development.Visualization import Visualization
 
 if __name__ == '__main__':
     # parsed_data = GtfsStaticDataProvider.parse_data()

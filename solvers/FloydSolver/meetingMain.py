@@ -1,6 +1,5 @@
 from DataClasses.MeetingQuery import MeetingQuery
-from DataProviders.GraphDataProvider import GraphDataProvider
-from DataProviders.GtfsStaticDataProvider import GtfsStaticDataProvider
+from development.DataProviders.GraphDataProvider import GraphDataProvider
 from solvers.FloydSolver.FloydSolver import FloydSolver
 
 if __name__ == "__main__":

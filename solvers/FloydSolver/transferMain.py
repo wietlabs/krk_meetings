@@ -1,8 +1,7 @@
 from DataClasses.TransferQuery import TransferQuery
-from DataProviders.GraphDataProvider import GraphDataProvider
-from DataProviders.GtfsStaticDataProvider import GtfsStaticDataProvider
+from development.DataProviders.GraphDataProvider import GraphDataProvider
+from development.DataProviders.GtfsStaticDataProvider import GtfsStaticDataProvider
 from solvers.FloydSolver.FloydSolver import FloydSolver
-from solvers.BfsSolver.BfsSolver import BfsSolver
 from datetime import date, time
 
 if __name__ == "__main__":

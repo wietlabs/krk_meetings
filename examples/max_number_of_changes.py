@@ -1,6 +1,6 @@
 import networkx as nx
 
-from DataProviders.GtfsStaticDataProvider import GtfsStaticDataProvider
+from development.DataProviders.GtfsStaticDataProvider import GtfsStaticDataProvider
 
 if __name__ == '__main__':
     # GtfsStaticDataProvider.parse_data()
