@@ -3,13 +3,15 @@ from pathlib import Path
 import pandas as pd
 import networkx as nx
 
+from DataClasses.ExtractedData import ExtractedData
 from solvers.ISolver import ISolver
 from DataClasses.TransferQuery import TransferQuery
 from DataClasses.ParsedData import ParsedData
 
 
 class BfsSolver(ISolver):
-    def __init__(self, parsed_data: ParsedData):
+    def __init__(self, parsed_data: ParsedData, extracted_data: ExtractedData):
+        # TODO: use DataProvider
         # self.G = nx.read_gpickle(Path(__file__).parent / 'tmp' / 'G.gpickle')
         # self.G_R = nx.read_gpickle(Path(__file__).parent / 'tmp' / 'G_R.gpickle')
         # self.stops_df = parsed_data.stops_df
@@ -19,6 +21,7 @@ class BfsSolver(ISolver):
         G = nx.DiGraph()
 
         stops_df = parsed_data.stops_df
+        stops_df_by_name = extracted_data.stops_df_by_name
         stop_times_df = parsed_data.stop_times_df
         transfers_df = parsed_data.transfers_df
 
@@ -71,7 +74,8 @@ class BfsSolver(ISolver):
 
         self.G = G
         self.G_R = G_R
-        self.stops_df = parsed_data.stops_df
+        self.stops_df = stops_df
+        self.stops_df_by_name = stops_df_by_name
         self.unique_stop_times_df = unique_stop_times_df
 
     def find_connections(self, query: TransferQuery):
