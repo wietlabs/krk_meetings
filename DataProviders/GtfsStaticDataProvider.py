@@ -1,4 +1,4 @@
-from static_timetable_module.gtfs_static.Parser import Parser
+from gtfs_static.Parser import Parser
 from static_timetable_module.gtfs_static.Extractor import Extractor
 from DataClasses.ExtractedData import ExtractedData
 from pathlib import Path

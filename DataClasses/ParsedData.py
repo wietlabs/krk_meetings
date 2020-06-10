@@ -4,7 +4,7 @@ from DataClasses.Data import Data
 
 
 @dataclass
-class ParsedData(Data):  # server has reference to its instance
+class ParsedData(Data):
     calendar_df: pd.DataFrame
     routes_df: pd.DataFrame
     trips_df: pd.DataFrame
