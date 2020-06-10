@@ -1,14 +1,14 @@
-import pandas as pd
-import networkx as nx
-import matplotlib.pyplot as plt
 from math import cos, radians
-from pathlib import Path
+
+import networkx as nx
+import pandas as pd
+import matplotlib.pyplot as plt
 
 from DataClasses.ExtractedData import ExtractedData
 
 
 class Visualization:
-    def __init__(self, fix_scaling=True):
+    def __init__(self, fix_scaling: bool = True):
         if fix_scaling:
             import sys
             if sys.platform == 'win32':
@@ -18,9 +18,9 @@ class Visualization:
 
         self.fig, self.ax = plt.subplots(figsize=(10, 7))
         self.fig.tight_layout()
-        self.ax.set_aspect(aspect=1 / cos(radians(50)))
+        self.ax.set_aspect(1 / cos(radians(50)))
 
-    def draw_stops(self, extracted_data: ExtractedData, draw_transfers=True, **kwargs) -> None:
+    def draw_stops(self, extracted_data: ExtractedData, draw_transfers: bool = True, **kwargs) -> None:
         stops_df = extracted_data.stops_df
         avg_durations_df = extracted_data.avg_durations_df
 
@@ -46,11 +46,3 @@ class Visualization:
     def show(self) -> None:
         self.fig.show()
 
-
-if __name__ == '__main__':
-    path = Path(__file__).parent / 'static_timetable_module' / 'gtfs_static' / 'tmp' / 'extracted_data.pickle'
-    extracted_data = ExtractedData.load(path)
-
-    visualization = Visualization()
-    visualization.draw_stops(extracted_data)
-    visualization.show()
