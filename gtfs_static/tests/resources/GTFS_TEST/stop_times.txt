@@ -1,0 +1,13 @@
+trip_id,arrival_time,departure_time,stop_id,stop_sequence,stop_headsign,pickup_type,drop_off_type,shape_dist_traveled,timepoint
+block_1652_trip_2_service_1,06:50:00,06:50:00,stop_60_8404,7,"",0,0,,1
+block_1652_trip_2_service_1,06:51:00,06:51:00,stop_58_8202,8,"",0,0,,1
+block_1652_trip_2_service_1,06:52:00,06:52:00,stop_1230_287801,9,"",0,0,,1
+block_1652_trip_2_service_1,06:53:00,06:53:00,stop_57_8101,10,"",0,0,,1
+block_1652_trip_2_service_1,06:55:00,06:55:00,stop_1626_311102,11,"",0,0,,1
+block_337_trip_2_service_3,04:52:00,04:52:00,stop_57_8102,1,"",0,1,,1
+block_337_trip_2_service_3,04:54:00,04:54:00,stop_58_8203,2,"",0,0,,1
+block_337_trip_2_service_3,04:55:00,04:55:00,stop_61_8502,3,"",0,0,,1
+block_337_trip_3_service_3,23:57:00,23:57:00,stop_61_8503,12,"",0,0,,1
+block_337_trip_3_service_3,23:59:00,23:59:00,stop_1230_287801,13,"",0,0,,1
+block_337_trip_3_service_3,24:00:00,24:00:00,stop_57_8101,14,"",0,0,,1
+block_337_trip_3_service_3,24:02:00,24:02:00,stop_55_7904,15,"",0,0,,1
