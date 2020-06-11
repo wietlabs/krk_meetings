@@ -4,10 +4,40 @@ import time
 from development.DataProviders.GtfsStaticDataProvider import GtfsStaticDataProvider
 from solvers.BfsSolver.BfsSolver import BfsSolver
 from DataClasses.TransferQuery import TransferQuery
+from solvers.BfsSolver.BfsSolverData import BfsSolverData
 from solvers.ISolver import ISolver
 
 
-def search(solver: ISolver, start_date: datetime.date, start_time: datetime.time, start_stop_name: str, end_stop_name: str):
+if __name__ == '__main__':
+    # parsed_data = GtfsStaticDataProvider.parse_data()
+    # extracted_data = GtfsStaticDataProvider.extract_data()
+    parsed_data = GtfsStaticDataProvider.load_parsed_data()
+    extracted_data = GtfsStaticDataProvider.load_extracted_data()
+
+    bfs_solver_data = BfsSolverData.create(parsed_data, extracted_data)
+    solver = BfsSolver(bfs_solver_data)
+
+    # start_time = datetime.datetime.strptime(input('Godzina odjazdu: '), '%H:%M').time()
+    # start_stop_name = input('Przystanek początkowy: ')
+    # end_stop_name = input('Przystanek końcowy: ')
+
+    # start_time = datetime.time(6, 3)
+    # start_stop_name = 'Miasteczko Studenckie AGH'
+    # end_stop_name = 'Dworzec Główny Wschód'
+
+    start_time = datetime.time(21, 20)
+    start_stop_name = 'Brzeźnica Dworzec'
+    end_stop_name = 'Słomniki Osiedle'
+
+    # start_time = datetime.time(6, 58)
+    # start_stop_name = 'Wieliczka Miasto'
+    # end_stop_name = 'Górka Narodowa Wschód'
+
+    # start_time = datetime.time(22, 10)
+    # start_stop_name = 'Goszcza Dworek'
+    # end_stop_name = 'Grabie Pętla'
+
+    start_date = datetime.datetime.now().date()
     query = TransferQuery(start_date, start_time, start_stop_name, end_stop_name)
 
     t1 = time.time()
@@ -24,24 +54,3 @@ def search(solver: ISolver, start_date: datetime.date, start_time: datetime.time
     # visualization.draw_stops(extracted_data, node_color='gray', edge_color='gray')
     # visualization.draw_result_path(result, color='blue')
     # visualization.show()
-
-
-if __name__ == '__main__':
-    # parsed_data = GtfsStaticDataProvider.parse_data()
-    # extracted_data = GtfsStaticDataProvider.extract_data()
-    parsed_data = GtfsStaticDataProvider.load_parsed_data()
-    extracted_data = GtfsStaticDataProvider.load_extracted_data()
-
-    solver = BfsSolver(parsed_data, extracted_data)
-
-    today = datetime.datetime.now().date()
-
-    search(solver, today, datetime.time(6, 3), 'Miasteczko Studenckie AGH', 'Dworzec Główny Wschód')
-    search(solver, today, datetime.time(21, 20), 'Brzeźnica Dworzec', 'Słomniki Osiedle')
-    search(solver, today, datetime.time(6, 58), 'Wieliczka Miasto', 'Górka Narodowa Wschód')
-    search(solver, today, datetime.time(22, 10), 'Goszcza Dworek', 'Grabie Pętla')
-
-    # start_time = datetime.datetime.strptime(input('Godzina odjazdu: '), '%H:%M').time()
-    # start_stop_name = input('Przystanek początkowy: ')
-    # end_stop_name = input('Przystanek końcowy: ')
-    # search(solver, today, start_time, start_stop_name, end_stop_name)

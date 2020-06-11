@@ -1,89 +1,21 @@
-from pathlib import Path
-
 import pandas as pd
 import networkx as nx
 
-from DataClasses.ExtractedData import ExtractedData
+from solvers.BfsSolver.BfsSolverData import BfsSolverData
 from solvers.ISolver import ISolver
 from DataClasses.TransferQuery import TransferQuery
-from DataClasses.ParsedData import ParsedData
 
 
 class BfsSolver(ISolver):
-    def __init__(self, parsed_data: ParsedData, extracted_data: ExtractedData):
-        # TODO: use DataProvider
-        # self.G = nx.read_gpickle(Path(__file__).parent / 'tmp' / 'G.gpickle')
-        # self.G_R = nx.read_gpickle(Path(__file__).parent / 'tmp' / 'G_R.gpickle')
-        # self.stops_df = parsed_data.stops_df
-        # self.unique_stop_times_df = pd.read_pickle(Path(__file__).parent / 'tmp' / 'unique_stop_times_df.pickle')
-        # return
-
-        G = nx.DiGraph()
-
-        stops_df = parsed_data.stops_df
-        stops_df_by_name = extracted_data.stops_df_by_name
-        stop_times_df = parsed_data.stop_times_df
-        transfers_df = parsed_data.transfers_df
-
-        transfers_df = transfers_df[['start_time', 'end_time', 'start_stop_id', 'end_stop_id', 'duration']]
-
-        unique_stop_times_df = stop_times_df.reset_index()[['stop_id', 'departure_time']]
-        unique_stop_times_df['departure_time'] %= 24 * 60 * 60
-        unique_stop_times_df.drop_duplicates(inplace=True)
-        unique_stop_times_df.set_index(['stop_id', 'departure_time'], inplace=True)
-        unique_stop_times_df.sort_index(inplace=True)
-        # TODO: move to extractor?
-
-        G.add_nodes_from(unique_stop_times_df.index)
-
-        G.add_weighted_edges_from(
-            ((start_stop_id, start_time), (end_stop_id, end_time), duration)
-            for _, start_time, end_time, start_stop_id, end_stop_id, duration in transfers_df.itertuples()
-        )
-        # TODO: include weekdays using service_id
-
-        # trick #1: add destination nodes
-        G.add_nodes_from(
-            (stop_id, None)
-            for stop_id in stops_df.index
-        )
-
-        # trick #2: merged waiting edges
-        G.add_weighted_edges_from(
-            ((stop_id, start_time), (stop_id, end_time), (end_time - start_time) % (24 * 60 * 60))
-            for stop_id, df in unique_stop_times_df.groupby('stop_id')
-            for (_, start_time), (_, end_time) in nx.utils.pairwise(df.index, cyclic=True)
-        )
-
-        # trick #3: use reversed graph to find the latest departure time
-        G_R = G.reverse()
-
-        G.add_edges_from((
-            ((stop_id, time), (stop_id, None))
-            for stop_id, time in unique_stop_times_df.index
-        ), weight=0)
-
-        G_R.add_edges_from((
-            ((stop_id, time), (stop_id, None))
-            for stop_id, time in unique_stop_times_df.index
-        ), weight=0)
-
-        nx.write_gpickle(G, Path(__file__).parent / 'tmp' / 'G.gpickle')
-        nx.write_gpickle(G_R, Path(__file__).parent / 'tmp' / 'G_R.gpickle')
-        unique_stop_times_df.to_pickle(Path(__file__).parent / 'tmp' / 'unique_stop_times_df.pickle')
-
-        self.G = G
-        self.G_R = G_R
-        self.stops_df = stops_df
-        self.stops_df_by_name = stops_df_by_name
-        self.unique_stop_times_df = unique_stop_times_df
+    def __init__(self, data: BfsSolverData):
+        self.data = data
 
     def find_connections(self, query: TransferQuery):
         start_time = query.start_time.hour * 3600 + query.start_time.minute * 60 + query.start_time.second
-        start_stop_id = self.stops_df_by_name.loc[query.start_stop_name]['stop_id']
-        end_stop_id = self.stops_df_by_name.loc[query.end_stop_name]['stop_id']
+        start_stop_id = self.data.stops_df_by_name.loc[query.start_stop_name]['stop_id']
+        end_stop_id = self.data.stops_df_by_name.loc[query.end_stop_name]['stop_id']
 
-        unique_stop_times = self.unique_stop_times_df.xs(start_stop_id).index
+        unique_stop_times = self.data.unique_stop_times_df.xs(start_stop_id).index
         idx = unique_stop_times.searchsorted(start_time)
         if idx == len(unique_stop_times):
             idx = 0
@@ -95,14 +27,16 @@ class BfsSolver(ISolver):
         # shortest_path = nx.shortest_path(self.G, source, target)
         # path = shortest_path[:-1]
 
-        shortest_path_length = nx.shortest_path_length(self.G, source, target, 'weight')
+        shortest_path_length = nx.shortest_path_length(self.data.G, source, target, 'weight')
         end_time = (start_time + shortest_path_length) % (24 * 60 * 60)
 
         source = (end_stop_id, end_time)
         target = (start_stop_id, None)
 
-        shortest_inverted_path = nx.shortest_path(self.G_R, source, target, 'weight')
+        shortest_inverted_path = nx.shortest_path(self.data.G_R, source, target, 'weight')
         path = shortest_inverted_path[:-1][::-1]
 
         result_df = pd.DataFrame(path, columns=['stop_id', 'time'])
         return result_df
+
+        # TODO: return List[List[Transfer]
