@@ -5,7 +5,6 @@ from development.DataProviders.GtfsStaticDataProvider import GtfsStaticDataProvi
 from solvers.BfsSolver.BfsSolver import BfsSolver
 from DataClasses.TransferQuery import TransferQuery
 from solvers.BfsSolver.BfsSolverData import BfsSolverData
-from solvers.ISolver import ISolver
 
 
 if __name__ == '__main__':

@@ -1,6 +1,9 @@
+from typing import List
+
 import pandas as pd
 import networkx as nx
 
+from DataClasses.Transfer import Transfer
 from solvers.BfsSolver.BfsSolverData import BfsSolverData
 from solvers.ISolver import ISolver
 from DataClasses.TransferQuery import TransferQuery
@@ -10,10 +13,10 @@ class BfsSolver(ISolver):
     def __init__(self, data: BfsSolverData):
         self.data = data
 
-    def find_connections(self, query: TransferQuery):
+    def find_connections(self, query: TransferQuery) -> List[List[Transfer]]:
         start_time = query.start_time.hour * 3600 + query.start_time.minute * 60 + query.start_time.second
-        start_stop_id = self.data.stops_df_by_name.loc[query.start_stop_name]['stop_id']
-        end_stop_id = self.data.stops_df_by_name.loc[query.end_stop_name]['stop_id']
+        start_stop_id = int(self.data.stops_df_by_name.loc[query.start_stop_name]['stop_id'])
+        end_stop_id = int(self.data.stops_df_by_name.loc[query.end_stop_name]['stop_id'])
 
         # step 1: find next earliest possible departure time
         unique_stop_times = self.data.unique_stop_times_df.xs(start_stop_id).index
@@ -37,7 +40,5 @@ class BfsSolver(ISolver):
         shortest_inverted_path = nx.shortest_path(self.data.G_R, source, target, 'weight')
         path = shortest_inverted_path[:-1][::-1]
 
-        # step 4: reconstruct the result
-        # TODO: return List[List[Transfer]]
-        result_df = pd.DataFrame(path, columns=['stop_id', 'time'])
-        return result_df
+        # step 4: reconstruct the result  # TODO
+        return []
