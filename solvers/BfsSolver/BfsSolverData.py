@@ -12,6 +12,7 @@ from DataClasses.ParsedData import ParsedData
 class BfsSolverData(Data):
     G: nx.DiGraph
     G_R: nx.DiGraph
+    G_B: nx.DiGraph
     stops_df: pd.DataFrame
     stops_df_by_name: pd.DataFrame
     unique_stop_times_df: pd.DataFrame
@@ -23,7 +24,8 @@ class BfsSolverData(Data):
         stop_times_df = parsed_data.stop_times_df
         transfers_df = parsed_data.transfers_df
 
-        transfers_min_df = transfers_df[['start_time', 'end_time', 'start_stop_id', 'end_stop_id', 'duration']]
+        stop_times_min_df = stop_times_df.reset_index()[['stop_id', 'departure_time', 'block_id']]
+        transfers_min_df = transfers_df[['start_time', 'end_time', 'start_stop_id', 'end_stop_id', 'duration', 'block_id']]
 
         unique_stop_times_df = stop_times_df.reset_index()[['stop_id', 'departure_time']]
         unique_stop_times_df['departure_time'] %= 24 * 60 * 60
@@ -33,10 +35,17 @@ class BfsSolverData(Data):
 
         G = nx.DiGraph()
 
+        # G.add_nodes_from(unique_stop_times_df.index)
+
         G.add_weighted_edges_from(
             ((start_stop_id, start_time), (end_stop_id, end_time), duration)
-            for _, start_time, end_time, start_stop_id, end_stop_id, duration in transfers_min_df.itertuples()
+            for _, start_time, end_time, start_stop_id, end_stop_id, duration, _ in transfers_min_df.itertuples()
         )
+
+        # G.add_nodes_from(
+        #     (stop_id, None)
+        #     for stop_id in stops_df.index
+        # )
 
         G.add_weighted_edges_from(
             ((stop_id, start_time), (stop_id, end_time), (end_time - start_time) % (24 * 60 * 60))
@@ -56,4 +65,32 @@ class BfsSolverData(Data):
             for stop_id, time in unique_stop_times_df.index
         ), weight=0)
 
-        return cls(G, G_R, stops_df, stops_df_by_name, unique_stop_times_df)
+        G_B = nx.DiGraph()
+
+        G_B.add_weighted_edges_from((
+            ((start_stop_id, start_time, block_id), (end_stop_id, end_time, block_id), duration)
+            for _, start_time, end_time, start_stop_id, end_stop_id, duration, block_id in transfers_min_df.itertuples()
+        ))
+
+        G_B.add_edges_from((
+            ((stop_id, time, None), (stop_id, time, block_id))
+            for _, stop_id, time, block_id in stop_times_min_df.itertuples()
+        ), weight=120 * 60)  # max trip duration <= 2 h
+
+        G_B.add_edges_from((
+            ((stop_id, time, block_id), (stop_id, time, None))
+            for _, stop_id, time, block_id in stop_times_min_df.itertuples()
+        ), weight=0)
+
+        G_B.add_weighted_edges_from((
+            ((stop_id, start_time, None), (stop_id, end_time, None), (end_time - start_time) % (24 * 60 * 60))
+            for stop_id, df in unique_stop_times_df.groupby('stop_id')
+            for (_, start_time), (_, end_time) in nx.utils.pairwise(df.index, cyclic=True)
+        ))
+
+        G_B.add_edges_from((
+            ((stop_id, time, None), (stop_id, None, None))
+            for stop_id, time in unique_stop_times_df.index
+        ), weight=0)
+
+        return cls(G, G_R, G_B, stops_df, stops_df_by_name, unique_stop_times_df)

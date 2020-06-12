@@ -1,6 +1,5 @@
 from typing import List
 
-import pandas as pd
 import networkx as nx
 
 from DataClasses.Transfer import Transfer
@@ -14,6 +13,7 @@ class BfsSolver(ISolver):
         self.data = data
 
     def find_connections(self, query: TransferQuery) -> List[List[Transfer]]:
+        # TODO: handle start_date
         start_time = query.start_time.hour * 3600 + query.start_time.minute * 60 + query.start_time.second
         start_stop_id = int(self.data.stops_df_by_name.loc[query.start_stop_name]['stop_id'])
         end_stop_id = int(self.data.stops_df_by_name.loc[query.end_stop_name]['stop_id'])
@@ -34,11 +34,21 @@ class BfsSolver(ISolver):
         shortest_path_length = nx.shortest_path_length(self.data.G, source, target, 'weight')
         end_time = (start_time + shortest_path_length) % (24 * 60 * 60)
 
-        # step 3: find the path with latest departure time by finding the shortest path in the reversed graph
+        # step 3: calculate the latest departure time by finding the shortest path length in the reversed graph
         source = (end_stop_id, end_time)
         target = (start_stop_id, None)
-        shortest_inverted_path = nx.shortest_path(self.data.G_R, source, target, 'weight')
-        path = shortest_inverted_path[:-1][::-1]
+        shortest_path_length = nx.shortest_path_length(self.data.G_R, source, target, 'weight')
+        start_time = (end_time - shortest_path_length) % (24 * 60 * 60)
 
-        # step 4: reconstruct the result  # TODO
-        return []
+        # step 4: find sequence of transfers
+        source = (start_stop_id, start_time, None)
+        target = (end_stop_id, end_time, None)
+        shortest_path = nx.shortest_path(self.data.G_B, source, target, 'weight')
+
+        # step 5: reconstruct the result
+        sequence = []
+        for node in shortest_path:
+            print(node)
+
+        results = [sequence]
+        return results
