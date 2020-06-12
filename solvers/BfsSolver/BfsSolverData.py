@@ -16,6 +16,8 @@ class BfsSolverData(Data):
     stops_df: pd.DataFrame
     stops_df_by_name: pd.DataFrame
     unique_stop_times_df: pd.DataFrame
+    trips_df: pd.DataFrame
+    routes_df: pd.DataFrame
 
     @classmethod
     def create(cls, parsed_data: ParsedData, extracted_data: ExtractedData):
@@ -23,6 +25,8 @@ class BfsSolverData(Data):
         stops_df_by_name = extracted_data.stops_df_by_name
         stop_times_df = parsed_data.stop_times_df
         transfers_df = parsed_data.transfers_df
+        trips_df = parsed_data.trips_df
+        routes_df = parsed_data.routes_df
 
         stop_times_min_df = stop_times_df.reset_index()[['stop_id', 'departure_time', 'block_id', 'trip_num', 'service_id']]
         transfers_min_df = transfers_df[['start_time', 'end_time', 'start_stop_id', 'end_stop_id', 'duration', 'block_id', 'trip_num', 'service_id']]
@@ -93,4 +97,4 @@ class BfsSolverData(Data):
             for stop_id, time in unique_stop_times_df.index
         ), weight=0)
 
-        return cls(G, G_R, G_B, stops_df, stops_df_by_name, unique_stop_times_df)
+        return cls(G, G_R, G_B, stops_df, stops_df_by_name, unique_stop_times_df, trips_df, routes_df)
