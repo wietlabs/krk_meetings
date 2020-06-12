@@ -62,12 +62,14 @@ class Parser:
     def create_transfers_df(self, stop_times_df: pd.DataFrame) -> pd.DataFrame:  # TODO: rename create to generate?
         stop_times_df = stop_times_df.reset_index()
         def gen():
-            start = {'trip_num': None}  # TODO: assign first row
-            for _, end in stop_times_df.iterrows():
-                if start['trip_num'] == end['trip_num'] and start['block_id'] == end['block_id'] and start['service_id'] == end['service_id']:
-                    yield start['block_id'], start['trip_num'], start['service_id'], start['departure_time'], end['departure_time'], \
-                          start['stop_id'], end['stop_id'], start['peron_id'], end['peron_id'], start['stop_sequence']
-                start = end
+            prev_trip_num = None
+            for _, service_id, block_id, trip_num, stop_sequence, stop_id, peron_id, departure_time in stop_times_df.itertuples():
+                if trip_num == prev_trip_num and block_id == prev_block_id and service_id == prev_service_id:
+                    yield block_id, trip_num, service_id, prev_departure_time, departure_time, \
+                          prev_stop_id, stop_id, prev_peron_id, peron_id, prev_stop_sequence
+                prev_service_id, prev_block_id, prev_trip_num, prev_stop_sequence, \
+                    prev_stop_id, prev_peron_id, prev_departure_time = \
+                    service_id, block_id, trip_num, stop_sequence, stop_id, peron_id, departure_time
 
         df = pd.DataFrame(gen(), columns=['block_id', 'trip_num', 'service_id', 'start_time', 'end_time',
                                           'start_stop_id', 'end_stop_id', 'start_peron_id', 'end_peron_id', 'stop_sequence'])
