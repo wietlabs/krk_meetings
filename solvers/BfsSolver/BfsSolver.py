@@ -42,21 +42,21 @@ class BfsSolver(ISolver):
         start_time = (end_time - shortest_path_length) % (24 * 60 * 60)
 
         # step 4: find sequence of transfers
-        source = (start_stop_id, start_time, None)
-        target = (end_stop_id, end_time, None)
+        source = (start_stop_id, start_time, None, None, None)
+        target = (end_stop_id, end_time, None, None, None)
         shortest_path = nx.shortest_path(self.data.G_B, source, target, 'weight')
 
         # step 5: reconstruct the result
         changes = []
-        last_block_id = None
+        last_trip = None
         for node in shortest_path:
-            stop_id, time, block_id = node
-            if block_id != last_block_id:
-                last_block_id = block_id
+            current_trip = node[2:]
+            if current_trip != last_trip:
+                last_trip = current_trip
                 changes.append(node)
 
         sequence = []
-        for (start_stop_id, start_time, block_id), (end_stop_id, end_time, _) in zip(changes[::2], changes[1::2]):
+        for (start_stop_id, start_time, block_id, trip_num, service_id), (end_stop_id, end_time, _, _, _) in zip(changes[::2], changes[1::2]):
             route_number = 'MPK'  # TODO: retrieve line number
             start_stop_name = self.data.stops_df.loc[start_stop_id]['stop_name']
             end_stop_name = self.data.stops_df.loc[end_stop_id]['stop_name']
