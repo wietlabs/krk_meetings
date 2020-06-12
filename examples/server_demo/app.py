@@ -15,13 +15,13 @@ app = Flask(__name__)
 parsed_data = GtfsStaticDataProvider.load_parsed_data()
 extracted_data = GtfsStaticDataProvider.load_extracted_data()
 
-graph_data = GraphDataProvider.load_data()
-floyd_solver = FloydSolver(graph_data)
-
 bfs_solver_data = BfsSolverData.create(parsed_data, extracted_data)
 bfs_solver = BfsSolver(bfs_solver_data)
 
-solvers = [floyd_solver, bfs_solver]
+graph_data = GraphDataProvider.load_data()
+floyd_solver = FloydSolver(graph_data)
+
+solvers = [bfs_solver, floyd_solver]
 
 
 @app.route('/')
