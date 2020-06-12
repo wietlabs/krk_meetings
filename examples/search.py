@@ -44,6 +44,10 @@ if __name__ == '__main__':
     t2 = time.time()
     print(f'{t2 - t1:.3f} s')
 
+    sequence = results[0]
+    for transfer in sequence:
+        print(transfer)
+
     # TODO: visualize results
     # result = result.join(stops_df, on='stop_id')
     # result['time_formatted'] = result['time'].apply(format_time)
