@@ -1,0 +1,35 @@
+{% extends 'layout.html' %}
+
+{% block title %}Szukaj{% endblock %}
+
+{% block content %}
+  {% for solver_name, output in outputs.items() %}
+    <h1>{{ solver_name }}</h1>
+    <p>Czas wyszukiwania: {{ output['time_elapsed'] | round(3) }} s</p>
+    {% for sequence in output['results'] %}
+      <table border="1">
+        <thead>
+          <tr>
+            <th>Linia</th>
+            <th>Godzina odjazdu</th>
+            <th>Przystanek początkowy</th>
+            <th>Godzina przyjazdu</th>
+            <th>Przystanek końcowy</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for transfer in sequence %}
+            <tr>
+              <td>{{ transfer.route_number }}
+              <td>{{ transfer.start_time }}</td>
+              <td>{{ transfer.start_stop_name }}</td>
+              <td>{{ transfer.end_time }}</td>
+              <td>{{ transfer.end_stop_name }}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      <br>
+    {% endfor %}
+  {% endfor %}
+{% endblock %}

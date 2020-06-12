@@ -3,4 +3,5 @@ networkx
 numpy
 matplotlib
 requests
+flask
 pytest
