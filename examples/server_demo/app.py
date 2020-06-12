@@ -57,7 +57,7 @@ def search():
             'time_elapsed': time_elapsed,
         }
 
-    return render_template('results.html', outputs=outputs, time_elapsed=time_elapsed)
+    return render_template('results.html', outputs=outputs)
 
 
 if __name__ == '__main__':
