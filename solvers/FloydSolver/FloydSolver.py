@@ -25,8 +25,8 @@ class FloydSolver(ISolver):
     def find_connections(self, query: TransferQuery):
         current_time = time_to_int(query.start_time)
         current_date = query.start_date
-        start_stop_id = self.stops_df_by_name.loc[query.start_stop_name]['stop_id']
-        end_stop_id = self.stops_df_by_name.loc[query.end_stop_name]['stop_id']
+        start_stop_id = self.stops_df_by_name.at[query.start_stop_name, 'stop_id']
+        end_stop_id = self.stops_df_by_name.at[query.end_stop_name, 'stop_id']
 
         paths = self.get_paths(start_stop_id, end_stop_id)
         connections = []
@@ -38,9 +38,9 @@ class FloydSolver(ISolver):
                 connection = []
                 for transfer in results:
                     index, current_stop_id, next_stop_id, departure_time, arrival_time = transfer
-                    route_name = self.routes_df.loc[index]['route_name']
-                    current_stop_name = self.stops_df.loc[current_stop_id]['stop_name']
-                    next_stop_name = self.stops_df.loc[next_stop_id]['stop_name']
+                    route_name = self.routes_df.at[index, 'route_name']
+                    current_stop_name = self.stops_df.at[current_stop_id, 'stop_name']
+                    next_stop_name = self.stops_df.at[next_stop_id, 'stop_name']
                     start_time = int_to_time(departure_time)
                     start_date = shift_date(current_date, departure_time)
                     end_time = int_to_time(arrival_time)
@@ -53,7 +53,7 @@ class FloydSolver(ISolver):
         return connections
 
     def find_meeting_points(self, query: MeetingQuery):
-        start_stop_ids = list(map(lambda x: int(self.stops_df_by_name.loc[x]['stop_id']), query.start_stop_names))
+        start_stop_ids = list(map(lambda x: int(self.stops_df_by_name.at[x, 'stop_id']), query.start_stop_names))
         if query.metric == 'square':
             metric = lambda l: sum(map(lambda i: i * i, l))
         elif query.metric == 'sum':
@@ -67,7 +67,7 @@ class FloydSolver(ISolver):
             distances_to_destination = list(map(lambda stop_id: self.distances[stop_id][end_stop_id], start_stop_ids))
             meeting_metrics.append((end_stop_id, metric(distances_to_destination)))
         meeting_metrics.sort(key=lambda x: x[1])
-        meeting_points = list(map(lambda x: self.stops_df.loc[x[0]]['stop_name'], meeting_metrics[0:10]))
+        meeting_points = list(map(lambda x: self.stops_df.at[x[0], 'stop_name'], meeting_metrics[0:10]))
         return meeting_points
 
     def find_optimal_sequence(self, query: SequenceQuery):
@@ -85,13 +85,13 @@ class FloydSolver(ISolver):
                 weight = weight + self.distances[current_stop_id][last_stop_id]
                 yield sequence, weight
 
-        stops_to_visit_ids = list(map(lambda x: int(self.stops_df_by_name.loc[x]['stop_id']), query.stops_to_visit))
-        start_stop_id = int(self.stops_df_by_name.loc[query.start_stop_name]['stop_id'])
-        end_stop_id = int(self.stops_df_by_name.loc[query.end_stop_name]['stop_id'])
+        stops_to_visit_ids = list(map(lambda x: int(self.stops_df_by_name.at[x, 'stop_id']), query.stops_to_visit))
+        start_stop_id = int(self.stops_df_by_name.at[query.start_stop_name, 'stop_id'])
+        end_stop_id = int(self.stops_df_by_name.at[query.end_stop_name, 'stop_id'])
         sequences = list(gen(stops_to_visit_ids, start_stop_id, end_stop_id, [start_stop_id], 0))
         optimal_order = min(sequences, key=lambda x: x[1])
         print(optimal_order[1])
-        optimal_order = list(map(lambda x: self.stops_df.loc[x]['stop_name'], optimal_order[0]))
+        optimal_order = list(map(lambda x: self.stops_df.at[x, 'stop_name'], optimal_order[0]))
         return optimal_order
 
     def find_routes(self, path, time):

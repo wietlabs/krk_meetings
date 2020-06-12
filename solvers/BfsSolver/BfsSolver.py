@@ -16,8 +16,8 @@ class BfsSolver(ISolver):
     def find_connections(self, query: TransferQuery) -> List[List[Transfer]]:
         # TODO: handle start_date
         start_time = query.start_time.hour * 3600 + query.start_time.minute * 60 + query.start_time.second
-        start_stop_id = int(self.data.stops_df_by_name.loc[query.start_stop_name]['stop_id'])
-        end_stop_id = int(self.data.stops_df_by_name.loc[query.end_stop_name]['stop_id'])
+        start_stop_id = int(self.data.stops_df_by_name.at[query.start_stop_name, 'stop_id'])
+        end_stop_id = int(self.data.stops_df_by_name.at[query.end_stop_name, 'stop_id'])
 
         # step 1: find next earliest possible departure time
         unique_stop_times = self.data.unique_stop_times_df.xs(start_stop_id).index
@@ -57,10 +57,10 @@ class BfsSolver(ISolver):
 
         sequence = []
         for (start_stop_id, start_time, block_id, trip_num, service_id), (end_stop_id, end_time, _, _, _) in zip(changes[1::2], changes[2::2]):
-            route_id = self.data.trips_df.loc[service_id, block_id, trip_num]['route_id']
-            route_number = self.data.routes_df.loc[route_id]['route_short_name']
-            start_stop_name = self.data.stops_df.loc[start_stop_id]['stop_name']
-            end_stop_name = self.data.stops_df.loc[end_stop_id]['stop_name']
+            route_id = self.data.trips_df.at[(service_id, block_id, trip_num), 'route_id']
+            route_number = self.data.routes_df.at[route_id, 'route_short_name']
+            start_stop_name = self.data.stops_df.at[start_stop_id, 'stop_name']
+            end_stop_name = self.data.stops_df.at[end_stop_id, 'stop_name']
             start_date = end_date = query.start_date  # TODO: retrieve start and end date
             start_time = int_to_time(start_time)
             end_time = int_to_time(end_time)
