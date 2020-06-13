@@ -2,6 +2,7 @@ from typing import List, Tuple, Optional
 
 import networkx as nx
 
+from DataClasses.Connection import Connection
 from DataClasses.Transfer import Transfer
 from solvers.BfsSolver.BfsSolverData import BfsSolverData
 from solvers.ISolver import ISolver
@@ -13,7 +14,7 @@ class BfsSolver(ISolver):
     def __init__(self, data: BfsSolverData):
         self.data = data
 
-    def find_connections(self, query: TransferQuery) -> List[List[Transfer]]:
+    def find_connections(self, query: TransferQuery) -> List[Connection]:
         # TODO: handle start_date
         start_time = query.start_time.hour * 3600 + query.start_time.minute * 60 + query.start_time.second
         start_stop_id = int(self.data.stops_df_by_name.at[query.start_stop_name, 'stop_id'])
@@ -55,7 +56,7 @@ class BfsSolver(ISolver):
                 last_trip = current_trip
                 changes.append(node)
 
-        sequence = []
+        transfers = []
         for (start_stop_id, start_time, block_id, trip_num, service_id), (end_stop_id, end_time, _, _, _) in zip(changes[1::2], changes[2::2]):
             route_id = self.data.trips_df.at[(service_id, block_id, trip_num), 'route_id']
             route_number = self.data.routes_df.at[route_id, 'route_short_name']
@@ -65,7 +66,9 @@ class BfsSolver(ISolver):
             start_time = int_to_time(start_time)
             end_time = int_to_time(end_time)
             transfer = Transfer(route_number, start_stop_name, end_stop_name, start_date, start_time, end_date, end_time)
-            sequence.append(transfer)
+            transfers.append(transfer)
 
-        results = [sequence]
+        connection = Connection(transfers)
+
+        results = [connection]
         return results
