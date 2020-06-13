@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 
-from DataClasses.Connection import Connection
-from DataClasses.TransferQuery import TransferQuery
+from src.DataClasses.Connection import Connection
+from src.DataClasses.TransferQuery import TransferQuery
 from typing import List
 
 

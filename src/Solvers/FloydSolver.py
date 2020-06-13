@@ -1,14 +1,15 @@
 from copy import copy
 from queue import PriorityQueue
 from typing import List
-from DataClasses.Connection import Connection
-from utils import *
-from solvers.ISolver import ISolver
-from DataClasses.Transfer import Transfer
-from DataClasses.TransferQuery import TransferQuery
-from DataClasses.MeetingQuery import MeetingQuery
-from DataClasses.SequenceQuery import SequenceQuery
-from config import SEARCHING_TIME, MAX_PRIORITY_MULTIPLIER
+from src.DataClasses.Connection import Connection
+from src.utils import *
+from src.Solvers.ISolver import ISolver
+from src.DataClasses.Transfer import Transfer
+from src.DataClasses.TransferQuery import TransferQuery
+from src.DataClasses.MeetingQuery import MeetingQuery
+from src.DataClasses.SequenceQuery import SequenceQuery
+from src.config import SEARCHING_TIME, MAX_PRIORITY_MULTIPLIER
+
 
 class FloydSolver(ISolver):
     def __init__(self, graph_data):
@@ -58,7 +59,7 @@ class FloydSolver(ISolver):
 
                         connection = Connection(transfers)
                         connections.append(connection)
-
+        connections.sort(key=lambda x: x.transfers[0].start_time)
         return connections
 
     def find_meeting_points(self, query: MeetingQuery):

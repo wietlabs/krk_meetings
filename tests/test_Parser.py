@@ -4,9 +4,9 @@ import pytest
 import pandas as pd
 from pandas.testing import assert_frame_equal
 
-from DataClasses.ParsedData import ParsedData
-from gtfs_static.Parser import Parser
-from gtfs_static.utils import parse_time
+from src.DataClasses.ParsedData import ParsedData
+from src.DataConverters.Parser import Parser
+from src.DataConverters.utils import parse_time
 
 
 @pytest.fixture(scope='session')  # executed only once

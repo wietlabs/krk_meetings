@@ -1,13 +1,13 @@
-from DataClasses.SequenceQuery import SequenceQuery
-from development.DataProviders.GraphDataProvider import GraphDataProvider
-from solvers.FloydSolver.FloydSolver import FloydSolver
+from src.DataClasses.SequenceQuery import SequenceQuery
+from src.DataConverters.DataProvider import DataProvider
+from src.Solvers.FloydSolver import FloydSolver
 
 if __name__ == "__main__":
     #gtfs_data = GtfsStaticDataProvider.extract_data()
     #print("GTFS DATA EXTRACTED")
     #graph_data = GraphDataProvider.extract_data(gtfs_data)
     #print("GRAPH DATA EXTRACTED")
-    graph_data = GraphDataProvider.load_data()
+    graph_data = DataProvider.load_floyd_solver_data()
     solver = FloydSolver(graph_data)
     stops_to_visit = ['Biprostal', 'Kawiory', 'Czarnowiejska']
     start_stop_name = 'Wrocławska'

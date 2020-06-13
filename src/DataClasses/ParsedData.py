@@ -1,6 +1,6 @@
 import pandas as pd
 from dataclasses import dataclass
-from DataClasses.Data import Data
+from src.DataClasses.Data import Data
 
 
 @dataclass

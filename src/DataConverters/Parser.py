@@ -3,8 +3,8 @@ from typing import Tuple
 import pandas as pd
 from matplotlib.path import Path
 
-from DataClasses.ParsedData import ParsedData
-from gtfs_static.utils import parse_service_id, parse_route_id, parse_trip_id, parse_stop_id, parse_time
+from src.DataClasses.ParsedData import ParsedData
+from src.DataConverters.utils import parse_service_id, parse_route_id, parse_trip_id, parse_stop_id, parse_time
 
 
 class Parser:

@@ -1,13 +1,13 @@
-from typing import List, Tuple, Optional
+from typing import List
 
 import networkx as nx
 
-from DataClasses.Connection import Connection
-from DataClasses.Transfer import Transfer
-from solvers.BfsSolver.BfsSolverData import BfsSolverData
-from solvers.ISolver import ISolver
-from DataClasses.TransferQuery import TransferQuery
-from utils import int_to_time
+from src.DataClasses.Connection import Connection
+from src.DataClasses.Transfer import Transfer
+from src.DataClasses.BfsSolverData import BfsSolverData
+from src.Solvers.ISolver import ISolver
+from src.DataClasses.TransferQuery import TransferQuery
+from src.utils import int_to_time
 
 
 class BfsSolver(ISolver):

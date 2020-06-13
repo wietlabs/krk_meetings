@@ -1,6 +1,6 @@
 import pandas as pd
 from dataclasses import dataclass
-from DataClasses.Data import Data
+from src.DataClasses.Data import Data
 
 
 @dataclass
@@ -13,3 +13,4 @@ class ExtractedData(Data):  # server has reference to its instance
     first_stops_df: pd.DataFrame
     routes_df: pd.DataFrame
     stops_df_by_name: pd.DataFrame
+    calendar_df: pd.DataFrame

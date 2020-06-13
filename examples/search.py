@@ -2,9 +2,9 @@ import datetime
 import time
 
 from development.DataProviders.GtfsStaticDataProvider import GtfsStaticDataProvider
-from solvers.BfsSolver.BfsSolver import BfsSolver
-from DataClasses.TransferQuery import TransferQuery
-from solvers.BfsSolver.BfsSolverData import BfsSolverData
+from src.Solvers.BfsSolver import BfsSolver
+from src.DataClasses.TransferQuery import TransferQuery
+from src.DataClasses.BfsSolverData import BfsSolverData
 
 
 if __name__ == '__main__':

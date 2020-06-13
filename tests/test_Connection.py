@@ -2,8 +2,8 @@ from datetime import date, time, datetime, timedelta
 
 import pytest
 
-from DataClasses.Connection import Connection
-from DataClasses.Transfer import Transfer
+from src.DataClasses.Connection import Connection
+from src.DataClasses.Transfer import Transfer
 
 connection1 = Connection([
     Transfer('139', 'Czarnowiejska', 'Miasteczko Studenckie AGH', date(2019, 1, 1), time(12, 34), date(2019, 1, 1), time(12, 37)),

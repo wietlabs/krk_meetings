@@ -1,7 +1,7 @@
 from pathlib import Path
 
-from gtfs_static.Extractor import Extractor
-from gtfs_static.Parser import Parser
+from src.DataConverters.BasicDataExtractor import BasicDataExtractor
+from src.DataConverters.Parser import Parser
 
 if __name__ == '__main__':
     gtfs_dir_path = Path(__file__).parent / 'GTFS_KRK_T'
@@ -9,5 +9,5 @@ if __name__ == '__main__':
     parser = Parser()
     parsed_data = parser.parse(gtfs_dir_path)
 
-    extractor = Extractor()
+    extractor = BasicDataExtractor()
     extracted_data = extractor.extract(parsed_data)

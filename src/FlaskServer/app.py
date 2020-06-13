@@ -3,24 +3,23 @@ import time
 
 from flask import Flask, request, render_template
 
-from DataClasses.TransferQuery import TransferQuery
-from development.DataProviders.GraphDataProvider import GraphDataProvider
-from development.DataProviders.GtfsStaticDataProvider import GtfsStaticDataProvider
-from solvers.BfsSolver.BfsSolver import BfsSolver
-from solvers.BfsSolver.BfsSolverData import BfsSolverData
-from solvers.FloydSolver.FloydSolver import FloydSolver
+from src.DataClasses.TransferQuery import TransferQuery
+from src.DataConverters.DataProvider import DataProvider
+from src.Solvers.BfsSolver import BfsSolver
+from src.DataClasses.BfsSolverData import BfsSolverData
+from src.Solvers.FloydSolver import FloydSolver
 
 app = Flask(__name__)
 
-parsed_data = GtfsStaticDataProvider.load_parsed_data()
-extracted_data = GtfsStaticDataProvider.load_extracted_data()
+parsed_data = DataProvider.load_parsed_data()
+extracted_data = DataProvider.load_extracted_data()
 
 bfs_solver_data = BfsSolverData.create(parsed_data, extracted_data)
 bfs_solver1 = BfsSolver(bfs_solver_data, earliest_arrival_time=False, latest_departure_time=False)
 bfs_solver2 = BfsSolver(bfs_solver_data, earliest_arrival_time=True, latest_departure_time=False)
 bfs_solver3 = BfsSolver(bfs_solver_data, earliest_arrival_time=True, latest_departure_time=True)
 
-graph_data = GraphDataProvider.load_data()
+graph_data = DataProvider.load_floyd_solver_data()
 floyd_solver = FloydSolver(graph_data)
 
 solvers = {

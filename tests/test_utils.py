@@ -1,6 +1,6 @@
 import pytest
 
-from gtfs_static.utils import parse_time, parse_stop_id, parse_trip_id, parse_service_id, parse_route_id
+from src.DataConverters.utils import parse_time, parse_stop_id, parse_trip_id, parse_service_id, parse_route_id
 
 
 def test_parse_stop_id():

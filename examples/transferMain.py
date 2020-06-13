@@ -1,7 +1,6 @@
-from DataClasses.TransferQuery import TransferQuery
-from development.DataProviders.GraphDataProvider import GraphDataProvider
-from development.DataProviders.GtfsStaticDataProvider import GtfsStaticDataProvider
-from solvers.FloydSolver.FloydSolver import FloydSolver
+from src.DataClasses.TransferQuery import TransferQuery
+from src.DataConverters.DataProvider import DataProvider
+from src.Solvers.FloydSolver import FloydSolver
 from datetime import date, time
 
 if __name__ == "__main__":
@@ -9,8 +8,7 @@ if __name__ == "__main__":
     #print("GTFS DATA EXTRACTED")
     #graph_data = GraphDataProvider.extract_data(gtfs_data)
     #print("GRAPH DATA EXTRACTED")
-    graph_data = GraphDataProvider.load_data()
-    parsed_data = GtfsStaticDataProvider.load_parsed_data()
+    graph_data = DataProvider.load_floyd_solver_data()
     floydSolver = FloydSolver(graph_data)
 
     start_time = time(20, 0, 0)

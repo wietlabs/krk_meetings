@@ -3,9 +3,9 @@ from dataclasses import dataclass
 import pandas as pd
 import networkx as nx
 
-from DataClasses.Data import Data
-from DataClasses.ExtractedData import ExtractedData
-from DataClasses.ParsedData import ParsedData
+from src.DataClasses.Data import Data
+from src.DataClasses.ExtractedData import ExtractedData
+from src.DataClasses.ParsedData import ParsedData
 
 
 @dataclass

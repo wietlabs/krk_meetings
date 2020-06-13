@@ -1,14 +1,14 @@
 from functools import reduce
-from DataClasses.GraphData import GraphData
+from src.DataClasses.FloydSolverData import FloydSolverData
 
 import pandas as pd
 import networkx as nx
 
-from DataClasses import ExtractedData
-from config import PERIOD_MULTIPLIER
+from src.DataClasses import ExtractedData
+from src.config import PERIOD_MULTIPLIER
 
 
-class GraphDataExtractor:
+class FloydDataExtractor:
     def extract(self, extracted_data: ExtractedData):
         stops_df = extracted_data.stops_df
         transfers_df = extracted_data.transfers_df
@@ -45,7 +45,7 @@ class GraphDataExtractor:
         for key in distances.keys():
             distances[key] = dict(distances[key])
 
-        return GraphData(floyd_graph, distances, stop_times_df, stops_df, routes_df, stops_df_by_name)
+        return FloydSolverData(floyd_graph, distances, stop_times_df, stops_df, routes_df, stops_df_by_name)
 
     def generate_floyd_nodes(self, graph, stops_df):
         stops_df = stops_df.reset_index()

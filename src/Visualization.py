@@ -4,7 +4,7 @@ import networkx as nx
 import pandas as pd
 import matplotlib.pyplot as plt
 
-from DataClasses.ExtractedData import ExtractedData
+from src.DataClasses.ExtractedData import ExtractedData
 
 
 class Visualization:

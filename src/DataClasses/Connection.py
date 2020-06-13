@@ -1,8 +1,8 @@
 from dataclasses import dataclass
-from datetime import date, time, datetime, timedelta
+from datetime import datetime, timedelta
 from typing import List
 
-from DataClasses.Transfer import Transfer
+from src.DataClasses.Transfer import Transfer
 
 
 @dataclass
