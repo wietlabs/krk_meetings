@@ -8,10 +8,7 @@ from DataClasses.Transfer import Transfer
 from DataClasses.TransferQuery import TransferQuery
 from DataClasses.MeetingQuery import MeetingQuery
 from DataClasses.SequenceQuery import SequenceQuery
-
-
-SEARCHING_TIME = 4 * 3600
-MAX_PRIORITY_MULTIPLIER = 1.2
+from config import SEARCHING_TIME, MAX_PRIORITY_MULTIPLIER
 
 class FloydSolver(ISolver):
     def __init__(self, graph_data):

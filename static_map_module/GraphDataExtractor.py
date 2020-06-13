@@ -4,9 +4,8 @@ from DataClasses.GraphData import GraphData
 import pandas as pd
 import networkx as nx
 
-#To draw
-
 from DataClasses import ExtractedData
+from config import PERIOD_MULTIPLIER
 
 
 class GraphDataExtractor:
@@ -61,7 +60,7 @@ class GraphDataExtractor:
         def edge_generator():
             for _, row in transfers_df.iterrows():
                 yield int(row['start_stop_id']), int(row['end_stop_id']), \
-                        {'weight': int(row['duration'] + row['period'] / 2), 'route_ids': row['route_id'], 'path': row['path']}
+                        {'weight': int(row['duration'] + row['period'] * PERIOD_MULTIPLIER), 'route_ids': row['route_id'], 'path': row['path']}
 
         graph.add_edges_from(edge_generator())
 
