@@ -1,8 +1,8 @@
 from copy import copy
 from queue import PriorityQueue
-import time as e_time
+from typing import List
+from DataClasses.Connection import Connection
 from utils import *
-import pandas as pd
 from solvers.ISolver import ISolver
 from DataClasses.Transfer import Transfer
 from DataClasses.TransferQuery import TransferQuery
@@ -32,7 +32,7 @@ class FloydSolver(ISolver):
                 .reset_index('stop_sequence')[['departure_time']]
 
 
-    def find_connections(self, query: TransferQuery):
+    def find_connections(self, query: TransferQuery) -> List[Connection]:
         current_time = time_to_int(query.start_time)
         current_date = query.start_date
         start_stop_id = self.stops_df_by_name.at[query.start_stop_name, 'stop_id']
@@ -44,7 +44,7 @@ class FloydSolver(ISolver):
             results = self.find_routes(path, current_time)
             if results is not None:
                 for result in results:
-                    connection = []
+                    transfers = []
                     for transfer in result:
                         index, current_stop_id, next_stop_id, departure_time, arrival_time = transfer
                         route_name = self.routes_df.at[index, 'route_name']
@@ -55,8 +55,13 @@ class FloydSolver(ISolver):
                         end_time = int_to_time(arrival_time)
                         end_date = shift_date(current_date, arrival_time)
 
-                        connection.append(Transfer(route_name, current_stop_name, next_stop_name, start_date, start_time, end_date,end_time))
-                    connections.append(connection)
+                        transfers.append(
+                            Transfer(route_name, current_stop_name, next_stop_name, start_date, start_time, end_date,
+                                     end_time))
+
+                        connection = Connection(transfers)
+                        connections.append(connection)
+
         return connections
 
     def find_meeting_points(self, query: MeetingQuery):

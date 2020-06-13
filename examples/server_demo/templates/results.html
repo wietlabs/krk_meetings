@@ -6,24 +6,24 @@
   {% for solver_name, output in outputs.items() %}
     <h1>{{ solver_name }}</h1>
     <p>Czas wyszukiwania: {{ output['time_elapsed'] | round(3) }} s</p>
-    {% for sequence in output['results'] %}
+    {% for connection in output['results'] %}
       <table border="1">
         <thead>
           <tr>
             <th>Linia</th>
-            <th>Godzina odjazdu</th>
+            <th>Odjazd</th>
             <th>Przystanek początkowy</th>
-            <th>Godzina przyjazdu</th>
+            <th>Przyjazd</th>
             <th>Przystanek końcowy</th>
           </tr>
         </thead>
         <tbody>
-          {% for transfer in sequence %}
+          {% for transfer in connection.transfers %}
             <tr>
               <td>{{ transfer.route_number }}
-              <td>{{ transfer.start_time }}</td>
+              <td>{{ transfer.start_time.strftime('%H:%M') }}</td>
               <td>{{ transfer.start_stop_name }}</td>
-              <td>{{ transfer.end_time }}</td>
+              <td>{{ transfer.end_time.strftime('%H:%M') }}</td>
               <td>{{ transfer.end_stop_name }}</td>
             </tr>
           {% endfor %}

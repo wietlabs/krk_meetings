@@ -19,7 +19,7 @@ if __name__ == "__main__":
     end_stop_name = 'Kombinat'
     query = TransferQuery(start_date, start_time, start_stop_name, end_stop_name)
     connections = floydSolver.find_connections(query)
+
     for connection in connections:
-        for transfer in connection:
-            print(str(transfer))
-        print("------------------------------")
+        print(connection)
+        print('-' * 30)
