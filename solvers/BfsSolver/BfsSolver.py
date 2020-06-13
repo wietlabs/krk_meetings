@@ -13,17 +13,17 @@ class BfsSolver(ISolver):
     def __init__(self, data: BfsSolverData, *,
                  earliest_arrival_time: bool = True,
                  latest_departure_time: bool = True,
-                 min_transfers_count: bool = True):
+                 minimal_transfers_count: bool = True):
         if latest_departure_time and not earliest_arrival_time:
             raise ValueError()
 
-        if not min_transfers_count:
+        if not minimal_transfers_count:
             raise NotImplementedError()
 
         self.data = data
         self.earliest_arrival_time = earliest_arrival_time
         self.latest_departure_time = latest_departure_time
-        self.min_transfers_count = min_transfers_count
+        self.minimal_transfers_count = minimal_transfers_count
 
     def find_connections(self, query: TransferQuery) -> List[List[Transfer]]:
         # TODO: handle start_date
