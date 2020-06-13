@@ -16,12 +16,19 @@ parsed_data = GtfsStaticDataProvider.load_parsed_data()
 extracted_data = GtfsStaticDataProvider.load_extracted_data()
 
 bfs_solver_data = BfsSolverData.create(parsed_data, extracted_data)
-bfs_solver = BfsSolver(bfs_solver_data)
+bfs_solver1 = BfsSolver(bfs_solver_data, earliest_arrival_time=False, latest_departure_time=False)
+bfs_solver2 = BfsSolver(bfs_solver_data, earliest_arrival_time=True, latest_departure_time=False)
+bfs_solver3 = BfsSolver(bfs_solver_data, earliest_arrival_time=True, latest_departure_time=True)
 
 graph_data = GraphDataProvider.load_data()
 floyd_solver = FloydSolver(graph_data)
 
-solvers = [bfs_solver, floyd_solver]
+solvers = {
+    'BfsSolver(False, False)': bfs_solver1,
+    'BfsSolver(True, False)': bfs_solver2,
+    'BfsSolver(True, True)': bfs_solver3,
+    'FloydSolver': floyd_solver,
+}
 
 
 @app.route('/')
@@ -45,13 +52,11 @@ def search():
 
     outputs = {}
 
-    for solver in solvers:
+    for solver_name, solver in solvers.items():
         t1 = time.time()
         results = solver.find_connections(query)
         t2 = time.time()
         time_elapsed = t2 - t1
-
-        solver_name = solver.__class__.__name__
         outputs[solver_name] = {
             'results': results,
             'time_elapsed': time_elapsed,

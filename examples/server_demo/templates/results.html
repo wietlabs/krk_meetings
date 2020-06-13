@@ -11,9 +11,9 @@
         <thead>
           <tr>
             <th>Linia</th>
-            <th>Godzina odjazdu</th>
+            <th>Odjazd</th>
             <th>Przystanek początkowy</th>
-            <th>Godzina przyjazdu</th>
+            <th>Przyjazd</th>
             <th>Przystanek końcowy</th>
           </tr>
         </thead>
@@ -21,9 +21,9 @@
           {% for transfer in connection.transfers %}
             <tr>
               <td>{{ transfer.route_number }}
-              <td>{{ transfer.start_time }}</td>
+              <td>{{ transfer.start_time.strftime('%H:%M') }}</td>
               <td>{{ transfer.start_stop_name }}</td>
-              <td>{{ transfer.end_time }}</td>
+              <td>{{ transfer.end_time.strftime('%H:%M') }}</td>
               <td>{{ transfer.end_stop_name }}</td>
             </tr>
           {% endfor %}
