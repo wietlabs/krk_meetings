@@ -6,7 +6,7 @@
   {% for solver_name, output in outputs.items() %}
     <h1>{{ solver_name }}</h1>
     <p>Czas wyszukiwania: {{ output['time_elapsed'] | round(3) }} s</p>
-    {% for sequence in output['results'] %}
+    {% for connection in output['results'] %}
       <table border="1">
         <thead>
           <tr>
@@ -18,7 +18,7 @@
           </tr>
         </thead>
         <tbody>
-          {% for transfer in sequence %}
+          {% for transfer in connection.transfers %}
             <tr>
               <td>{{ transfer.route_number }}
               <td>{{ transfer.start_time }}</td>
