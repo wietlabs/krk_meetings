@@ -20,13 +20,13 @@ class Parser:
 
     def parse_calendar_df(self, calendar_txt_path: Path) -> pd.DataFrame:
         df = pd.read_csv(calendar_txt_path, usecols=['service_id', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'])
-        df['service_id'] = df['service_id'].str.split('_', n=1).str[1].astype(int)
+        df['service_id'] = df['service_id'].str[len('service_'):].astype(int)
         df.set_index('service_id', inplace=True)
         return df
 
     def parse_routes_df(self, routes_txt_path: Path) -> pd.DataFrame:
         df = pd.read_csv(routes_txt_path, usecols=['route_id', 'route_short_name'], dtype={'route_short_name': 'str'})
-        df['route_id'] = df['route_id'].str.split('_', n=1).str[1].astype(int)
+        df['route_id'] = df['route_id'].str[len('route_'):].astype(int)
         df.set_index('route_id', inplace=True)
         return df
 
@@ -37,7 +37,7 @@ class Parser:
         df['trip_num'] = splitted.str[3].astype(int)
         df['service_id'] = splitted.str[5].astype(int)
         df.drop(columns=['trip_id'], inplace=True)
-        df['route_id'] = df['route_id'].str.split('_', n=1).str[1].astype(int)
+        df['route_id'] = df['route_id'].str[len('route_'):].astype(int)
         df.set_index(['service_id', 'block_id', 'trip_num'], inplace=True)
         return df
 
