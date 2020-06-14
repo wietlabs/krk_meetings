@@ -6,6 +6,9 @@ from solvers.BfsSolver.BfsSolverData import BfsSolverData
 
 
 class BfsSolverExtractor:
+    def __init__(self, max_trip_duration: int = 120 * 60):
+        self.max_trip_duration = max_trip_duration
+
     def extract(self, parsed_data: ParsedData, extracted_data: ExtractedData):
         stops_df = parsed_data.stops_df
         stops_df_by_name = extracted_data.stops_df_by_name
@@ -65,7 +68,7 @@ class BfsSolverExtractor:
         G_B.add_edges_from((
             ((stop_id, time, None, None, None), (stop_id, time, block_id, trip_num, service_id))
             for _, stop_id, time, block_id, trip_num, service_id in stop_times_min_df.itertuples()
-        ), weight=120 * 60)  # max trip duration <= 2 h
+        ), weight=self.max_trip_duration)  # max trip duration <= 2 h
 
         G_B.add_edges_from((
             ((stop_id, time, block_id, trip_num, service_id), (stop_id, time, None, None, None))
