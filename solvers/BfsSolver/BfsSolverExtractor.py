@@ -1,3 +1,5 @@
+from typing import Optional
+
 import networkx as nx
 
 from DataClasses.ExtractedData import ExtractedData
@@ -6,8 +8,8 @@ from solvers.BfsSolver.BfsSolverData import BfsSolverData
 
 
 class BfsSolverExtractor:
-    def __init__(self, max_trip_duration: int = 120 * 60):
-        self.max_trip_duration = max_trip_duration
+    def __init__(self, boarding_edge_weight: Optional[int] = None):
+        self.boarding_edge_weight = boarding_edge_weight
 
     def extract(self, parsed_data: ParsedData, extracted_data: ExtractedData):
         stops_df = parsed_data.stops_df
@@ -58,6 +60,11 @@ class BfsSolverExtractor:
             for stop_id, time in unique_stop_times_df.index
         ), weight=0)
 
+        if self.boarding_edge_weight is not None:
+            boarding_edge_weight = self.boarding_edge_weight
+        else:
+            boarding_edge_weight = transfers_df.groupby(['service_id', 'block_id', 'trip_num'])['duration'].sum().max()
+
         G_B = nx.DiGraph()
 
         G_B.add_weighted_edges_from((
@@ -68,7 +75,7 @@ class BfsSolverExtractor:
         G_B.add_edges_from((
             ((stop_id, time, None, None, None), (stop_id, time, block_id, trip_num, service_id))
             for _, stop_id, time, block_id, trip_num, service_id in stop_times_min_df.itertuples()
-        ), weight=self.max_trip_duration)  # max trip duration <= 2 h
+        ), weight=boarding_edge_weight)
 
         G_B.add_edges_from((
             ((stop_id, time, block_id, trip_num, service_id), (stop_id, time, None, None, None))
