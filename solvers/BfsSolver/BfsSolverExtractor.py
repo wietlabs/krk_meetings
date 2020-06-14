@@ -65,32 +65,32 @@ class BfsSolverExtractor:
         else:
             boarding_edge_weight = transfers_df.groupby(['service_id', 'block_id', 'trip_num'])['duration'].sum().max()
 
-        G_B = nx.DiGraph()
+        G_T = nx.DiGraph()
 
-        G_B.add_weighted_edges_from((
+        G_T.add_weighted_edges_from((
             ((start_stop_id, start_time, block_id, trip_num, service_id), (end_stop_id, end_time, block_id, trip_num, service_id), duration)
             for _, start_time, end_time, start_stop_id, end_stop_id, duration, block_id, trip_num, service_id in transfers_min_df.itertuples()
         ))
 
-        G_B.add_edges_from((
+        G_T.add_edges_from((
             ((stop_id, time, None, None, None), (stop_id, time, block_id, trip_num, service_id))
             for _, stop_id, time, block_id, trip_num, service_id in stop_times_min_df.itertuples()
         ), weight=boarding_edge_weight)
 
-        G_B.add_edges_from((
+        G_T.add_edges_from((
             ((stop_id, time, block_id, trip_num, service_id), (stop_id, time, None, None, None))
             for _, stop_id, time, block_id, trip_num, service_id in stop_times_min_df.itertuples()
         ), weight=0)
 
-        G_B.add_weighted_edges_from((
+        G_T.add_weighted_edges_from((
             ((stop_id, start_time, None, None, None), (stop_id, end_time, None, None, None), (end_time - start_time) % (24 * 60 * 60))
             for stop_id, df in unique_stop_times_df.groupby('stop_id')
             for (_, start_time), (_, end_time) in nx.utils.pairwise(df.index, cyclic=True)
         ))
 
-        G_B.add_edges_from((
+        G_T.add_edges_from((
             ((stop_id, time, None, None, None), (stop_id, None, None, None, None))
             for stop_id, time in unique_stop_times_df.index
         ), weight=0)
 
-        return BfsSolverData(G, G_R, G_B, stops_df, stops_df_by_name, unique_stop_times_df, trips_df, routes_df)
+        return BfsSolverData(G, G_R, G_T, stops_df, stops_df_by_name, unique_stop_times_df, trips_df, routes_df)

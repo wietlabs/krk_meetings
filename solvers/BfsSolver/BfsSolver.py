@@ -57,7 +57,7 @@ class BfsSolver(ISolver):
         # step 4: find sequence of transfers
         source = (start_stop_id, start_time, None, None, None)
         target = (end_stop_id, end_time, None, None, None)
-        shortest_path = nx.shortest_path(self.data.G_B, source, target, 'weight')
+        shortest_path = nx.shortest_path(self.data.G_T, source, target, 'weight')
 
         # step 5: reconstruct the result
         changes = []
