@@ -4,7 +4,6 @@ import pandas as pd
 from matplotlib.path import Path
 
 from DataClasses.ParsedData import ParsedData
-from gtfs_static.utils import parse_service_id, parse_route_id, parse_trip_id, parse_stop_id, parse_time
 
 
 class Parser:
@@ -21,27 +20,27 @@ class Parser:
 
     def parse_calendar_df(self, calendar_txt_path: Path) -> pd.DataFrame:
         df = pd.read_csv(calendar_txt_path, usecols=['service_id', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'])
-        df['service_id'] = df['service_id'].map(parse_service_id)
+        df['service_id'] = df['service_id'].str.split('_', n=1, expand=True)[1].astype(int)
         df.set_index('service_id', inplace=True)
         return df
 
     def parse_routes_df(self, routes_txt_path: Path) -> pd.DataFrame:
         df = pd.read_csv(routes_txt_path, usecols=['route_id', 'route_short_name'], dtype={'route_short_name': 'str'})
-        df['route_id'] = df['route_id'].map(parse_route_id)
+        df['route_id'] = df['route_id'].str.split('_', n=1, expand=True)[1].astype(int)
         df.set_index('route_id', inplace=True)
         return df
 
     def parse_trips_df(self, trips_txt_path: Path) -> pd.DataFrame:
         df = pd.read_csv(trips_txt_path, usecols=['trip_id', 'route_id', 'trip_headsign'])
-        df['block_id'], df['trip_num'], df['service_id'] = zip(*df['trip_id'].map(parse_trip_id))  # TODO: consider df.apply
+        df[['block_id', 'trip_num', 'service_id']] = df['trip_id'].str.split('_', n=5, expand=True)[[1, 3, 5]].astype(int)
         df.drop(columns=['trip_id'], inplace=True)
-        df['route_id'] = df['route_id'].map(parse_route_id)
+        df['route_id'] = df['route_id'].str.split('_', n=1, expand=True)[1].astype(int)
         df.set_index(['service_id', 'block_id', 'trip_num'], inplace=True)
         return df
 
     def parse_stops_df(self, stops_txt_path: Path) -> Tuple[pd.DataFrame, pd.DataFrame]:
         df = pd.read_csv(stops_txt_path, usecols=['stop_id', 'stop_name', 'stop_lat', 'stop_lon'])
-        df['stop_id'], df['peron_id'] = zip(*df['stop_id'].map(parse_stop_id))  # TODO: consider df.apply
+        df[['stop_id', 'peron_id']] = df['stop_id'].str.split('_', n=2, expand=True)[[1, 2]].astype(int)
         perons_df = df.set_index('peron_id')
         stops_df = df[['stop_id', 'stop_name', 'stop_lat', 'stop_lon']] \
                     .groupby(['stop_id', 'stop_name'], as_index=False) \
@@ -51,10 +50,11 @@ class Parser:
 
     def parse_stop_times_df(self, stop_times_txt_path: Path) -> pd.DataFrame:
         df = pd.read_csv(stop_times_txt_path, usecols=['trip_id', 'departure_time', 'stop_id', 'stop_sequence'])
-        df['block_id'], df['trip_num'], df['service_id'] = zip(*df['trip_id'].map(parse_trip_id))  # TODO: consider df.apply
+        df[['block_id', 'trip_num', 'service_id']] = df['trip_id'].str.split('_', n=5, expand=True)[[1, 3, 5]].astype(int)
         df.drop(columns=['trip_id'], inplace=True)
-        df['stop_id'], df['peron_id'] = zip(*df['stop_id'].map(parse_stop_id))  # TODO: consider df.apply
-        df['departure_time'] = df['departure_time'].map(parse_time)
+        df[['stop_id', 'peron_id']] = df['stop_id'].str.split('_', n=2, expand=True)[[1, 2]].astype(int)
+        departure_times_df = df['departure_time'].str.split(':', n=2, expand=True).astype(int)
+        df['departure_time'] = departure_times_df[0] * 3600 + departure_times_df[1] * 60 + departure_times_df[2]
         df.set_index(['service_id', 'block_id', 'trip_num', 'stop_sequence'], inplace=True)
         df = df[['stop_id', 'peron_id', 'departure_time']]
         return df
