@@ -1,14 +1,13 @@
+from datetime import date, time
+
 from DataClasses.TransferQuery import TransferQuery
 from development.DataProviders.GraphDataProvider import GraphDataProvider
 from development.DataProviders.GtfsStaticDataProvider import GtfsStaticDataProvider
 from solvers.FloydSolver.FloydSolver import FloydSolver
-from datetime import date, time
 
 if __name__ == "__main__":
-    #gtfs_data = GtfsStaticDataProvider.extract_data()
-    #print("GTFS DATA EXTRACTED")
-    #graph_data = GraphDataProvider.extract_data(gtfs_data)
-    #print("GRAPH DATA EXTRACTED")
+    # gtfs_data = GtfsStaticDataProvider.extract_data()
+    # graph_data = GraphDataProvider.extract_data(gtfs_data)
 
     graph_data = GraphDataProvider.load_data()
     solver = FloydSolver(graph_data)
