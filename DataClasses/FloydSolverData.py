@@ -5,8 +5,9 @@ from DataClasses.Data import Data
 
 
 @dataclass
-class GraphData(Data):  # server has reference to its instance
-    graph: nx.Graph
+class FloydSolverData(Data):  # server has reference to its instance
+    graph: nx.DiGraph
+    kernelized_floyd_graph: nx.DiGraph
     distances: dict
     stop_times_df: pd.DataFrame
     stops_df: pd.DataFrame

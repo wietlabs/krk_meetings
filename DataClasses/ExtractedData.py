@@ -10,6 +10,5 @@ class ExtractedData(Data):  # server has reference to its instance
     stop_times_df: pd.DataFrame
     avg_durations_df: pd.DataFrame
     period_df: pd.DataFrame
-    first_stops_df: pd.DataFrame
     routes_df: pd.DataFrame
     stops_df_by_name: pd.DataFrame
