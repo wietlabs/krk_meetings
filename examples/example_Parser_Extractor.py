@@ -11,3 +11,4 @@ if __name__ == '__main__':
 
     extractor = Extractor()
     extracted_data = extractor.extract(parsed_data)
+    print(extracted_data.stops_df.sort_index())

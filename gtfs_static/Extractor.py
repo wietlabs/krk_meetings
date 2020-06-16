@@ -21,10 +21,10 @@ class Extractor:
         stop_times_route_ids_df = self.create_stop_times_trips_df_for_service_id(stop_times_df, route_ids_df)
         avg_durations_df = self.create_avg_durations_df(transfers_df)
         period_df = self.create_period_df(stop_times_df, route_ids_df)
-        first_stops_df = self.create_first_stops_df(stop_times_df, route_ids_df)
-        extended_stops_df = self.extend_stops_df(transfers_df, first_stops_df, stops_df)
+        stops_df = self.set_first_and_last_stop(stop_times_df, route_ids_df, stops_df)
+        stops_df = self.extend_stops_df(transfers_df, stops_df)
         stops_df_by_name = stops_df.reset_index().set_index('stop_name')
-        return ExtractedData(extended_stops_df, transfers_route_ids_df, stop_times_route_ids_df, avg_durations_df, period_df, first_stops_df, routes_trips_df, stops_df_by_name)
+        return ExtractedData(stops_df, transfers_route_ids_df, stop_times_route_ids_df, avg_durations_df, period_df, routes_trips_df, stops_df_by_name)
 
     def create_route_ids_df(self, stop_times_df):
         routes_path_df = stop_times_df.groupby(['block_id', 'trip_num', 'service_id']).agg(
@@ -73,33 +73,39 @@ class Extractor:
         df = df.set_index('route_id')
         return df
 
-    def create_first_stops_df(self, stop_times_df: pd.DataFrame, route_ids_df: pd.DataFrame) -> pd.DataFrame:
-        stop_times_df = stop_times_df.reset_index()
-        df = pd.merge(stop_times_df, route_ids_df, on=['block_id', 'service_id'])
-        is_first = df['stop_sequence'] == 1
-        df = df[is_first]
-        df = df.drop_duplicates(['stop_id', 'route_id']).reset_index()
-        df = df[['stop_id', 'route_id']]
-        return df
+    def set_first_and_last_stop(self, stop_times_df: pd.DataFrame, route_ids_df: pd.DataFrame, stops_df: pd.DataFrame) -> pd.DataFrame:
+        stop_times_df = stop_times_df
 
-    def extend_stops_df(self, transfer_df: pd.DataFrame, first_stops_df: pd.DataFrame, stops_df: pd.DataFrame):
-        first_stops_df = first_stops_df[['stop_id']]
-        first_stops_df = first_stops_df.drop_duplicates('stop_id')
+        stop_times_df = stop_times_df.join(route_ids_df)
+        stop_times_df.sort_values(by='stop_sequence', inplace=True)
+
+        is_first = stop_times_df.drop_duplicates(subset=['route_id'], keep='first')
+        is_last = stop_times_df.drop_duplicates(subset=['route_id'], keep='last')
+        is_first = is_first['stop_id'].tolist()
+        is_last = is_last['stop_id'].tolist()
+
+        stops_df.reset_index(inplace=True)
+        stops_df['is_first'] = stops_df['stop_id'].apply(lambda x: x in is_first)
+        stops_df['is_last'] = stops_df['stop_id'].apply(lambda x: x in is_last)
+        stops_df.set_index('stop_id', inplace=True)
+        return stops_df
+
+    def extend_stops_df(self, transfer_df: pd.DataFrame, stops_df: pd.DataFrame):
         hubs_df = transfer_df[['start_stop_id', 'end_stop_id']]
         hubs_df = hubs_df.drop_duplicates(subset=['start_stop_id', 'end_stop_id'])
         hubs_df = hubs_df.groupby('start_stop_id').count()
-        has_3_neighbours = hubs_df['end_stop_id'] > 2
-        start_hubs_df = hubs_df.reset_index().merge(first_stops_df, left_on='start_stop_id', right_on='stop_id')
-        start_hubs_df = start_hubs_df[['start_stop_id', 'end_stop_id']].set_index('start_stop_id')
-        has_2_neighbours = start_hubs_df['end_stop_id'] > 1
-        hubs_3_df = hubs_df[has_3_neighbours]
-        hubs_2_df = start_hubs_df[has_2_neighbours]
-        hubs_df = hubs_2_df.append(hubs_3_df)
-        hubs_df = hubs_df.reset_index()
-        hubs_df['stop_id'] = hubs_df['start_stop_id']
+        hubs_df = stops_df.reset_index().merge(hubs_df, left_on='stop_id', right_on='start_stop_id', how="outer")
+        hubs_df.fillna(0, inplace=True)
+        hubs_df = hubs_df[['stop_id', 'end_stop_id']].set_index('stop_id')
+
+        def is_hub(row):
+            if row['is_first'] and row['is_last']:
+                return hubs_df.at[(row['stop_id'], 'end_stop_id')] > 1
+            return hubs_df.at[(row['stop_id'], 'end_stop_id')] > 2
 
         stops_df = stops_df.reset_index()
-        stops_df['hub'] = stops_df.apply(lambda row: row.stop_id in set(hubs_df['stop_id']), axis=1)
+        stops_df['hub'] = stops_df.apply(is_hub, axis=1)
+
         stops_df = stops_df.set_index('stop_id')
 
         return stops_df

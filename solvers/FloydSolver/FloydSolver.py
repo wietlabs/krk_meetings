@@ -8,24 +8,27 @@ from DataClasses.Transfer import Transfer
 from DataClasses.TransferQuery import TransferQuery
 from DataClasses.MeetingQuery import MeetingQuery
 from DataClasses.SequenceQuery import SequenceQuery
-from config import SEARCHING_TIME, MAX_PRIORITY_MULTIPLIER
+
+from config import FLOYD_SOLVER_SEARCHING_TIME, FLOYD_SOLVER_MAX_PRIORITY_MULTIPLIER, FLOYD_SOLVER_MAX_PATHS
+
 
 class FloydSolver(ISolver):
-    def __init__(self, graph_data):
-        self.graph = graph_data.graph
-        self.distances = graph_data.distances
-        self.stops_df = graph_data.stops_df
-        self.routes_df = graph_data.routes_df
-        self.stops_df_by_name = graph_data.stops_df_by_name
+    def __init__(self, data):
+        self.graph = data.graph
+        self.kernelized_graph = data.kernelized_floyd_graph
+        self.distances = data.distances
+        self.stops_df = data.stops_df
+        self.routes_df = data.routes_df
+        self.stops_df_by_name = data.stops_df_by_name
         self.stop_times = dict()
         self.paths = dict()
         for node in self.graph.nodes():
             self.paths[node] = dict()
 
         stop_ids = self.stops_df.index.tolist()
-        self.stop_times_df = graph_data.stop_times_df
+        self.stop_times_df = data.stop_times_df
         for stop_id in stop_ids:
-            self.stop_times[stop_id] = graph_data.stop_times_df[graph_data.stop_times_df['stop_id'] == stop_id] \
+            self.stop_times[stop_id] = data.stop_times_df[data.stop_times_df['stop_id'] == stop_id] \
                 .reset_index('stop_sequence')[['departure_time']]
 
 
@@ -58,7 +61,7 @@ class FloydSolver(ISolver):
 
                         connection = Connection(transfers)
                         connections.append(connection)
-
+            connections.sort(key=lambda c: c.transfers[0].start_time)
         return connections
 
     def find_meeting_points(self, query: MeetingQuery):
@@ -102,7 +105,7 @@ class FloydSolver(ISolver):
         optimal_order = list(map(lambda x: self.stops_df.at[x, 'stop_name'], optimal_order[0]))
         return optimal_order
 
-    def find_routes(self, path, time):
+    def find_routes(self, path: List[int], start_time: time):
         # TODO smart join could return paths for all hours at once
         # TODO seek for routes from end_stop
         # TODO change to generatorin the future
@@ -115,10 +118,10 @@ class FloydSolver(ISolver):
             cst_df = self.stop_times[current_stop]
             nst_df = self.stop_times[next_stop]
 
-            cst_df = cst_df[time <= cst_df.departure_time]
-            cst_df = cst_df[cst_df.departure_time <= time + SEARCHING_TIME]
-            nst_df = nst_df[time <= nst_df.departure_time]
-            nst_df = nst_df[nst_df.departure_time <= time + SEARCHING_TIME]
+            cst_df = cst_df[start_time <= cst_df.departure_time]
+            cst_df = cst_df[cst_df.departure_time <= start_time + FLOYD_SOLVER_SEARCHING_TIME]
+            nst_df = nst_df[start_time <= nst_df.departure_time]
+            nst_df = nst_df[nst_df.departure_time <= start_time + FLOYD_SOLVER_SEARCHING_TIME]
 
             transfers_df = cst_df.join(nst_df, how='inner', lsuffix='_c', rsuffix='_n')
             transfers_df = transfers_df[transfers_df.departure_time_c < transfers_df.departure_time_n]
@@ -158,17 +161,45 @@ class FloydSolver(ISolver):
             self.paths[start_node][end_node] = self.calculate_paths(start_node, end_node)
         return self.paths[start_node][end_node]
 
-    def calculate_paths(self, start_node, end_node):
+    def calculate_paths(self, start_node_id: int, end_node_id: int):
+
+        def resolve_neighbor(node_id, neighbor_id, weight, path, routes, graph):
+            n_weight = weight + graph.edges[node_id, neighbor_id]['weight']
+            n_priority = n_weight + self.distances[neighbor_id][end_node_id]
+            n_path = copy(path)
+            n_path.append(neighbor_id)
+            n_routes = copy(routes)
+            route = graph.edges[node_id, neighbor_id]['route_ids']
+            if self.is_redundant(n_routes, route):
+                return
+            n_routes.append(route)
+            if (n_routes, neighbor_id) not in routes_dict:
+                routes_dict.append((n_routes, neighbor_id))
+                queue.put((n_priority, n_weight, neighbor_id, n_path, n_routes))
+
         queue = PriorityQueue()
         count = 0
         paths = []
         costs = []
         routes_dict = []
         routes_to_node = {}
-        queue.put((0, 0, start_node, [start_node], []))
-        max_priority = self.distances[start_node][end_node] * MAX_PRIORITY_MULTIPLIER
+        max_priority = self.distances[start_node_id][end_node_id] * FLOYD_SOLVER_MAX_PRIORITY_MULTIPLIER
         priority = 0
-        while queue and priority < max_priority:
+
+        last_hubs = []
+        if end_node_id not in self.kernelized_graph.nodes:
+            for neighbor_id in self.graph.neighbors(end_node_id):
+                if neighbor_id in self.kernelized_graph.nodes:
+                    last_hubs.append(neighbor_id)
+
+        if start_node_id in self.kernelized_graph.nodes:
+            queue.put((0, 0, start_node_id, [start_node_id], []))
+        else:
+            for neighbor_id in self.graph.neighbors(start_node_id):
+                if neighbor_id in self.kernelized_graph.nodes:
+                    resolve_neighbor(start_node_id, neighbor_id, 0, [start_node_id], [],  self.graph)
+
+        while queue and priority <= max_priority and len(paths) <= FLOYD_SOLVER_MAX_PATHS:
             priority, weight, node_id, path, routes = queue.get()
             subset_route = False
             current_route_set = set()
@@ -185,27 +216,20 @@ class FloydSolver(ISolver):
                 routes_to_node[node_id] = []
             routes_to_node[node_id].append(current_route_set)
 
-            if node_id == end_node:
+            if node_id == end_node_id:
                 count = count + 1
                 paths.append(path)
                 costs.append(priority)
                 continue
-            for neighbor_id in self.graph.neighbors(node_id):
-                n_weight = weight + self.graph.edges[node_id, neighbor_id]['weight']
-                n_priority = n_weight + self.distances[neighbor_id][end_node]
-                n_path = copy(path)
-                n_path.append(neighbor_id)
-                n_routes = copy(routes)
-                route = self.graph.edges[node_id, neighbor_id]['route_ids']
-                if self.is_redundant(n_routes, route):
-                    continue
-                n_routes.append(route)
-                if (n_routes, neighbor_id) not in routes_dict:
-                    routes_dict.append((n_routes, neighbor_id))
-                    queue.put((n_priority, n_weight, neighbor_id, n_path, n_routes))
+            if node_id in last_hubs:
+                resolve_neighbor(node_id, end_node_id, weight, path, routes, self.graph)
+
+            for neighbor_id in self.kernelized_graph.neighbors(node_id):
+                resolve_neighbor(node_id, neighbor_id, weight, path, routes, self.kernelized_graph)
+
         return paths
 
-    def is_redundant(self, n_routes, route):
+    def is_redundant(self, n_routes: List[tuple], route: tuple):
         if not n_routes:
             return False
         index = len(n_routes) - 1

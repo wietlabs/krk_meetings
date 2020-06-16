@@ -1,5 +1,5 @@
 from static_map_module.GraphDataExtractor import GraphDataExtractor
-from DataClasses.GraphData import GraphData
+from DataClasses.FloydSolverData import FloydSolverData
 from pathlib import Path
 
 
@@ -13,5 +13,5 @@ class GraphDataProvider:
 
     @staticmethod
     def load_data():
-        extracted_data = GraphData.load(Path(__file__).parent / 'tmp' / 'graph_data.pickle')
+        extracted_data = FloydSolverData.load(Path(__file__).parent / 'tmp' / 'graph_data.pickle')
         return extracted_data
