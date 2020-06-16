@@ -24,7 +24,7 @@ def test_parse_calendar_df(parsed_data: ParsedData) -> None:
         columns=['service_id', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']) \
         .set_index('service_id')
     actual = parsed_data.calendar_df
-    assert_frame_equal(expected, actual)
+    assert_frame_equal(expected, actual, check_dtype=False)
 
 
 def test_parse_routes_df(parsed_data: ParsedData) -> None:
@@ -37,7 +37,7 @@ def test_parse_routes_df(parsed_data: ParsedData) -> None:
         [42, 'A'],
         ], columns=['route_id', 'route_short_name']).set_index('route_id')
     actual = parsed_data.routes_df
-    assert_frame_equal(expected, actual)
+    assert_frame_equal(expected, actual, check_dtype=False)
 
 
 def test_parse_trips_df(parsed_data: ParsedData) -> None:
@@ -52,7 +52,7 @@ def test_parse_trips_df(parsed_data: ParsedData) -> None:
         ], columns=['block_id', 'trip_num', 'service_id', 'route_id', 'trip_headsign']) \
         .set_index(['service_id', 'block_id', 'trip_num'])
     actual = parsed_data.trips_df
-    assert_frame_equal(expected, actual)
+    assert_frame_equal(expected, actual, check_dtype=False)
 
 
 def test_parse_stops_df(parsed_data: ParsedData) -> None:
@@ -73,7 +73,7 @@ def test_parse_stops_df(parsed_data: ParsedData) -> None:
         [475, 'Bieżanów', 50.017537, 20.068257],
         ], columns=['stop_id', 'stop_name', 'stop_lat', 'stop_lon']).set_index('stop_id').sort_index()
     actual = parsed_data.stops_df
-    assert_frame_equal(expected, actual)
+    assert_frame_equal(expected, actual, check_dtype=False)
 
 
 def test_parse_perons_df(parsed_data: ParsedData) -> None:
@@ -102,10 +102,9 @@ def test_parse_perons_df(parsed_data: ParsedData) -> None:
         [1368, 304401, 'Rżąka', 50.006257, 20.01116],
         [475, 66701, 'Bieżanów', 50.017537, 20.068257],
         ], columns=['stop_id', 'peron_id', 'stop_name', 'stop_lat', 'stop_lon']) \
-        .astype({'stop_id': 'int32'}) \
         .set_index('peron_id')
     actual = parsed_data.perons_df
-    assert_frame_equal(expected, actual)
+    assert_frame_equal(expected, actual, check_dtype=False)
 
 
 def test_parse_stop_times_df(parsed_data: ParsedData) -> None:
@@ -123,11 +122,10 @@ def test_parse_stop_times_df(parsed_data: ParsedData) -> None:
         [337, 3, 3, parse_time('24:00:00'), 57, 8101, 14],
         [337, 3, 3, parse_time('24:02:00'), 55, 7904, 15],
         ], columns=['block_id', 'trip_num', 'service_id', 'departure_time', 'stop_id', 'peron_id', 'stop_sequence']) \
-        .astype({'stop_id': 'int32', 'peron_id': 'int32'}) \
         .set_index(['service_id', 'block_id', 'trip_num', 'stop_sequence']) \
         [['stop_id', 'peron_id', 'departure_time']]
     actual = parsed_data.stop_times_df
-    assert_frame_equal(expected, actual)
+    assert_frame_equal(expected, actual, check_dtype=False)
 
 
 def test_create_transfers_df(parsed_data: ParsedData) -> None:
@@ -144,4 +142,4 @@ def test_create_transfers_df(parsed_data: ParsedData) -> None:
         ], columns=['block_id', 'trip_num', 'service_id', 'start_time', 'end_time',
                     'start_stop_id', 'end_stop_id', 'start_peron_id', 'end_peron_id', 'stop_sequence', 'duration'])
     actual = parsed_data.transfers_df
-    assert_frame_equal(expected, actual)
+    assert_frame_equal(expected, actual, check_dtype=False)

@@ -7,7 +7,7 @@ from DataClasses.TransferQuery import TransferQuery
 from development.DataProviders.GraphDataProvider import GraphDataProvider
 from development.DataProviders.GtfsStaticDataProvider import GtfsStaticDataProvider
 from solvers.BfsSolver.BfsSolver import BfsSolver
-from solvers.BfsSolver.BfsSolverData import BfsSolverData
+from solvers.BfsSolver.BfsSolverExtractor import BfsSolverExtractor
 from solvers.FloydSolver.FloydSolver import FloydSolver
 
 app = Flask(__name__)
@@ -15,7 +15,9 @@ app = Flask(__name__)
 parsed_data = GtfsStaticDataProvider.load_parsed_data()
 extracted_data = GtfsStaticDataProvider.load_extracted_data()
 
-bfs_solver_data = BfsSolverData.create(parsed_data, extracted_data)
+bfs_extractor = BfsSolverExtractor()
+bfs_solver_data = bfs_extractor.extract(parsed_data, extracted_data)
+
 bfs_solver1 = BfsSolver(bfs_solver_data, earliest_arrival_time=False, latest_departure_time=False)
 bfs_solver2 = BfsSolver(bfs_solver_data, earliest_arrival_time=True, latest_departure_time=False)
 bfs_solver3 = BfsSolver(bfs_solver_data, earliest_arrival_time=True, latest_departure_time=True)

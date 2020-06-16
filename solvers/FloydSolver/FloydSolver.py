@@ -8,6 +8,7 @@ from DataClasses.Transfer import Transfer
 from DataClasses.TransferQuery import TransferQuery
 from DataClasses.MeetingQuery import MeetingQuery
 from DataClasses.SequenceQuery import SequenceQuery
+
 from config import FLOYD_SOLVER_SEARCHING_TIME, FLOYD_SOLVER_MAX_PRIORITY_MULTIPLIER, FLOYD_SOLVER_MAX_PATHS
 
 
