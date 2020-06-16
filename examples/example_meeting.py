@@ -7,9 +7,12 @@ if __name__ == "__main__":
     #print("GTFS DATA EXTRACTED")
     #graph_data = GraphDataProvider.extract_data(gtfs_data)
     #print("GRAPH DATA EXTRACTED")
+
     graph_data = GraphDataProvider.load_data()
     solver = FloydSolver(graph_data)
+
     start_stop_names = ['Azory', 'Kawiory', 'Rondo Mogilskie']
     query = MeetingQuery(start_stop_names, 'square')
+
     meeting_points = solver.find_meeting_points(query)
     print(meeting_points)
