@@ -3,6 +3,7 @@ import time
 
 from flask import Flask, request, render_template
 
+from DataClasses.Connection import Connection
 from DataClasses.TransferQuery import TransferQuery
 from development.DataProviders.GraphDataProvider import GraphDataProvider
 from development.DataProviders.GtfsStaticDataProvider import GtfsStaticDataProvider
@@ -16,7 +17,7 @@ parsed_data = GtfsStaticDataProvider.load_parsed_data()
 extracted_data = GtfsStaticDataProvider.load_extracted_data()
 
 bfs_extractor = BfsSolverExtractor()
-bfs_solver_data = bfs_extractor.extract(parsed_data, extracted_data)
+bfs_solver_data = bfs_extractor.extract(parsed_data)
 
 bfs_solver1 = BfsSolver(bfs_solver_data, earliest_arrival_time=False, latest_departure_time=False)
 bfs_solver2 = BfsSolver(bfs_solver_data, earliest_arrival_time=True, latest_departure_time=False)
@@ -57,6 +58,7 @@ def search():
     for solver_name, solver in solvers.items():
         t1 = time.time()
         results = solver.find_connections(query)
+        results = [min(results, key=Connection.arrival_time)]
         t2 = time.time()
         time_elapsed = t2 - t1
         outputs[solver_name] = {
