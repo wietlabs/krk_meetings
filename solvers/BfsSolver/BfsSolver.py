@@ -29,8 +29,8 @@ class BfsSolver(ISolver):
     def find_connections(self, query: TransferQuery) -> List[Connection]:
         # TODO: handle start_date
         start_time = query.start_time.hour * 3600 + query.start_time.minute * 60 + query.start_time.second
-        start_stop_id = int(self.data.stops_df_by_name.at[query.start_stop_name, 'stop_id'])
-        end_stop_id = int(self.data.stops_df_by_name.at[query.end_stop_name, 'stop_id'])
+        start_stop_id = int(self.data.stops_name_to_id.at[query.start_stop_name])
+        end_stop_id = int(self.data.stops_name_to_id.at[query.end_stop_name])
 
         # step 1: find next earliest possible departure time
         unique_stop_times = self.data.unique_stop_times_df.xs(start_stop_id).index

@@ -1,6 +1,7 @@
 from typing import Optional
 
 import networkx as nx
+import pandas as pd
 
 from DataClasses.ParsedData import ParsedData
 from solvers.BfsSolver.BfsSolverData import BfsSolverData
@@ -17,9 +18,7 @@ class BfsSolverExtractor:
         trips_df = parsed_data.trips_df
         routes_df = parsed_data.routes_df
 
-        stops_df_by_name = stops_df[['stop_name']]
-        stops_df_by_name.reset_index(inplace=True)
-        stops_df_by_name.set_index('stop_name', inplace=True)
+        stops_name_to_id = pd.Series(stops_df.index, index=stops_df['stop_name'])
 
         stop_times_min_df = stop_times_df.reset_index()[['stop_id', 'departure_time', 'block_id', 'trip_num', 'service_id']]
         transfers_min_df = transfers_df[['start_time', 'end_time', 'start_stop_id', 'end_stop_id', 'duration', 'block_id', 'trip_num', 'service_id']]
@@ -95,4 +94,4 @@ class BfsSolverExtractor:
             for stop_id, time in unique_stop_times_df.index
         ), weight=0)
 
-        return BfsSolverData(G, G_R, G_T, stops_df, stops_df_by_name, unique_stop_times_df, trips_df, routes_df)
+        return BfsSolverData(G, G_R, G_T, stops_df, stops_name_to_id, unique_stop_times_df, trips_df, routes_df)

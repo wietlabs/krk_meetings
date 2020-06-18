@@ -12,7 +12,7 @@ class BfsSolverData(Data):
     G_R: nx.DiGraph
     G_T: nx.DiGraph
     stops_df: pd.DataFrame
-    stops_df_by_name: pd.DataFrame
+    stops_name_to_id: pd.Series
     unique_stop_times_df: pd.DataFrame
     trips_df: pd.DataFrame
     routes_df: pd.DataFrame
