@@ -2,7 +2,6 @@ from typing import Optional
 
 import networkx as nx
 
-from DataClasses.ExtractedData import ExtractedData
 from DataClasses.ParsedData import ParsedData
 from solvers.BfsSolver.BfsSolverData import BfsSolverData
 
@@ -11,13 +10,16 @@ class BfsSolverExtractor:
     def __init__(self, boarding_edge_weight: Optional[int] = None):
         self.boarding_edge_weight = boarding_edge_weight
 
-    def extract(self, parsed_data: ParsedData, extracted_data: ExtractedData):
+    def extract(self, parsed_data: ParsedData):
         stops_df = parsed_data.stops_df
-        stops_df_by_name = extracted_data.stops_df_by_name
         stop_times_df = parsed_data.stop_times_df
         transfers_df = parsed_data.transfers_df
         trips_df = parsed_data.trips_df
         routes_df = parsed_data.routes_df
+
+        stops_df_by_name = stops_df[['stop_name']]
+        stops_df_by_name.reset_index(inplace=True)
+        stops_df_by_name.set_index('stop_name', inplace=True)
 
         stop_times_min_df = stop_times_df.reset_index()[['stop_id', 'departure_time', 'block_id', 'trip_num', 'service_id']]
         transfers_min_df = transfers_df[['start_time', 'end_time', 'start_stop_id', 'end_stop_id', 'duration', 'block_id', 'trip_num', 'service_id']]

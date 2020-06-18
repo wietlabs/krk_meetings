@@ -8,12 +8,10 @@ from solvers.BfsSolver.BfsSolverExtractor import BfsSolverExtractor
 
 if __name__ == '__main__':
     # parsed_data = GtfsStaticDataProvider.parse_data()
-    # extracted_data = GtfsStaticDataProvider.extract_data()
     parsed_data = GtfsStaticDataProvider.load_parsed_data()
-    extracted_data = GtfsStaticDataProvider.load_extracted_data()
 
     bfs_extractor = BfsSolverExtractor()
-    bfs_solver_data = bfs_extractor.extract(parsed_data, extracted_data)
+    bfs_solver_data = bfs_extractor.extract(parsed_data)
     solver = BfsSolver(bfs_solver_data)
 
     # start_time = datetime.datetime.strptime(input('Godzina odjazdu: '), '%H:%M').time()
