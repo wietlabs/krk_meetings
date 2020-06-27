@@ -101,7 +101,6 @@ class GraphDataExtractor:
     def extract_graph(self, stops_df: pd.DataFrame, transfers_df: pd.DataFrame, period_df: pd.DataFrame):
         G = nx.MultiDiGraph()
         self.generate_nodes(G, stops_df)
-        self.set_node_degrees(G, transfers_df)
         self.generate_edges(G, transfers_df, period_df)
         return G
 
@@ -115,6 +114,9 @@ class GraphDataExtractor:
             start_routes[first].add(route)
 
         for start_node in first_stops:
+            if start_node not in start_routes:
+                # TODO temporary fix, nodes with names PH and PT aren't in the dict
+                continue
             for route_id in start_routes[start_node]:
                 edges = self.get_edges_data_from(graph, start_node, route_id)
                 for edge in edges:
@@ -178,40 +180,18 @@ class GraphDataExtractor:
         G.add_nodes_from(node_generator())
 
     def generate_edges(self, G, transfers_df, period_df):
-        map_df = transfers_df[[
+        transfers_df = transfers_df[[
             'route_id', 'start_stop_id', 'end_stop_id', 'duration']]
-        avg_map_df = map_df.groupby(['route_id', 'start_stop_id', 'end_stop_id']).mean().reset_index()
+        avg_transfers_df = transfers_df.groupby(['route_id', 'start_stop_id', 'end_stop_id']).mean().reset_index()
 
         def edge_generator():
-            for _, row in avg_map_df.iterrows():
+            for _, row in avg_transfers_df.iterrows():
                 start_node = int(row['start_stop_id'])
                 end_node = int(row['end_stop_id'])
-                route_id =  row['route_id']
+                route_id = int(row['route_id'])
                 duration = row['duration']
-                period = int(period_df.loc[[int(route_id)]]['period'])
+                period = int(period_df.at[(route_id, 'period')])
                 yield start_node, end_node, route_id, \
                     {'route_id': route_id, 'duration': duration, 'period': period, 'path': []}
 
         G.add_edges_from(edge_generator())
-
-    def set_hubs(self, G, first_stops_df):
-        first_stops_df = first_stops_df[['stop_id']]
-        first_stops_df = first_stops_df.drop_duplicates('stop_id')
-        for node_id in G.nodes:
-            stop = G.nodes[node_id]
-            if node_id in first_stops_df.values and stop['degree'] > 1:
-                stop['hub'] = True
-            elif stop['degree'] > 2:
-                stop['hub'] = True
-            else:
-                stop['hub'] = False
-
-    def set_node_degrees(self, G, transfers_df):
-        transfers_df = transfers_df.groupby(['start_stop_id']).count().reset_index()
-        transfers_df = transfers_df[['start_stop_id', 'end_stop_id']]
-        transfers_df = transfers_df.rename(columns={'start_stop_id': 'stop_id', 'end_stop_id': 'degree'},
-                                           errors='raise')
-        for node_id in G.nodes:
-            stop = G.nodes[node_id]
-            row = transfers_df.loc[transfers_df['stop_id'] == node_id]
-            stop['degree'] = row.iloc[0]['degree']
