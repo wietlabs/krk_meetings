@@ -1,4 +1,5 @@
 from DataClasses.MeetingQuery import MeetingQuery
+from development.DataProviders.GtfsStaticDataProvider import GtfsStaticDataProvider
 from development.DataProviders.GraphDataProvider import GraphDataProvider
 from solvers.FloydSolver.FloydSolver import FloydSolver
 

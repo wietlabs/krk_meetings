@@ -62,8 +62,7 @@ class Extractor:
     def create_period_df(self, stop_times_df: pd.DataFrame, route_ids_df: pd.DataFrame) -> pd.DataFrame:
         stop_times_df = stop_times_df.reset_index()
         df = stop_times_df.join(route_ids_df, on=['block_id', 'trip_num', 'service_id'])
-        is_first = df['stop_sequence'] == 1
-        df = df[is_first]
+        df = df[df['stop_sequence'] == 2]
         df = df[['route_id', 'departure_time']]
         df = df.groupby(['route_id']).agg({'departure_time': ['count', 'min', 'max']})
         df.columns = ['count', 'min', 'max']
