@@ -1,31 +1,13 @@
 from functools import reduce
 from DataClasses.FloydSolverData import FloydSolverData
+from gtfs_static.Extractor import Extractor
 
 import pandas as pd
 import networkx as nx
-
-from DataClasses import ExtractedData
 from config import FLOYD_EXTRACTOR_PERIOD_MULTIPLIER
 
 
-class GraphDataExtractor:
-    def extract(self, extracted_data: ExtractedData):
-        stops_df = extracted_data.stops_df
-        transfers_df = extracted_data.transfers_df
-        stop_times_df = extracted_data.stop_times_df
-        period_df = extracted_data.period_df
-        routes_df = extracted_data.routes_df.set_index(['service_id', 'block_id', 'trip_num'])
-        stops_df_by_name = extracted_data.stops_df_by_name
-
-        graph = self.extract_graph(stops_df, transfers_df, period_df)
-        extended_graph = self.extend_graph(graph, stops_df)
-        extended_transfers_df = self.create_extended_transfers_df(extended_graph)
-        floyd_graph = self.create_floyd_graph(extended_transfers_df, stops_df)
-        kernelized_floyd_graph = self.create_kernelized_floyd_graph(floyd_graph, stops_df)
-        distances = self.get_distances(floyd_graph)
-
-        return FloydSolverData(floyd_graph, kernelized_floyd_graph, distances, stop_times_df, stops_df, routes_df, stops_df_by_name)
-
+class FloydDataExtractor(Extractor):
     def create_kernelized_floyd_graph(self, graph: nx.DiGraph, stops_df):
         kernelized_graph = nx.DiGraph()
         stops_df = stops_df[stops_df['hub']]

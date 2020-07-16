@@ -1,6 +1,4 @@
 import pandas as pd
-from DataClasses.ParsedData import ParsedData
-from DataClasses.ExtractedData import ExtractedData
 
 
 class Extractor:
@@ -8,23 +6,17 @@ class Extractor:
         # configuration goes here
         pass
 
-    def extract(self, parsed_data: ParsedData):
-        stops_df = parsed_data.stops_df
-        transfers_df = parsed_data.transfers_df
-        stop_times_df = parsed_data.stop_times_df
-        trips_df = parsed_data.trips_df
-        routes_df = parsed_data.routes_df
-
-        routes_trips_df = self.create_routes_trips_df(trips_df, routes_df)
-        route_ids_df = self.create_route_ids_df(stop_times_df)
-        transfers_route_ids_df = self.create_transfers_trips_df(transfers_df, route_ids_df)
-        stop_times_route_ids_df = self.create_stop_times_trips_df_for_service_id(stop_times_df, route_ids_df)
-        avg_durations_df = self.create_avg_durations_df(transfers_df)
-        period_df = self.create_period_df(stop_times_df, route_ids_df)
-        stops_df = self.set_first_and_last_stop(stop_times_df, route_ids_df, stops_df)
-        stops_df = self.extend_stops_df(transfers_df, stops_df)
-        stops_df_by_name = stops_df.reset_index().set_index('stop_name')
-        return ExtractedData(stops_df, transfers_route_ids_df, stop_times_route_ids_df, avg_durations_df, period_df, routes_trips_df, stops_df_by_name)
+    def get_day_to_services_dict(self, calendar_df: pd.DataFrame):
+        day_to_services = {0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: []}
+        for service_id, monday, tuesday, wednesday, thursday, friday, saturday, sunday in calendar_df.itertuples():
+            if monday: day_to_services[0].append(service_id)
+            if tuesday: day_to_services[1].append(service_id)
+            if wednesday: day_to_services[2].append(service_id)
+            if thursday: day_to_services[3].append(service_id)
+            if friday: day_to_services[4].append(service_id)
+            if saturday: day_to_services[5].append(service_id)
+            if sunday: day_to_services[6].append(service_id)
+        return day_to_services
 
     def create_route_ids_df(self, stop_times_df):
         routes_path_df = stop_times_df.groupby(['block_id', 'trip_num', 'service_id']).agg(

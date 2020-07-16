@@ -15,7 +15,7 @@ from config import FLOYD_SOLVER_SEARCHING_TIME, FLOYD_SOLVER_MAX_PRIORITY_MULTIP
 class FloydSolver(ISolver):
     def __init__(self, data):
         self.graph = data.graph
-        self.kernelized_graph = data.kernelized_floyd_graph
+        self.kernelized_graph = data.kernelized_graph
         self.distances = data.distances
         self.stops_df = data.stops_df
         self.routes_df = data.routes_df

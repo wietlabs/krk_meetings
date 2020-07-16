@@ -1,16 +1,13 @@
 from datetime import date, time
 
 from DataClasses.TransferQuery import TransferQuery
-from development.DataProviders.GraphDataProvider import GraphDataProvider
-from development.DataProviders.GtfsStaticDataProvider import GtfsStaticDataProvider
+from development.DataProviders.DataProvider import DataProvider
 from solvers.FloydSolver.FloydSolver import FloydSolver
 
 if __name__ == "__main__":
-    # gtfs_data = GtfsStaticDataProvider.extract_data()
-    # graph_data = GraphDataProvider.extract_data(gtfs_data)
-
-    graph_data = GraphDataProvider.load_data()
-    solver = FloydSolver(graph_data)
+    floyd_data = DataProvider.parse_and_extract_floyd_data()
+    # floyd_data = DataProvider.load_floyd_data()
+    solver = FloydSolver(floyd_data)
 
     start_date = date(2020, 5, 24)
     start_time = time(20, 0, 0)
