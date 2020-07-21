@@ -1,6 +1,10 @@
 from copy import copy
 from queue import PriorityQueue
 from typing import List
+from itertools import chain
+import pandas as pd
+
+from DataClasses.FloydSolverData import FloydSolverData
 from DataClasses.Connection import Connection
 from utils import *
 from solvers.ISolver import ISolver
@@ -8,28 +12,25 @@ from DataClasses.Transfer import Transfer
 from DataClasses.TransferQuery import TransferQuery
 from DataClasses.MeetingQuery import MeetingQuery
 from DataClasses.SequenceQuery import SequenceQuery
+from copy import deepcopy
 
 from config import FLOYD_SOLVER_SEARCHING_TIME, FLOYD_SOLVER_MAX_PRIORITY_MULTIPLIER, FLOYD_SOLVER_MAX_PATHS
 
 
 class FloydSolver(ISolver):
-    def __init__(self, data):
+    def __init__(self, data: FloydSolverData):
         self.graph = data.graph
-        self.kernelized_graph = data.kernelized_floyd_graph
-        self.distances = data.distances
+        self.kernelized_graph = data.kernelized_graph
+        self.distances = data.distances_dict
         self.stops_df = data.stops_df
         self.routes_df = data.routes_df
         self.stops_df_by_name = data.stops_df_by_name
-        self.stop_times = dict()
+        self.stop_times_0 = data.stop_times_0_dict
+        self.stop_times_24 = data.stop_times_24_dict
         self.paths = dict()
+        self.day_to_services_dict = data.day_to_services_dict
         for node in self.graph.nodes():
             self.paths[node] = dict()
-
-        stop_ids = self.stops_df.index.tolist()
-        self.stop_times_df = data.stop_times_df
-        for stop_id in stop_ids:
-            self.stop_times[stop_id] = data.stop_times_df[data.stop_times_df['stop_id'] == stop_id] \
-                .reset_index('stop_sequence')[['departure_time']]
 
 
     def find_connections(self, query: TransferQuery) -> List[Connection]:
@@ -41,7 +42,7 @@ class FloydSolver(ISolver):
         paths = self.get_paths(start_stop_id, end_stop_id)
         connections = []
         for path in paths:
-            results = self.find_routes(path, current_time)
+            results = self.find_routes(path, current_time, current_date)
             if results is not None:
                 for result in results:
                     transfers = []
@@ -59,10 +60,11 @@ class FloydSolver(ISolver):
                             Transfer(route_name, current_stop_name, next_stop_name, start_date, start_time, end_date,
                                      end_time))
 
-                        connection = Connection(transfers)
-                        connections.append(connection)
+                    connection = Connection(transfers)
+                    connections.append(connection)
             connections.sort(key=lambda c: c.transfers[0].start_time)
         return connections
+
 
     def find_meeting_points(self, query: MeetingQuery):
         start_stop_ids = list(map(lambda x: int(self.stops_df_by_name.at[x, 'stop_id']), query.start_stop_names))
@@ -105,18 +107,24 @@ class FloydSolver(ISolver):
         optimal_order = list(map(lambda x: self.stops_df.at[x, 'stop_name'], optimal_order[0]))
         return optimal_order
 
-    def find_routes(self, path: List[int], start_time: time):
+    def find_routes(self, path: List[int], start_time: int, start_date: date):
         # TODO smart join could return paths for all hours at once
         # TODO seek for routes from end_stop
         # TODO change to generatorin the future
+        day = start_date.weekday()
+        current_services = self.day_to_services_dict[day]
+        next_services = self.day_to_services_dict[(day + 1) % 7]
+
         results = []
-        results_df_not_exists = True
+        results_df = pd.DataFrame()
         for i in range(len(path) - 1):
             current_stop = path[i]
             next_stop = path[i + 1]
 
-            cst_df = self.stop_times[current_stop]
-            nst_df = self.stop_times[next_stop]
+            cst_df = pd.concat(chain([self.stop_times_0[service, current_stop] for service in current_services],
+                                     [self.stop_times_24[service, current_stop] for service in next_services]))
+            nst_df = pd.concat(chain([self.stop_times_0[service, next_stop] for service in current_services],
+                                     [self.stop_times_24[service, next_stop] for service in next_services]))
 
             cst_df = cst_df[start_time <= cst_df.departure_time]
             cst_df = cst_df[cst_df.departure_time <= start_time + FLOYD_SOLVER_SEARCHING_TIME]
@@ -127,8 +135,10 @@ class FloydSolver(ISolver):
             transfers_df = transfers_df[transfers_df.departure_time_c < transfers_df.departure_time_n]
             transfers_df['index'] = transfers_df.index
 
-            if results_df_not_exists:
-                results_df_not_exists = False
+            if transfers_df.empty:
+                return []
+
+            if results_df.empty:
                 results_df = transfers_df
                 results_df.columns = [str(col) + '0' for col in results_df.columns]
                 results_df = results_df.sort_values(by=['departure_time_n0'])
@@ -144,12 +154,13 @@ class FloydSolver(ISolver):
                 results_df = results_df[results_df['departure_time_n' + str(i - 1)] < results_df['departure_time_c' + str(i)]]
                 results_df = results_df.sort_values(by=['departure_time_n' + str(i)])
                 results_df = results_df.drop_duplicates(subset='departure_time_c0', keep='first')
-        for index, row in results_df.iterrows():
+
+        for row in results_df.itertuples():
             result = []
             for i in range(len(path) - 1):
-                index = row['index' + str(i)]
-                departure_time = row['departure_time_c' + str(i)]
-                arrival_time = row['departure_time_n' + str(i)]
+                index = row[3 * i + 3]
+                departure_time = row[3 * i + 1]
+                arrival_time = row[3 * i + 2]
                 result.append((index, path[i], path[i+1], departure_time, arrival_time))
             results.append(result)
         return results

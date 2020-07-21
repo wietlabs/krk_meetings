@@ -5,7 +5,7 @@ from flask import Flask, request, render_template
 
 from DataClasses.Connection import Connection
 from DataClasses.TransferQuery import TransferQuery
-from development.DataProviders.GraphDataProvider import GraphDataProvider
+from development.DataProviders.DataProvider import DataProvider
 from development.DataProviders.GtfsStaticDataProvider import GtfsStaticDataProvider
 from solvers.BfsSolver.BfsSolver import BfsSolver
 from solvers.BfsSolver.BfsSolverExtractor import BfsSolverExtractor
@@ -23,7 +23,7 @@ bfs_solver1 = BfsSolver(bfs_solver_data, earliest_arrival_time=False, latest_dep
 bfs_solver2 = BfsSolver(bfs_solver_data, earliest_arrival_time=True, latest_departure_time=False)
 bfs_solver3 = BfsSolver(bfs_solver_data, earliest_arrival_time=True, latest_departure_time=True)
 
-graph_data = GraphDataProvider.load_data()
+graph_data = DataProvider.load_floyd_data()
 floyd_solver = FloydSolver(graph_data)
 
 solvers = {
@@ -32,6 +32,7 @@ solvers = {
     'BfsSolver(True, True)': bfs_solver3,
     'FloydSolver': floyd_solver,
 }
+print("----------")
 
 
 @app.route('/')
