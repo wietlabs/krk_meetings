@@ -18,6 +18,12 @@ class Extractor:
             if sunday: day_to_services[6].append(service_id)
         return day_to_services
 
+    def get_services_list(self, calendar_df):
+        services = []
+        for service_id, _, _, _, _, _, _, _ in calendar_df.itertuples():
+            services.append(service_id)
+        return services
+
     def create_route_ids_df(self, stop_times_df):
         routes_path_df = stop_times_df.groupby(['block_id', 'trip_num', 'service_id']).agg(
             {'peron_id': lambda x: tuple(x)})
@@ -34,6 +40,7 @@ class Extractor:
         routes_df = trips_df.reset_index().merge(routes_df, on='route_id')[
             ['service_id', 'block_id', 'trip_num', 'trip_headsign', 'route_short_name']]
         routes_df = routes_df.rename(columns={'route_short_name': 'route_name', 'trip_headsign': 'headsign'})
+        routes_df = routes_df.set_index(['service_id', 'block_id', 'trip_num'])
         return routes_df
 
     def create_transfers_trips_df(self, transfers_df: pd.DataFrame, route_ids_df: pd.DataFrame) -> pd.DataFrame:

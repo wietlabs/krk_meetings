@@ -15,7 +15,7 @@ class FloydDataExtractor(Extractor):
         def node_generator():
             for index, row in stops_df.iterrows():
                 yield index, {'stop_name': row['stop_name'], 'stop_lat': row['stop_lat'],
-                                'stop_lon': row['stop_lon'], 'hub': row['hub']}
+                              'stop_lon': row['stop_lon'], 'hub': row['hub']}
 
         def edge_generator():
             for first, second in graph.edges:
@@ -35,12 +35,9 @@ class FloydDataExtractor(Extractor):
 
     def create_floyd_graph(self, extended_transfers_df: pd.DataFrame, stops_df: pd.DataFrame):
         def harmonic_sum(series):
-            return int(reduce(lambda x, y: (x*y) / (x+y), series))
+            return int(reduce(lambda x, y: (x * y) / (x + y), series))
 
-
-
-
-        extended_transfers_df = extended_transfers_df.groupby(['start_stop_id', 'end_stop_id', 'path'])\
+        extended_transfers_df = extended_transfers_df.groupby(['start_stop_id', 'end_stop_id', 'path']) \
             .agg({'duration': 'mean', 'period': harmonic_sum, 'route_id': lambda r: tuple(r)})
         extended_transfers_df = extended_transfers_df.reset_index()
 
@@ -52,10 +49,11 @@ class FloydDataExtractor(Extractor):
 
     def generate_floyd_nodes(self, graph, stops_df):
         stops_df = stops_df.reset_index()
+
         def node_generator():
             for _, row in stops_df.iterrows():
                 yield row['stop_id'], {'stop_name': row['stop_name'], 'stop_lat': row['stop_lat'],
-                                'stop_lon': row['stop_lon'], 'hub': row['hub']}
+                                       'stop_lon': row['stop_lon'], 'hub': row['hub']}
 
         graph.add_nodes_from(node_generator())
 
@@ -63,22 +61,36 @@ class FloydDataExtractor(Extractor):
         def edge_generator():
             for _, row in transfers_df.iterrows():
                 yield int(row['start_stop_id']), int(row['end_stop_id']), \
-                        {'weight': int(row['duration'] + row['period'] * FLOYD_EXTRACTOR_PERIOD_MULTIPLIER), 'route_ids': row['route_id'], 'path': row['path']}
+                      {'weight': int(row['duration'] + row['period'] * FLOYD_EXTRACTOR_PERIOD_MULTIPLIER),
+                       'route_ids': row['route_id'], 'path': row['path']}
 
         graph.add_edges_from(edge_generator())
 
     def create_extended_transfers_df(self, extended_graph: nx.MultiDiGraph):
         graph = extended_graph
+
         def generator():
             for strat_stop, end_stop, route_id in graph.edges(keys=True):
                 duration = graph.edges[strat_stop, end_stop, route_id]['duration']
                 period = graph.edges[strat_stop, end_stop, route_id]['period']
                 path = graph.edges[strat_stop, end_stop, route_id]['path']
                 yield strat_stop, end_stop, int(route_id), int(duration), int(period), tuple(path)
-        df = pd.DataFrame(generator(), columns=['start_stop_id', 'end_stop_id', 'route_id', 'duration', 'period', 'path'])
+
+        df = pd.DataFrame(generator(),
+                          columns=['start_stop_id', 'end_stop_id', 'route_id', 'duration', 'period', 'path'])
         df = df.astype(dtype={'start_stop_id': 'int64', 'end_stop_id': 'int64', 'route_id': 'int64',
-                            'duration': 'int64', 'period': 'int64', 'path': 'object'})
+                              'duration': 'int64', 'period': 'int64', 'path': 'object'})
         return df
+
+    def transform_stop_times_df_to_dict(self, stops_df, stop_times_df, services_list):
+        stop_times_dict = dict()
+        stop_ids = stops_df.index.tolist()
+        for stop_id in stop_ids:
+            times_by_stop_0 = stop_times_df[stop_times_df['stop_id'] == stop_id]
+            for service in services_list:
+                stop_times_dict[(service, stop_id)] = times_by_stop_0[times_by_stop_0['service'] == service] \
+                    [['departure_time']]
+        return stop_times_dict
 
     def extract_graph(self, stops_df: pd.DataFrame, transfers_df: pd.DataFrame, period_df: pd.DataFrame):
         G = nx.MultiDiGraph()
@@ -151,7 +163,8 @@ class FloydDataExtractor(Extractor):
         for node_to_id in G.neighbors(node_from_id):
             for edge in G.get_edge_data(node_from_id, node_to_id).values():
                 if edge['route_id'] == route_id:
-                    edges.add((int(edge['route_id']), node_from_id, node_to_id, int(edge['duration']), int(edge['period'])))
+                    edges.add(
+                        (int(edge['route_id']), node_from_id, node_to_id, int(edge['duration']), int(edge['period'])))
         return list(edges)
 
     def generate_nodes(self, G, stops_df):
@@ -159,6 +172,7 @@ class FloydDataExtractor(Extractor):
             for stop_id, row in stops_df.iterrows():
                 yield stop_id, {'stop_name': row['stop_name'], 'stop_lat': row['stop_lat'],
                                 'stop_lon': row['stop_lon'], 'hub': row['hub']}
+
         G.add_nodes_from(node_generator())
 
     def generate_edges(self, G, transfers_df, period_df):
@@ -174,6 +188,6 @@ class FloydDataExtractor(Extractor):
                 duration = row['duration']
                 period = int(period_df.at[(route_id, 'period')])
                 yield start_node, end_node, route_id, \
-                    {'route_id': route_id, 'duration': duration, 'period': period, 'path': []}
+                      {'route_id': route_id, 'duration': duration, 'period': period, 'path': []}
 
         G.add_edges_from(edge_generator())

@@ -32,6 +32,7 @@ solvers = {
     'BfsSolver(True, True)': bfs_solver3,
     'FloydSolver': floyd_solver,
 }
+print("----------")
 
 
 @app.route('/')
