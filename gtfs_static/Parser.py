@@ -43,6 +43,7 @@ class Parser:
         df = pd.read_csv(stops_txt_path, usecols=['stop_id', 'stop_name', 'stop_lat', 'stop_lon'])
         df['stop_id'], df['peron_id'] = zip(*df['stop_id'].map(parse_stop_id))  # TODO: consider df.apply
         perons_df = df.set_index('peron_id')
+        perons_df.columns = ['stop_id', 'peron_name', 'peron_lat', 'peron_lon']
         stops_df = df[['stop_id', 'stop_name', 'stop_lat', 'stop_lon']] \
                     .groupby(['stop_id', 'stop_name'], as_index=False) \
                     .mean() \
