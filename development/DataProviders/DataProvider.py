@@ -1,7 +1,9 @@
 import copy
 
+from gtfs_static.Merger import Merger
+from solvers.BfsSolver.BfsSolverData import BfsSolverData
+from solvers.BfsSolver.BfsSolverExtractor import BfsSolverExtractor
 from static_map_module.FloydDataExtractor import FloydDataExtractor
-from gtfs_static.Extractor import Extractor
 from gtfs_static.Parser import Parser
 from DataClasses.FloydSolverData import FloydSolverData
 from pathlib import Path
@@ -9,24 +11,21 @@ from pathlib import Path
 
 class DataProvider:
     @staticmethod
-    def parse_data():
-        parser = Parser()
-        parsed_data = parser.parse(Path(__file__).parent / 'GTFS_KRK_A')
-        parsed_data.save(Path(__file__).parent / 'tmp' / 'parsed_data.pickle')
-        return parsed_data
-
-    @staticmethod
     def parse_and_extract_floyd_data():
         parser = Parser()
+        parsed_data_A = parser.parse(Path(__file__).parent / 'GTFS_KRK_A')
+        parsed_data_T = parser.parse(Path(__file__).parent / 'GTFS_KRK_T')
+
+        merger = Merger()
+        merged_data = merger.merge(parsed_data_A, parsed_data_T)
+
         extractor = FloydDataExtractor()
-        # Loading parsed data
-        parsed_data = parser.parse(Path(__file__).parent / 'GTFS_KRK_A')
-        stops_df = parsed_data.stops_df
-        transfers_df = parsed_data.transfers_df
-        stop_times_df = parsed_data.stop_times_df
-        trips_df = parsed_data.trips_df
-        routes_df = parsed_data.routes_df
-        calendar_df = parsed_data.calendar_df
+        stops_df = merged_data.stops_df
+        transfers_df = merged_data.transfers_df
+        stop_times_df = merged_data.stop_times_df
+        trips_df = merged_data.trips_df
+        routes_df = merged_data.routes_df
+        calendar_df = merged_data.calendar_df
 
         # Basic extraction
         route_ids_df = extractor.create_route_ids_df(stop_times_df)
@@ -56,10 +55,30 @@ class DataProvider:
 
         floyd_data = FloydSolverData(floyd_graph, kernelized_floyd_graph, distances, day_to_services_dict,
                                     stop_times_0_dict, stop_times_24_dict, stops_df, routes_df, stops_df_by_name)
-        floyd_data.save(Path(__file__).parent / 'tmp' / 'graph_data.pickle')
+        floyd_data.save(Path(__file__).parent / 'tmp' / 'floyd_data.pickle')
         return floyd_data
 
     @staticmethod
     def load_floyd_data():
-        extracted_data = FloydSolverData.load(Path(__file__).parent / 'tmp' / 'graph_data.pickle')
-        return extracted_data
+        floyd_data = FloydSolverData.load(Path(__file__).parent / 'tmp' / 'floyd_data.pickle')
+        return floyd_data
+
+    @staticmethod
+    def parse_and_extract_bfs_data():
+        parser = Parser()
+        parsed_data_A = parser.parse(Path(__file__).parent / 'GTFS_KRK_A')
+        parsed_data_T = parser.parse(Path(__file__).parent / 'GTFS_KRK_T')
+
+        merger = Merger()
+        merged_data = merger.merge(parsed_data_A, parsed_data_T)
+
+        extractor = BfsSolverExtractor()
+        bfs_data = extractor.extract(merged_data)
+
+        bfs_data.save(Path(__file__).parent / 'tmp' / 'bfs_data.pickle')
+        return bfs_data
+
+    @staticmethod
+    def load_bfs_data():
+        bfs_data = BfsSolverData.load(Path(__file__).parent / 'tmp' / 'bfs_data.pickle')
+        return bfs_data
