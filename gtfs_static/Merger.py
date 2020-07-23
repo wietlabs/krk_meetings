@@ -111,6 +111,7 @@ class Merger:
         perons_df_2.reset_index(inplace=True)
         perons_df_2.loc[:, 'peron_id'] += peron_id_offset
         perons_df_2.loc[:, 'stop_id'] = self._map_stop_id(perons_df_2['stop_id'], stop_id_offset, stop_id_mapping)
+        perons_df_2.set_index('peron_id', inplace=True)
 
         perons_df = perons_df_1.append(perons_df_2)
         return perons_df, peron_id_offset
@@ -123,6 +124,7 @@ class Merger:
         stop_times_df_2.loc[:, 'stop_id'] = self._map_stop_id(stop_times_df_2['stop_id'], stop_id_offset,
                                                               stop_id_mapping)
         stop_times_df_2.loc[:, 'peron_id'] += peron_id_offset
+        stop_times_df_2.set_index(['service_id', 'block_id', 'trip_num', 'stop_sequence'], inplace=True)
 
         stop_times_df = stop_times_df_1.append(stop_times_df_2)
         return stop_times_df
