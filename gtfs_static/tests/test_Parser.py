@@ -1,4 +1,5 @@
 from pathlib import Path
+from statistics import mean
 
 import pytest
 import pandas as pd
@@ -56,19 +57,16 @@ def test_parse_trips_df(parsed_data: ParsedData) -> None:
 
 
 def test_parse_stops_df(parsed_data: ParsedData) -> None:
-    def avg(*xs: float) -> float:
-        return sum(xs) / len(xs)
-
     expected = pd.DataFrame([
-        [1626, 'AGH / UR', avg(50.064389, 50.062664), avg(19.924345, 19.923186)],
-        [55, 'Plac Inwalidów', avg(50.068681, 50.069472), avg(19.925866, 19.926957)],
-        [57, 'Czarnowiejska', avg(50.066172, 50.066574), avg(19.923052, 19.922154)],
+        [1626, 'AGH / UR', mean((50.064389, 50.062664)), mean((19.924345, 19.923186))],
+        [55, 'Plac Inwalidów', mean((50.068681, 50.069472)), mean((19.925866, 19.926957))],
+        [57, 'Czarnowiejska', mean((50.066172, 50.066574)), mean((19.923052, 19.922154))],
         [1230, 'Chopina', 50.067551, 19.917338],
-        [58, 'Kawiory', avg(50.068419, 50.068372, 50.068801), avg(19.913791, 19.912865, 19.91391)],
-        [61, 'Miasteczko Studenckie AGH', avg(50.0697, 50.069923, 50.069619, 50.070321), avg(19.903701, 19.905468, 19.906581, 19.904225)],
-        [60, 'Biprostal', avg(50.07351, 50.072412, 50.073446), avg(19.91368, 19.91522, 19.915894)],
-        [544, 'Brücknera', avg(50.011982, 50.012561), avg(19.875804, 19.876017)],
-        [1785, 'Petőfiego (nż)', avg(50.094152, 50.094174), avg(20.035397, 20.035502)],
+        [58, 'Kawiory', mean((50.068419, 50.068372, 50.068801)), mean((19.913791, 19.912865, 19.91391))],
+        [61, 'Miasteczko Studenckie AGH', mean((50.0697, 50.069923, 50.069619, 50.070321)), mean((19.903701, 19.905468, 19.906581, 19.904225))],
+        [60, 'Biprostal', mean((50.07351, 50.072412, 50.073446)), mean((19.91368, 19.91522, 19.915894))],
+        [544, 'Brücknera', mean((50.011982, 50.012561)), mean((19.875804, 19.876017))],
+        [1785, 'Petőfiego (nż)', mean((50.094152, 50.094174)), mean((20.035397, 20.035502))],
         [1368, 'Rżąka', 50.006257, 20.0111],
         [475, 'Bieżanów', 50.017537, 20.068257],
         ], columns=['stop_id', 'stop_name', 'stop_lat', 'stop_lon']).set_index('stop_id').sort_index()
