@@ -101,7 +101,7 @@ def test_parse_perons_df(parsed_data: ParsedData) -> None:
         [1785, 319102, 'Petőfiego (nż)', 50.094174, 20.035502],
         [1368, 304401, 'Rżąka', 50.006257, 20.01116],
         [475, 66701, 'Bieżanów', 50.017537, 20.068257],
-        ], columns=['stop_id', 'peron_id', 'stop_name', 'stop_lat', 'stop_lon']) \
+        ], columns=['stop_id', 'peron_id', 'peron_name', 'peron_lat', 'peron_lon']) \
         .set_index('peron_id')
     actual = parsed_data.perons_df
     assert_frame_equal(expected, actual, check_dtype=False)
