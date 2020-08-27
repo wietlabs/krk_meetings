@@ -1,17 +1,15 @@
 import datetime
 import time
 
+from src.alternative_solvers.BfsSolverDataProvider import BfsSolverDataProvider
 from src.data_classes.TransferQuery import TransferQuery
-from src.development.DataProviders.GtfsStaticDataProvider import GtfsStaticDataProvider
+from src.data_provider.GtfsStaticDataProvider import GtfsStaticDataProvider
 from src.alternative_solvers.BfsSolver import BfsSolver
 from src.alternative_solvers.BfsSolverExtractor import BfsSolverExtractor
 
 if __name__ == '__main__':
-    # parsed_data = GtfsStaticDataProvider.parse_data()
-    parsed_data = GtfsStaticDataProvider.load_parsed_data()
-
-    bfs_extractor = BfsSolverExtractor()
-    bfs_solver_data = bfs_extractor.extract(parsed_data)
+    # BfsSolverDataProvider.prepare_data()
+    bfs_solver_data = BfsSolverDataProvider.load_data()
     solver = BfsSolver(bfs_solver_data)
 
     # start_time = datetime.datetime.strptime(input('Godzina odjazdu: '), '%H:%M').time()
