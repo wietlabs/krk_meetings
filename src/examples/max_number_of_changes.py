@@ -1,10 +1,10 @@
 import networkx as nx
 
-from src.development.DataProviders.GtfsStaticDataProvider import GtfsStaticDataProvider
+from src.data_provider.GtfsStaticDataProvider import GtfsStaticDataProvider
 
 if __name__ == '__main__':
-    # parsed_data = GtfsStaticDataProvider.parse_data()
-    parsed_data = GtfsStaticDataProvider.load_parsed_data()
+    # parsed_data = GtfsStaticDataProvider.prepare_data()
+    parsed_data = GtfsStaticDataProvider.load_data()
 
     trips_df = parsed_data.trips_df
     stop_times_df = parsed_data.stop_times_df
