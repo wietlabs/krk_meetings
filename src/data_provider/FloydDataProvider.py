@@ -4,9 +4,25 @@ from src.data_provider.FloydDataExtractor import FloydDataExtractor
 from src.data_provider.Parser import Parser
 from src.data_classes.FloydSolverData import FloydSolverData
 from pathlib import Path
+from src.rabbitmq.RmqConsumer import RmqConsumer
+from src.rabbitmq.RmqProducer import RmqProducer
+from src.config import EXCHANGES
 
 
 class DataProvider:
+    def __init__(self):
+        self.floyd_data_producer = RmqProducer(EXCHANGES.FLOYD_DATA.value)
+        # self.consumer = RmqConsumer("data_provider", self.parse_and_extract_floyd_data())  # TODO act when recive new data
+
+    def start(self):
+        floyd_data = self.load_floyd_data()
+        self.floyd_data_producer.send_msg(floyd_data)
+        print("data sent")
+        # self.consumer.start()
+
+    def stop(self):
+        pass
+
     @staticmethod
     def parse_and_extract_floyd_data():
         parser = Parser()
@@ -56,7 +72,7 @@ class DataProvider:
         return floyd_data
 
     @staticmethod
-    def load_floyd_data():
+    def load_floyd_data() -> FloydSolverData:
         floyd_data = FloydSolverData.load(Path(__file__).parent / 'data' / 'tmp' / 'floyd_data.pickle')
         return floyd_data
 

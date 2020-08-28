@@ -3,11 +3,11 @@ import time
 
 from flask import Flask, request, render_template
 
-from src.data_classes.Connection import Connection
-from src.data_classes.TransferQuery import TransferQuery
+from src.data_classes.ConnectionResults import ConnectionResults
+from src.data_classes.ConnectionQuery import ConnectionQuery
 from src.data_provider.FloydDataProvider import DataProvider
 from solvers.BfsSolver.BfsSolver import BfsSolver
-from src.solver.FloydSolver import FloydSolver
+from src.solver.FloydSolver import FloydConnectionSolver
 
 app = Flask(__name__)
 
@@ -17,7 +17,7 @@ bfs_solver2 = BfsSolver(bfs_data, earliest_arrival_time=True, latest_departure_t
 bfs_solver3 = BfsSolver(bfs_data, earliest_arrival_time=True, latest_departure_time=True)
 
 floyd_data = DataProvider.load_floyd_data()
-floyd_solver = FloydSolver(floyd_data)
+floyd_solver = FloydConnectionSolver(floyd_data)
 
 solvers = {
     'BfsSolver(False, False)': bfs_solver1,
@@ -44,14 +44,14 @@ def search():
     except:
         return 'Nieprawidłowy forma godziny odjazdu'
 
-    query = TransferQuery(start_date, start_time, start_stop_name, end_stop_name)
+    query = ConnectionQuery(start_date, start_time, start_stop_name, end_stop_name)
 
     outputs = {}
 
     for solver_name, solver in solvers.items():
         t1 = time.time()
         results = solver.find_connections(query)
-        results = [min(results, key=Connection.arrival_time)]
+        results = [min(results, key=ConnectionResults.arrival_time)]
         t2 = time.time()
         time_elapsed = t2 - t1
         outputs[solver_name] = {

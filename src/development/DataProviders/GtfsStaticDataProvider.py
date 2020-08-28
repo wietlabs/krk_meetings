@@ -1,7 +1,8 @@
-from src.data_provider.Parser import Parser
-from src.data_provider.Extractor import Extractor
-from src.data_classes.ExtractedData import ExtractedData
 from pathlib import Path
+
+from src.data_classes.ExtractedData import ExtractedData
+from src.data_provider.Extractor import Extractor
+from src.data_provider.Parser import Parser
 
 
 class GtfsStaticDataProvider:

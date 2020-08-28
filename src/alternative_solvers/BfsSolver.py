@@ -2,15 +2,15 @@ from typing import List
 
 import networkx as nx
 
-from src.data_classes.Connection import Connection
+from src.data_classes.ConnectionResults import ConnectionResults
 from src.data_classes.Transfer import Transfer
 from src.alternative_solvers.BfsSolverData import BfsSolverData
-from src.solver.ISolver import ISolver
-from src.data_classes.TransferQuery import TransferQuery
+from src.solver.IConnectionSolver import IConnectionSolver
+from src.data_classes.ConnectionQuery import ConnectionQuery
 from src.utils import int_to_time
 
 
-class BfsSolver(ISolver):
+class BfsConnectionSolver(IConnectionSolver):
     def __init__(self, data: BfsSolverData, *,
                  earliest_arrival_time: bool = True,
                  latest_departure_time: bool = True,
@@ -26,7 +26,7 @@ class BfsSolver(ISolver):
         self.latest_departure_time = latest_departure_time
         self.minimal_transfers_count = minimal_transfers_count
 
-    def find_connections(self, query: TransferQuery) -> List[Connection]:
+    def find_connections(self, query: ConnectionQuery) -> List[ConnectionResults]:
         # TODO: handle start_date
         start_time = query.start_time.hour * 3600 + query.start_time.minute * 60 + query.start_time.second
         start_stop_id = int(self.data.stops_name_to_id.at[query.start_stop_name])
@@ -80,7 +80,7 @@ class BfsSolver(ISolver):
             transfer = Transfer(route_number, start_stop_name, end_stop_name, start_date, start_time, end_date, end_time)
             transfers.append(transfer)
 
-        connection = Connection(transfers)
+        connection = ConnectionResults(transfers)
 
         results = [connection]
         return results

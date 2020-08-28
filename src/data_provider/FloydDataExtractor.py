@@ -86,8 +86,9 @@ class FloydDataExtractor(Extractor):
         stop_ids = stops_df.index.tolist()
         for stop_id in stop_ids:
             times_by_stop_0 = stop_times_df[stop_times_df['stop_id'] == stop_id]
+            stop_times_dict[stop_id] = {}
             for service in services_list:
-                stop_times_dict[(service, stop_id)] = times_by_stop_0[times_by_stop_0['service'] == service] \
+                stop_times_dict[stop_id][service] = times_by_stop_0[times_by_stop_0['service'] == service] \
                     [['departure_time']]
         return stop_times_dict
 
