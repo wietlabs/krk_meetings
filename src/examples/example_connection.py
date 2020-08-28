@@ -5,7 +5,7 @@ from src.data_provider.FloydDataProvider import DataProvider
 from src.solver.FloydSolver import FloydSolver
 
 if __name__ == "__main__":
-    #floyd_data = DataProvider.parse_and_extract_floyd_data()
+    # floyd_data = DataProvider.parse_and_extract_floyd_data()
     floyd_data = DataProvider.load_floyd_data()
     solver = FloydSolver(floyd_data)
 

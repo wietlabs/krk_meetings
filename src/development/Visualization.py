@@ -1,10 +1,10 @@
 from math import cos, radians
 
+import matplotlib.pyplot as plt
 import networkx as nx
 import pandas as pd
-import matplotlib.pyplot as plt
 
-from src.data_classes.ExtractedData import ExtractedData
+from src.data_classes.ParsedData import ParsedData
 
 
 class Visualization:
@@ -20,20 +20,21 @@ class Visualization:
         self.fig.tight_layout()
         self.ax.set_aspect(1 / cos(radians(50)))
 
-    def draw_stops(self, extracted_data: ExtractedData, draw_transfers: bool = True, **kwargs) -> None:
-        stops_df = extracted_data.stops_df
-        avg_durations_df = extracted_data.avg_durations_df
+    def draw_stops(self, parsed_data: ParsedData, draw_transfers: bool = True, **kwargs) -> None:
+        stops_df = parsed_data.stops_df
+
+        edges_df = parsed_data.transfers_df[['start_stop_id', 'end_stop_id']].drop_duplicates()
 
         G = nx.Graph()  # or DiGraph
         G.add_nodes_from(stops_df.index)
         if draw_transfers:
-            G.add_edges_from(avg_durations_df.index)
+            G.add_edges_from(edges_df.itertuples(index=False))
 
         pos = {
             stop_id: (stop_lon, stop_lat)
             for stop_id, stop_lat, stop_lon in stops_df[['stop_lat', 'stop_lon']].itertuples()
         }
-        params = {'node_size': 4, 'edge_width': 2, **kwargs}
+        params = {'node_size': 4, 'width': 1, **kwargs}
         nx.draw(G, pos, self.ax, **params)
 
     def draw_result_path(self, result: pd.DataFrame, **kwargs) -> None:
@@ -45,4 +46,3 @@ class Visualization:
 
     def show(self) -> None:
         self.fig.show()
-
