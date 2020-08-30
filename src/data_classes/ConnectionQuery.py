@@ -20,8 +20,8 @@ class ConnectionQuery:
         })
 
     @staticmethod
-    def from_json(json_file):
-        json_dict = json.loads(json_file)
+    def from_json(connection):
+        json_dict = json.loads(connection)
         return ConnectionQuery(
             datetime.strptime(json_dict["start_date"], "%m/%d/%Y").date(),
             datetime.strptime(json_dict["start_time"], "%H:%M:%S").time(),

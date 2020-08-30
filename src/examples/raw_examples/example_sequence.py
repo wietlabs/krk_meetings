@@ -12,5 +12,5 @@ if __name__ == "__main__":
     end_stop_name = 'AGH / UR'
     query = SequenceQuery(start_stop_name, end_stop_name, stops_to_visit)
 
-    sequence = solver.find_optimal_sequence(query)
+    sequence = solver.find_best_sequence(query)
     print(sequence)

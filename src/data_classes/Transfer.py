@@ -14,8 +14,8 @@ class Transfer:
     end_time: time
 
     @staticmethod
-    def to_json(transfer):
-        return json.dumps({
+    def to_serializable(transfer):
+        return {
             "route_number": transfer.route_number,
             "start_stop_name": transfer.start_stop_name,
             "end_stop_name": transfer.end_stop_name,
@@ -23,19 +23,18 @@ class Transfer:
             "start_time": transfer.start_time.strftime("%H:%M:%S"),
             "end_date": transfer.end_date.strftime("%m/%d/%Y"),
             "end_time": transfer.end_time.strftime("%H:%M:%S")
-        }, ensure_ascii=False)
+        }
 
     @staticmethod
-    def from_json(transfer):
-        json_dict = json.loads(transfer)
+    def from_serializable(transfer):
         return Transfer(
-            json_dict["route_number"],
-            json_dict["start_stop_name"],
-            json_dict["end_stop_name"],
-            datetime.strptime(json_dict["start_date"], "%m/%d/%Y").date(),
-            datetime.strptime(json_dict["start_time"], "%H:%M:%S").time(),
-            datetime.strptime(json_dict["end_date"], "%m/%d/%Y").date(),
-            datetime.strptime(json_dict["end_time"], "%H:%M:%S").time()
+            transfer["route_number"],
+            transfer["start_stop_name"],
+            transfer["end_stop_name"],
+            datetime.strptime(transfer["start_date"], "%m/%d/%Y").date(),
+            datetime.strptime(transfer["start_time"], "%H:%M:%S").time(),
+            datetime.strptime(transfer["end_date"], "%m/%d/%Y").date(),
+            datetime.strptime(transfer["end_time"], "%H:%M:%S").time()
         )
 
     def __str__(self):

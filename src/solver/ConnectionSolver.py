@@ -17,6 +17,11 @@ from src.config import FLOYD_SOLVER_SEARCHING_TIME, FLOYD_SOLVER_MAX_PRIORITY_MU
     EXCHANGES
 
 
+def start_connection_solver():
+    connection_solver = ConnectionSolver()
+    connection_solver.start()
+
+
 class ConnectionSolver(DataUpdater, IConnectionSolver):
     def __init__(self):
         DataUpdater.__init__(self)
@@ -25,6 +30,7 @@ class ConnectionSolver(DataUpdater, IConnectionSolver):
 
     def start(self):
         DataUpdater.start(self)
+        print("ConnectionSolver has started.")
         self.query_consumer.start()
 
     def stop(self):
@@ -35,9 +41,7 @@ class ConnectionSolver(DataUpdater, IConnectionSolver):
     def consume_transfer_query(self, query: ConnectionQuery):
         with self.lock:
             connections = self.find_connections(query)
-            print("got connections")
             self.results_producer.send_msg(connections)
-            print("connections sent")
 
     def find_connections(self, query: ConnectionQuery) -> List[ConnectionResults]:
         current_time = time_to_int(query.start_time)
@@ -54,7 +58,7 @@ class ConnectionSolver(DataUpdater, IConnectionSolver):
                     transfers = []
                     for transfer in result:
                         index, current_stop_id, next_stop_id, departure_time, arrival_time = transfer
-                        route_name = self.routes_df.at[str(index), 'route_name']
+                        route_name = self.routes_df.at[index, 'route_name']
                         current_stop_name = self.stops_df.at[current_stop_id, 'stop_name']
                         next_stop_name = self.stops_df.at[next_stop_id, 'stop_name']
                         start_time = int_to_time(departure_time)
@@ -63,7 +67,7 @@ class ConnectionSolver(DataUpdater, IConnectionSolver):
                         end_date = shift_date(current_date, arrival_time)
 
                         transfers.append(
-                            Transfer(str(route_name), current_stop_name, next_stop_name, start_date, start_time, end_date,
+                            Transfer(route_name, current_stop_name, next_stop_name, start_date, start_time, end_date,
                                      end_time))
 
                     connection = ConnectionResults(transfers)
@@ -76,8 +80,8 @@ class ConnectionSolver(DataUpdater, IConnectionSolver):
         # TODO seek for routes from end_stop
         # TODO change to generatorin the future
         day = start_date.weekday()
-        current_services = self.day_to_services_dict[str(day)]
-        next_services = self.day_to_services_dict[str((day + 1) % 7)]
+        current_services = self.day_to_services_dict[day]
+        next_services = self.day_to_services_dict[(day + 1) % 7]
 
         results = []
         results_df = pd.DataFrame()
@@ -85,10 +89,10 @@ class ConnectionSolver(DataUpdater, IConnectionSolver):
             current_stop = path[i]
             next_stop = path[i + 1]
 
-            cst_df = pd.concat(chain([self.stop_times_0[str(next_stop)][str(service)] for service in current_services],
-                                     [self.stop_times_24[str(next_stop)][str(service)] for service in next_services]))
-            nst_df = pd.concat(chain([self.stop_times_0[str(current_stop)][str(service)] for service in current_services],
-                                     [self.stop_times_24[str(current_stop)][str(service)] for service in next_services]))
+            cst_df = pd.concat(chain([self.stop_times_0[next_stop][service] for service in current_services],
+                                     [self.stop_times_24[next_stop][service] for service in next_services]))
+            nst_df = pd.concat(chain([self.stop_times_0[current_stop][service] for service in current_services],
+                                     [self.stop_times_24[current_stop][service] for service in next_services]))
 
             cst_df = cst_df[start_time <= cst_df.departure_time]
             cst_df = cst_df[cst_df.departure_time <= start_time + FLOYD_SOLVER_SEARCHING_TIME]
@@ -140,7 +144,7 @@ class ConnectionSolver(DataUpdater, IConnectionSolver):
     def calculate_paths(self, start_node_id: int, end_node_id: int):
         def resolve_neighbor(node_id, neighbor_id, weight, path, routes, graph):
             n_weight = weight + graph.edges[node_id, neighbor_id]['weight']
-            n_priority = n_weight + self.distances[str(neighbor_id)][str(end_node_id)]
+            n_priority = n_weight + self.distances[neighbor_id][end_node_id]
             n_path = copy(path)
             n_path.append(neighbor_id)
             n_routes = copy(routes)
@@ -158,7 +162,7 @@ class ConnectionSolver(DataUpdater, IConnectionSolver):
         costs = []
         routes_dict = []
         routes_to_node = {}
-        max_priority = self.distances[str(start_node_id)][str(end_node_id)] * FLOYD_SOLVER_MAX_PRIORITY_MULTIPLIER
+        max_priority = self.distances[start_node_id][end_node_id] * FLOYD_SOLVER_MAX_PRIORITY_MULTIPLIER
         priority = 0
 
         last_hubs = []

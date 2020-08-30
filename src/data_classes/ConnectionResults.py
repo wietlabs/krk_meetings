@@ -28,21 +28,20 @@ class ConnectionResults:
         return self.arrival_time() - departure_time
 
     @staticmethod
-    def list_to_json(connections):
-        return json.dumps(list(map(lambda c: ConnectionResults.to_json(c), connections)), ensure_ascii=False)
+    def to_json(connections):
+        return json.dumps(list(map(lambda c: ConnectionResults.to_serializable(c), connections)), ensure_ascii=False)
 
     @staticmethod
-    def list_from_json(json_file):
+    def from_json(json_file):
         json_dict = json.loads(json_file)
-        return list(map(lambda c: ConnectionResults.from_json(c), json_dict))
+        return list(map(lambda c: ConnectionResults.from_serializable(c), json_dict))
 
     @staticmethod
-    def to_json(connection):
+    def to_serializable(connection):
         #print(connection)
-        return json.dumps(list(map(lambda t: Transfer.to_json(t), connection.transfers)))
+        return list(map(lambda t: Transfer.to_serializable(t), connection.transfers))
 
     @staticmethod
-    def from_json(connection):
-        connection = json.loads(connection)
-        connection_result = list(map(lambda t: Transfer.from_json(t), connection))
+    def from_serializable(connection):
+        connection_result = list(map(lambda t: Transfer.from_serializable(t), connection))
         return ConnectionResults(connection_result)

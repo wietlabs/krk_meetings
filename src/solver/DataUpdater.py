@@ -2,7 +2,7 @@ from threading import Lock
 from threading import Thread
 
 from src.config import EXCHANGES
-from src.data_classes.FloydSolverData import FloydSolverData
+from src.data_provider.FloydDataProvider import DataProvider
 from src.rabbitmq.RmqConsumer import RmqConsumer
 
 
@@ -23,12 +23,14 @@ class DataUpdater:
         self.data_consumer_thread = Thread(target=self.data_consumer.start, args=[])
 
     def start(self):
+        self.update_data()
         self.data_consumer_thread.start()
 
     def stop(self):
         self.data_consumer_thread.start.do_run = False
 
-    def update_data(self, data: FloydSolverData):
+    def update_data(self, msg=None):
+        data = DataProvider.load_floyd_data()
         with self.lock:
             self.graph = data.graph
             self.kernelized_graph = data.kernelized_graph
@@ -43,4 +45,5 @@ class DataUpdater:
             for node in self.graph.nodes():
                 self.paths[node] = dict()
             print("Data updated")
+
 

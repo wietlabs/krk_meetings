@@ -1,4 +1,8 @@
 import copy
+import json
+import time
+from datetime import datetime
+
 from src.data_provider.Merger import Merger
 from src.data_provider.FloydDataExtractor import FloydDataExtractor
 from src.data_provider.Parser import Parser
@@ -8,17 +12,29 @@ from src.rabbitmq.RmqConsumer import RmqConsumer
 from src.rabbitmq.RmqProducer import RmqProducer
 from src.config import EXCHANGES
 
+FLOYD_DATA_PATH = Path(__file__).parent / 'data' / 'tmp' / 'floyd_data.pickle'
+LAST_UPDATE_PATH = Path(__file__).parent / 'data' / 'tmp' / 'config.json'
+
+
+def start_data_provider():
+    data_provider = DataProvider()
+    data_provider.start()
+
 
 class DataProvider:
     def __init__(self):
         self.floyd_data_producer = RmqProducer(EXCHANGES.FLOYD_DATA.value)
-        # self.consumer = RmqConsumer("data_provider", self.parse_and_extract_floyd_data())  # TODO act when recive new data
+        self.last_update_date = self.load_update_data()
 
     def start(self):
-        floyd_data = self.load_floyd_data()
-        self.floyd_data_producer.send_msg(floyd_data)
-        print("data sent")
-        # self.consumer.start()
+        print("FloydDataProvider has started.")
+        while True:
+            # TODO here check if data needs to be updated
+            # new_update_date =
+            if False:  # if new_update_date > last_update_date
+                self.parse_and_extract_floyd_data()
+                self.floyd_data_producer.send_msg("update data")
+            time.sleep(3600)
 
     def stop(self):
         pass
@@ -68,11 +84,24 @@ class DataProvider:
 
         floyd_data = FloydSolverData(floyd_graph, kernelized_floyd_graph, distances, day_to_services_dict,
                                     stop_times_0_dict, stop_times_24_dict, stops_df, routes_df, stops_df_by_name)
-        floyd_data.save(Path(__file__).parent / 'data' / 'tmp' / 'floyd_data.pickle')
+        floyd_data.save(FLOYD_DATA_PATH)
         return floyd_data
 
     @staticmethod
     def load_floyd_data() -> FloydSolverData:
-        floyd_data = FloydSolverData.load(Path(__file__).parent / 'data' / 'tmp' / 'floyd_data.pickle')
+        floyd_data = FloydSolverData.load(FLOYD_DATA_PATH)
         return floyd_data
+
+    @staticmethod
+    def load_update_data():
+        with open(LAST_UPDATE_PATH) as json_file:
+            config = json.load(json_file)
+            last_update_date = datetime.strptime(config['update_date'], "%d/%m/%Y %H:%M:%S")
+        return last_update_date
+
+    def save_update_date(self):
+        with open(LAST_UPDATE_PATH, 'w') as json_file:
+            config = json.load(json_file)
+            config['update_date'] = self.last_update_date
+            json.dump(config, json_file)
 
