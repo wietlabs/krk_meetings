@@ -1,38 +1,45 @@
+import json
 from datetime import date, time
 
 from src.config import EXCHANGES
 from src.data_classes.ConnectionQuery import ConnectionQuery
-from src.rabbitmq.RmqConsumer import RmqConsumer
+from src.data_classes.ConnectionResults import ConnectionResults
+from src.rabbitmq.RmqConsumer import RmqConsumer, RmqOneMsgConsumer
 from src.rabbitmq.RmqProducer import RmqProducer
 
 
 class MockedApi:
-    def __init__(self):
-        self.results_consumer = RmqConsumer(EXCHANGES.CONNECTION_RESULTS.value, print_connections)
+    def __init__(self, task_id):
+        self.results_consumer = RmqOneMsgConsumer(EXCHANGES.CONNECTION_RESULTS.value, task_id)
         self.query_producer = RmqProducer(EXCHANGES.CONNECTION_QUERY.value)
 
-    def start(self):
-        self.results_consumer.start()
+    def receive_msg(self):
+        return self.results_consumer.receive_msg()
 
     def stop(self):
-        self.results_consumer.stop()
         self.query_producer.stop()
+        del self.results_consumer
+        del self.query_producer
 
 
 def print_connections(connections):
+    connections = ConnectionResults.from_json(json.dumps(connections))
     for connection in connections:
         print(connection)
         print('-' * 30)
 
 
 if __name__ == "__main__":
-    mocked_api = MockedApi()
+    task_id = 1
+    mocked_api = MockedApi(task_id)
+    query_json = {
+        "query_id": task_id,
+        "start_date": "24/5/2020",
+        "start_time": "20:00:00",
+        "start_stop_name": 'Teatr Słowackiego',
+        "end_stop_name": 'Kurdwanów P+R'
+    }
+    mocked_api.query_producer.send_msg(query_json)
+    print_connections(mocked_api.receive_msg())
+    mocked_api.stop()
 
-    start_date = date(2020, 5, 24)
-    start_time = time(20, 0, 0)
-    start_stop_name = 'Teatr Słowackiego'
-    end_stop_name = 'Kurdwanów P+R'
-    query = ConnectionQuery(start_date, start_time, start_stop_name, end_stop_name)
-
-    mocked_api.query_producer.send_msg(query)
-    mocked_api.start()

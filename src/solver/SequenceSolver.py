@@ -1,4 +1,5 @@
 from copy import copy
+from time import sleep
 
 from src.data_classes.SequenceQuery import SequenceQuery
 from src.data_classes.SequenceResults import SequenceResults
@@ -11,19 +12,19 @@ from src.config import EXCHANGES
 
 
 def start_sequence_solver():
-    sequence_solver = MeetingSolver()
+    sequence_solver = SequenceSolver()
     sequence_solver.start()
 
 
-class MeetingSolver(DataUpdater, ISequenceSolver):
+class SequenceSolver(DataUpdater, ISequenceSolver):
     def __init__(self):
         DataUpdater.__init__(self)
-        self.query_consumer = RmqConsumer(EXCHANGES.SEQUENCE_QUERY.value, self.consume_meeting_query)
+        self.query_consumer = RmqConsumer(EXCHANGES.SEQUENCE_QUERY.value, self.consume_sequence_query)
         self.results_producer = RmqProducer(EXCHANGES.SEQUENCE_RESULTS.value)
 
     def start(self):
         DataUpdater.start(self)
-        print("SequenceSolver has started.")
+        print("SequenceSolver: started.")
         self.query_consumer.start()
 
     def stop(self):
@@ -31,10 +32,11 @@ class MeetingSolver(DataUpdater, ISequenceSolver):
         self.query_consumer.stop()
         self.results_producer.stop()
 
-    def consume_meeting_query(self, query: SequenceQuery):
+    def consume_sequence_query(self, query: SequenceQuery):
         with self.lock:
             best_sequence = self.find_best_sequence(query)
-            self.results_producer.send_msg(best_sequence)
+        sleep(0.001)
+        self.results_producer.send_msg(best_sequence, query.query_id)
 
     def find_best_sequence(self, query: SequenceQuery) -> SequenceResults:
         def gen(stop_ids: list, current_stop_id, last_stop_id, sequence: list, weight: int):

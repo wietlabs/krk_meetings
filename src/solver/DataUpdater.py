@@ -29,7 +29,7 @@ class DataUpdater:
     def stop(self):
         self.data_consumer_thread.start.do_run = False
 
-    def update_data(self, msg=None):
+    def update_data(self):
         data = DataProvider.load_floyd_data()
         with self.lock:
             self.graph = data.graph
@@ -44,6 +44,5 @@ class DataUpdater:
             self.day_to_services_dict = data.day_to_services_dict
             for node in self.graph.nodes():
                 self.paths[node] = dict()
-            print("Data updated")
 
 

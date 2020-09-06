@@ -3,6 +3,7 @@ from queue import PriorityQueue
 from typing import List
 from itertools import chain
 import pandas as pd
+from time import sleep
 
 from src.data_classes.ConnectionResults import ConnectionResults
 from src.rabbitmq.RmqConsumer import RmqConsumer
@@ -25,12 +26,12 @@ def start_connection_solver():
 class ConnectionSolver(DataUpdater, IConnectionSolver):
     def __init__(self):
         DataUpdater.__init__(self)
-        self.query_consumer = RmqConsumer(EXCHANGES.CONNECTION_QUERY.value, self.consume_transfer_query)
+        self.query_consumer = RmqConsumer(EXCHANGES.CONNECTION_QUERY.value, self.consume_connection_query)
         self.results_producer = RmqProducer(EXCHANGES.CONNECTION_RESULTS.value)
 
     def start(self):
         DataUpdater.start(self)
-        print("ConnectionSolver has started.")
+        print("ConnectionSolver: started.")
         self.query_consumer.start()
 
     def stop(self):
@@ -38,10 +39,11 @@ class ConnectionSolver(DataUpdater, IConnectionSolver):
         self.query_consumer.stop()
         self.results_producer.stop()
 
-    def consume_transfer_query(self, query: ConnectionQuery):
+    def consume_connection_query(self, query: ConnectionQuery):
         with self.lock:
             connections = self.find_connections(query)
-            self.results_producer.send_msg(connections)
+        sleep(0.001)
+        self.results_producer.send_msg(connections, query.query_id)
 
     def find_connections(self, query: ConnectionQuery) -> List[ConnectionResults]:
         current_time = time_to_int(query.start_time)
