@@ -2,15 +2,15 @@ import datetime
 import time
 
 from src.alternative_solvers.BfsSolverDataProvider import BfsSolverDataProvider
-from src.data_classes.TransferQuery import TransferQuery
+from src.data_classes.ConnectionQuery import ConnectionQuery
 from src.data_provider.GtfsStaticDataProvider import GtfsStaticDataProvider
-from src.alternative_solvers.BfsSolver import BfsSolver
+from src.alternative_solvers.BfsSolver import BfsConnectionSolver
 from src.alternative_solvers.BfsSolverExtractor import BfsSolverExtractor
 
 if __name__ == '__main__':
     # BfsSolverDataProvider.prepare_data()
     bfs_solver_data = BfsSolverDataProvider.load_data()
-    solver = BfsSolver(bfs_solver_data)
+    solver = BfsConnectionSolver(bfs_solver_data)
 
     # start_time = datetime.datetime.strptime(input('Godzina odjazdu: '), '%H:%M').time()
     # start_stop_name = input('Przystanek początkowy: ')
@@ -33,7 +33,7 @@ if __name__ == '__main__':
     # end_stop_name = 'Grabie Pętla'
 
     start_date = datetime.datetime.now().date()
-    query = TransferQuery(start_date, start_time, start_stop_name, end_stop_name)
+    query = ConnectionQuery(start_date, start_time, start_stop_name, end_stop_name)
 
     t1 = time.time()
     results = solver.find_connections(query)

@@ -4,33 +4,44 @@ from typing import List
 from itertools import chain
 import pandas as pd
 
-from src.data_classes.FloydSolverData import FloydSolverData
 from src.data_classes.ConnectionResults import ConnectionResults
+from src.rabbitmq.RmqConsumer import RmqConsumer
+from src.rabbitmq.RmqProducer import RmqProducer
+from src.solver.DataUpdater import DataUpdater
 from src.utils import *
 from src.solver.IConnectionSolver import IConnectionSolver
 from src.data_classes.Transfer import Transfer
 from src.data_classes.ConnectionQuery import ConnectionQuery
-from src.data_classes.MeetingQuery import MeetingQuery
-from src.data_classes.SequenceQuery import SequenceQuery
 
-from src.config import FLOYD_SOLVER_SEARCHING_TIME, FLOYD_SOLVER_MAX_PRIORITY_MULTIPLIER, FLOYD_SOLVER_MAX_PATHS
+from src.config import FLOYD_SOLVER_SEARCHING_TIME, FLOYD_SOLVER_MAX_PRIORITY_MULTIPLIER, FLOYD_SOLVER_MAX_PATHS, \
+    EXCHANGES
 
 
-class FloydSolver(IConnectionSolver):
-    def __init__(self, data: FloydSolverData):
-        self.graph = data.graph
-        self.kernelized_graph = data.kernelized_graph
-        self.distances = data.distances_dict
-        self.stops_df = data.stops_df
-        self.routes_df = data.routes_df
-        self.stops_df_by_name = data.stops_df_by_name
-        self.stop_times_0 = data.stop_times_0_dict
-        self.stop_times_24 = data.stop_times_24_dict
-        self.paths = dict()
-        self.day_to_services_dict = data.day_to_services_dict
-        for node in self.graph.nodes():
-            self.paths[node] = dict()
+def start_connection_solver():
+    connection_solver = ConnectionSolver()
+    connection_solver.start()
 
+
+class ConnectionSolver(DataUpdater, IConnectionSolver):
+    def __init__(self):
+        DataUpdater.__init__(self)
+        self.query_consumer = RmqConsumer(EXCHANGES.CONNECTION_QUERY.value, self.consume_transfer_query)
+        self.results_producer = RmqProducer(EXCHANGES.CONNECTION_RESULTS.value)
+
+    def start(self):
+        DataUpdater.start(self)
+        print("ConnectionSolver has started.")
+        self.query_consumer.start()
+
+    def stop(self):
+        DataUpdater.stop(self)
+        self.query_consumer.stop()
+        self.results_producer.stop()
+
+    def consume_transfer_query(self, query: ConnectionQuery):
+        with self.lock:
+            connections = self.find_connections(query)
+            self.results_producer.send_msg(connections)
 
     def find_connections(self, query: ConnectionQuery) -> List[ConnectionResults]:
         current_time = time_to_int(query.start_time)
@@ -63,48 +74,6 @@ class FloydSolver(IConnectionSolver):
                     connections.append(connection)
             connections.sort(key=lambda c: c.transfers[0].start_time)
         return connections
-
-
-    def find_meeting_points(self, query: MeetingQuery):
-        start_stop_ids = list(map(lambda x: int(self.stops_df_by_name.at[x, 'stop_id']), query.start_stop_names))
-        if query.metric == 'square':
-            metric = lambda l: sum(map(lambda i: i * i, l))
-        elif query.metric == 'sum':
-            metric = lambda l: sum(l)
-        elif query.metric == 'max':
-            metric = lambda l: max(l)
-        else:
-            return None
-        meeting_metrics = []
-        for end_stop_id in self.distances:
-            distances_to_destination = list(map(lambda stop_id: self.distances[stop_id][end_stop_id], start_stop_ids))
-            meeting_metrics.append((end_stop_id, metric(distances_to_destination)))
-        meeting_metrics.sort(key=lambda x: x[1])
-        meeting_points = list(map(lambda x: self.stops_df.at[x[0], 'stop_name'], meeting_metrics[0:10]))
-        return meeting_points
-
-    def find_optimal_sequence(self, query: SequenceQuery):
-        def gen(stop_ids: list, current_stop_id, last_stop_id, sequence: list, weight: int):
-            if stop_ids:
-                for next_stop_id in stop_ids:
-                    next_stop_ids = copy(stop_ids)
-                    next_stop_ids.remove(next_stop_id)
-                    next_sequence = copy(sequence)
-                    next_sequence.append(next_stop_id)
-                    next_weight = weight + self.distances[current_stop_id][next_stop_id]
-                    yield from gen(next_stop_ids, next_stop_id, last_stop_id, next_sequence, next_weight)
-            else:
-                sequence.append(last_stop_id)
-                weight = weight + self.distances[current_stop_id][last_stop_id]
-                yield sequence, weight
-
-        stops_to_visit_ids = list(map(lambda x: int(self.stops_df_by_name.at[x, 'stop_id']), query.stops_to_visit))
-        start_stop_id = int(self.stops_df_by_name.at[query.start_stop_name, 'stop_id'])
-        end_stop_id = int(self.stops_df_by_name.at[query.end_stop_name, 'stop_id'])
-        sequences = list(gen(stops_to_visit_ids, start_stop_id, end_stop_id, [start_stop_id], 0))
-        optimal_order = min(sequences, key=lambda x: x[1])
-        optimal_order = list(map(lambda x: self.stops_df.at[x, 'stop_name'], optimal_order[0]))
-        return optimal_order
 
     def find_routes(self, path: List[int], start_time: int, start_date: date):
         # TODO smart join could return paths for all hours at once
@@ -150,7 +119,8 @@ class FloydSolver(IConnectionSolver):
                                            'departure_time_n': 'departure_time_n' + str(i),
                                            'index': 'index' + str(i)},
                                   inplace=True)
-                results_df = results_df[results_df['departure_time_n' + str(i - 1)] < results_df['departure_time_c' + str(i)]]
+                results_df = results_df[
+                    results_df['departure_time_n' + str(i - 1)] < results_df['departure_time_c' + str(i)]]
                 results_df = results_df.sort_values(by=['departure_time_n' + str(i)])
                 results_df = results_df.drop_duplicates(subset='departure_time_c0', keep='first')
 
@@ -172,7 +142,6 @@ class FloydSolver(IConnectionSolver):
         return self.paths[start_node][end_node]
 
     def calculate_paths(self, start_node_id: int, end_node_id: int):
-
         def resolve_neighbor(node_id, neighbor_id, weight, path, routes, graph):
             n_weight = weight + graph.edges[node_id, neighbor_id]['weight']
             n_priority = n_weight + self.distances[neighbor_id][end_node_id]

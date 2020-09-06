@@ -1,7 +1,10 @@
+import json
+
 import networkx as nx
 import pandas as pd
 from dataclasses import dataclass
 from src.data_classes.Data import Data
+from networkx.readwrite import json_graph
 
 
 @dataclass

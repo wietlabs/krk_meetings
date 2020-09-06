@@ -3,19 +3,19 @@ import time
 
 from flask import Flask, request, render_template
 
-from src.alternative_solvers.BfsSolver import BfsSolver
-from src.alternative_solvers.BfsSolverDataProvider import BfsSolverDataProvider
-from src.data_classes.Connection import Connection
-from src.data_classes.TransferQuery import TransferQuery
-from src.data_provider.FloydDataProvider import DataProvider
+from src.data_classes.ConnectionResults import ConnectionResults
+from src.data_classes.ConnectionQuery import ConnectionQuery
 from src.solver.FloydSolver import FloydSolver
+from src.alternative_solvers.BfsSolver import BfsConnectionSolver
+from src.alternative_solvers.BfsSolverDataProvider import BfsSolverDataProvider
+from src.data_provider.FloydDataProvider import DataProvider
 
 app = Flask(__name__)
 
 bfs_data = BfsSolverDataProvider.load_data()
-bfs_solver1 = BfsSolver(bfs_data, earliest_arrival_time=False, latest_departure_time=False)
-bfs_solver2 = BfsSolver(bfs_data, earliest_arrival_time=True, latest_departure_time=False)
-bfs_solver3 = BfsSolver(bfs_data, earliest_arrival_time=True, latest_departure_time=True)
+bfs_solver1 = BfsConnectionSolver(bfs_data, earliest_arrival_time=False, latest_departure_time=False)
+bfs_solver2 = BfsConnectionSolver(bfs_data, earliest_arrival_time=True, latest_departure_time=False)
+bfs_solver3 = BfsConnectionSolver(bfs_data, earliest_arrival_time=True, latest_departure_time=True)
 
 floyd_data = DataProvider.load_floyd_data()
 floyd_solver = FloydSolver(floyd_data)
@@ -45,14 +45,14 @@ def search():
     except ValueError:
         return 'Nieprawidłowy format godziny odjazdu'
 
-    query = TransferQuery(start_date, start_time, start_stop_name, end_stop_name)
+    query = ConnectionQuery(start_date, start_time, start_stop_name, end_stop_name)
 
     outputs = {}
 
     for solver_name, solver in solvers.items():
         t1 = time.time()
         results = solver.find_connections(query)
-        results = [min(results, key=Connection.arrival_time)]
+        results = [min(results, key=ConnectionResults.arrival_time)]
         t2 = time.time()
         time_elapsed = t2 - t1
         outputs[solver_name] = {

@@ -1,6 +1,6 @@
 from datetime import date, time
 
-from src.data_classes.TransferQuery import TransferQuery
+from src.data_classes.ConnectionQuery import ConnectionQuery
 from src.data_provider.FloydDataProvider import DataProvider
 from src.solver.FloydSolver import FloydSolver
 
@@ -14,7 +14,7 @@ if __name__ == "__main__":
     start_stop_name = 'Teatr Słowackiego'
     end_stop_name = 'Kurdwanów P+R'
 
-    query = TransferQuery(start_date, start_time, start_stop_name, end_stop_name)
+    query = ConnectionQuery(start_date, start_time, start_stop_name, end_stop_name)
     connections = solver.find_connections(query)
 
     for connection in connections:
