@@ -8,12 +8,8 @@ if __name__ == '__main__':
     data_dir = Path(__file__).parent.parent.parent / 'data_provider' / 'data'
 
     parser = Parser()
-
-    with open(data_dir / 'GTFS_KRK_A.zip', 'rb') as f:
-        parsed_data_A = parser.parse(f)
-
-    with open(data_dir / 'GTFS_KRK_T.zip', 'rb') as f:
-        parsed_data_T = parser.parse(f)
+    parsed_data_A = parser.parse(data_dir / 'GTFS_KRK_A.zip')
+    parsed_data_T = parser.parse(data_dir / 'GTFS_KRK_T.zip')
 
     selector = Selector()
     selected_data_A = selector.select(parsed_data_A, service_id=1)

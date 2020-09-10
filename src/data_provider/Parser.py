@@ -1,18 +1,24 @@
 from pathlib import Path
-from typing import Tuple, Union, AnyStr, IO
+from typing import Tuple, Union, IO
 from zipfile import ZipFile
 
 import pandas as pd
+from pandas._typing import FilePathOrBuffer
 
 from src.data_classes.ParsedData import ParsedData
 from src.data_provider.utils import parse_service_id, parse_route_id, parse_trip_id, parse_stop_id, parse_time
 
-FilePathOrBuffer = Union[str, Path, IO[AnyStr]]
-
 
 class Parser:
-    def parse(self, gtfs_zip: IO):
-        with ZipFile(gtfs_zip) as zipfile:
+    def parse(self, gtfs_zip_path_or_buffer: Union[str, Path, IO]):
+        if isinstance(gtfs_zip_path_or_buffer, (str, Path)):
+            with open(gtfs_zip_path_or_buffer, 'rb') as f:
+                return self._parse_io(f)
+
+        return self._parse_io(gtfs_zip_path_or_buffer)
+
+    def _parse_io(self, gtfs_zip_io: IO):
+        with ZipFile(gtfs_zip_io) as zipfile:
             with zipfile.open('calendar.txt') as f:
                 calendar_df = self.parse_calendar_df(f)
 

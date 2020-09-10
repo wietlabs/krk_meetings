@@ -14,8 +14,7 @@ from src.data_provider.utils import parse_time
 def parsed_data() -> ParsedData:
     parser = Parser()
     gtfs_zip_path = Path(__file__).parent / 'resources' / 'GTFS_TEST.zip'
-    with open(gtfs_zip_path, 'rb') as f:
-        return parser.parse(f)
+    return parser.parse(gtfs_zip_path)
 
 
 def test_parse_calendar_df(parsed_data: ParsedData) -> None:
