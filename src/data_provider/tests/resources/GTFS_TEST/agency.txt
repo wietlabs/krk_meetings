@@ -1,3 +1,0 @@
-service_id,monday,tuesday,wednesday,thursday,friday,saturday,sunday,start_date,end_date
-service_3,0,0,0,0,0,0,1,20200101,20201231
-service_1,1,1,1,0,0,0,0,20200202,20200303
