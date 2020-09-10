@@ -9,8 +9,12 @@ class GtfsStaticDataProvider:
     @staticmethod
     def prepare_data() -> None:
         parser = Parser()
-        parsed_data_A = parser.parse(Path(__file__).parent / 'data' / 'GTFS_KRK_A')
-        parsed_data_T = parser.parse(Path(__file__).parent / 'data' / 'GTFS_KRK_T')
+
+        with open(Path(__file__).parent / 'data' / 'GTFS_KRK_A.zip', 'rb') as f:
+            parsed_data_A = parser.parse(f)
+
+        with open(Path(__file__).parent / 'data' / 'GTFS_KRK_T.zip', 'rb') as f:
+            parsed_data_T = parser.parse(f)
 
         merger = Merger()
         merged_data = merger.merge(parsed_data_A, parsed_data_T)

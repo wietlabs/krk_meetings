@@ -12,9 +12,10 @@ from src.data_provider.utils import parse_time
 
 @pytest.fixture(scope='session')  # executed only once
 def parsed_data() -> ParsedData:
-    gtfs_dir_path = Path(__file__).parent / 'resources' / 'GTFS_TEST'
     parser = Parser()
-    return parser.parse(gtfs_dir_path)
+    gtfs_zip_path = Path(__file__).parent / 'resources' / 'GTFS_TEST.zip'
+    with open(gtfs_zip_path, 'rb') as f:
+        return parser.parse(f)
 
 
 def test_parse_calendar_df(parsed_data: ParsedData) -> None:

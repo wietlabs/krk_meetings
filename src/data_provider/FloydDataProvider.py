@@ -3,6 +3,8 @@ import json
 import time
 from datetime import datetime
 
+from src.data_classes.ParsedData import ParsedData
+from src.data_provider.Downloader import Downloader
 from src.data_provider.Merger import Merger
 from src.data_provider.FloydDataExtractor import FloydDataExtractor
 from src.data_provider.Parser import Parser
@@ -25,14 +27,16 @@ class DataProvider:
     def __init__(self):
         self.floyd_data_producer = RmqProducer(EXCHANGES.FLOYD_DATA.value)
         self.last_update_date = self.load_update_data()
+        self.downloader = Downloader()
 
     def start(self):
         print("FloydDataProvider has started.")
         while True:
             # TODO here check if data needs to be updated
-            # new_update_date =
+            new_update_date = downloader.get_last_update_time()
             if False:  # if new_update_date > last_update_date
-                self.parse_and_extract_floyd_data()
+                merged_data = self.downloader.download_merged_data()
+                self.parse_and_extract_floyd_data(merged_data)
                 self.floyd_data_producer.send_msg("update data")
             time.sleep(3600)
 
@@ -40,14 +44,7 @@ class DataProvider:
         pass
 
     @staticmethod
-    def parse_and_extract_floyd_data():
-        parser = Parser()
-        parsed_data_A = parser.parse(Path(__file__).parent / 'data' / 'GTFS_KRK_A')
-        parsed_data_T = parser.parse(Path(__file__).parent / 'data' / 'GTFS_KRK_T')
-
-        merger = Merger()
-        merged_data = merger.merge(parsed_data_A, parsed_data_T)
-
+    def extract_floyd_data(merged_data: ParsedData):
         extractor = FloydDataExtractor()
         stops_df = merged_data.stops_df
         transfers_df = merged_data.transfers_df
