@@ -48,8 +48,8 @@ class ConnectionSolver(DataUpdater, IConnectionSolver):
     def find_connections(self, query: ConnectionQuery) -> List[ConnectionResults]:
         current_time = time_to_int(query.start_time)
         current_date = query.start_date
-        start_stop_id = self.stops_df_by_name.at[query.start_stop_name, 'stop_id']
-        end_stop_id = self.stops_df_by_name.at[query.end_stop_name, 'stop_id']
+        start_stop_id = query.start_stop_id
+        end_stop_id = query.end_stop_id
 
         paths = self.get_paths(start_stop_id, end_stop_id)
         connections = []
@@ -59,17 +59,14 @@ class ConnectionSolver(DataUpdater, IConnectionSolver):
                 for result in results:
                     transfers = []
                     for transfer in result:
-                        index, current_stop_id, next_stop_id, departure_time, arrival_time = transfer
-                        route_name = self.routes_df.at[index, 'route_name']
-                        current_stop_name = self.stops_df.at[current_stop_id, 'stop_name']
-                        next_stop_name = self.stops_df.at[next_stop_id, 'stop_name']
+                        route_id, current_stop_id, next_stop_id, departure_time, arrival_time = transfer
                         start_time = int_to_time(departure_time)
                         start_date = shift_date(current_date, departure_time)
                         end_time = int_to_time(arrival_time)
                         end_date = shift_date(current_date, arrival_time)
 
                         transfers.append(
-                            Transfer(route_name, current_stop_name, next_stop_name, start_date, start_time, end_date,
+                            Transfer(route_id, current_stop_id, next_stop_id, start_date, start_time, end_date,
                                      end_time))
 
                     connection = ConnectionResults(transfers)
@@ -100,6 +97,8 @@ class ConnectionSolver(DataUpdater, IConnectionSolver):
             cst_df = cst_df[cst_df.departure_time <= start_time + FLOYD_SOLVER_SEARCHING_TIME]
             nst_df = nst_df[start_time <= nst_df.departure_time]
             nst_df = nst_df[nst_df.departure_time <= start_time + FLOYD_SOLVER_SEARCHING_TIME]
+            print(cst_df)
+            print(nst_df)
 
             transfers_df = cst_df.join(nst_df, how='inner', lsuffix='_c', rsuffix='_n')
             transfers_df = transfers_df[transfers_df.departure_time_c < transfers_df.departure_time_n]
@@ -110,29 +109,32 @@ class ConnectionSolver(DataUpdater, IConnectionSolver):
 
             if results_df.empty:
                 results_df = transfers_df
-                results_df.columns = [str(col) + '0' for col in results_df.columns]
-                results_df = results_df.sort_values(by=['departure_time_n0'])
-                results_df = results_df.drop_duplicates(subset='departure_time_c0', keep='first')
+                results_df.columns = [str(col) + '_0' for col in results_df.columns]
+                results_df = results_df.sort_values(by=['departure_time_n_0'])
+                results_df = results_df.drop_duplicates(subset='departure_time_c_0', keep='first')
+                results_df.rename(columns={'route_id_n_0': 'route_id_0'}, inplace=True)
+                results_df.drop(columns=['route_id_c_0'], axis=1, inplace=True)
             else:
                 results_df = results_df.assign(c=1)
                 results_df = results_df.merge(transfers_df.assign(c=1))
-                results_df = results_df.drop('c', 1)
-                results_df.rename(columns={'departure_time_c': 'departure_time_c' + str(i),
-                                           'departure_time_n': 'departure_time_n' + str(i),
-                                           'index': 'index' + str(i)},
+                results_df.drop(columns=['c', 'route_id_c'], axis=1, inplace=True)
+                results_df.rename(columns={'departure_time_c': 'departure_time_c_' + str(i),
+                                           'departure_time_n': 'departure_time_n_' + str(i),
+                                           'route_id_n': 'route_id_' + str(i),
+                                           'index': 'index_' + str(i)},
                                   inplace=True)
                 results_df = results_df[
-                    results_df['departure_time_n' + str(i - 1)] < results_df['departure_time_c' + str(i)]]
-                results_df = results_df.sort_values(by=['departure_time_n' + str(i)])
-                results_df = results_df.drop_duplicates(subset='departure_time_c0', keep='first')
+                    results_df['departure_time_n_' + str(i - 1)] < results_df['departure_time_c_' + str(i)]]
+                results_df = results_df.sort_values(by=['departure_time_n_' + str(i)])
+                results_df = results_df.drop_duplicates(subset='departure_time_c_0', keep='first')
 
         for row in results_df.itertuples():
             result = []
             for i in range(len(path) - 1):
-                index = row[3 * i + 3]
-                departure_time = row[3 * i + 1]
-                arrival_time = row[3 * i + 2]
-                result.append((index, path[i], path[i+1], departure_time, arrival_time))
+                route_id = row[4 * i + 3]
+                departure_time = row[4 * i + 1]
+                arrival_time = row[4 * i + 2]
+                result.append((route_id, path[i], path[i+1], departure_time, arrival_time))
             results.append(result)
         return results
 

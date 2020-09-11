@@ -8,7 +8,7 @@ from src.data_classes.ConnectionQuery import ConnectionQuery
 from src.solver.FloydSolver import FloydSolver
 from src.alternative_solvers.BfsSolver import BfsConnectionSolver
 from src.alternative_solvers.BfsSolverDataProvider import BfsSolverDataProvider
-from src.data_provider.FloydDataProvider import DataProvider
+from src.data_provider.FloydDataProvider import FloydDataProvider
 
 app = Flask(__name__)
 
@@ -17,7 +17,7 @@ bfs_solver1 = BfsConnectionSolver(bfs_data, earliest_arrival_time=False, latest_
 bfs_solver2 = BfsConnectionSolver(bfs_data, earliest_arrival_time=True, latest_departure_time=False)
 bfs_solver3 = BfsConnectionSolver(bfs_data, earliest_arrival_time=True, latest_departure_time=True)
 
-floyd_data = DataProvider.load_floyd_data()
+floyd_data = FloydDataProvider.load_floyd_data()
 floyd_solver = FloydSolver(floyd_data)
 
 solvers = {

@@ -5,9 +5,9 @@ from datetime import date, time, datetime
 
 @dataclass
 class Transfer:
-    route_number: str
-    start_stop_name: str
-    end_stop_name: str
+    route_id: int
+    start_stop_id: int
+    end_stop_id: int
     start_date: date
     start_time: time
     end_date: date
@@ -16,27 +16,27 @@ class Transfer:
     @staticmethod
     def to_serializable(transfer):
         return {
-            "route_number": transfer.route_number,
-            "start_stop_name": transfer.start_stop_name,
-            "end_stop_name": transfer.end_stop_name,
-            "start_date": transfer.start_date.strftime("%m/%d/%Y"),
+            "route_id": int(transfer.route_id),
+            "start_stop_id": int(transfer.start_stop_id),
+            "end_stop_id": int(transfer.end_stop_id),
+            "start_date": transfer.start_date.strftime("%Y-%m-%d"),
             "start_time": transfer.start_time.strftime("%H:%M:%S"),
-            "end_date": transfer.end_date.strftime("%m/%d/%Y"),
+            "end_date": transfer.end_date.strftime("%Y-%m-%d"),
             "end_time": transfer.end_time.strftime("%H:%M:%S")
         }
 
     @staticmethod
     def from_serializable(transfer):
         return Transfer(
-            transfer["route_number"],
-            transfer["start_stop_name"],
-            transfer["end_stop_name"],
-            datetime.strptime(transfer["start_date"], "%m/%d/%Y").date(),
+            transfer["route_id"],
+            transfer["start_stop_id"],
+            transfer["end_stop_id"],
+            datetime.strptime(transfer["start_date"], "%Y-%m-%d").date(),
             datetime.strptime(transfer["start_time"], "%H:%M:%S").time(),
-            datetime.strptime(transfer["end_date"], "%m/%d/%Y").date(),
+            datetime.strptime(transfer["end_date"], "%Y-%m-%d").date(),
             datetime.strptime(transfer["end_time"], "%H:%M:%S").time()
         )
 
     def __str__(self):
-        return self.route_number + " " + self.start_stop_name + " " + str(self.start_date) + " " + str(self.start_time) \
-               + " ==> " + self.end_stop_name + " " + str(self.end_date) + " " + str(self.end_time)
+        return str(self.route_id) + " " + str(self.start_stop_id) + " " + str(self.start_date) + " " + str(self.start_time) \
+               + " ==> " + str(self.end_stop_id) + " " + str(self.end_date) + " " + str(self.end_time)

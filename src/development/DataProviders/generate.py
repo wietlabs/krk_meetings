@@ -1,5 +1,5 @@
 from src.alternative_solvers.BfsSolverDataProvider import BfsSolverDataProvider
-from src.data_provider.FloydDataProvider import DataProvider as FloydDataProvider
+from src.data_provider.FloydDataProvider import FloydDataProvider as FloydDataProvider
 from src.data_provider.GtfsStaticDataProvider import GtfsStaticDataProvider
 
 if __name__ == '__main__':
