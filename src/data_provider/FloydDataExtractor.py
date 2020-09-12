@@ -89,7 +89,7 @@ class FloydDataExtractor(Extractor):
             stop_times_dict[stop_id] = {}
             for service in services_list:
                 stop_times_dict[stop_id][service] = times_by_stop_0[times_by_stop_0['service'] == service] \
-                    [['departure_time']]
+                    [['departure_time', 'route_id']]
         return stop_times_dict
 
     def extract_graph(self, stops_df: pd.DataFrame, transfers_df: pd.DataFrame, period_df: pd.DataFrame):

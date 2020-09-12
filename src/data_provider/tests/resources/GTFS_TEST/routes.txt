@@ -1,7 +1,0 @@
-route_id,agency_id,route_short_name,route_long_name,route_desc,route_type,route_url,route_color,route_text_color
-route_7,agency_1,"0","",,700,,,
-route_583,agency_1,"139","",,700,,,
-route_612,agency_1,"194","",,700,,,
-route_134,agency_1,"501","",,700,,,
-route_143,agency_1,"611","",,700,,,
-route_42,agency_1,"A","",,700,,,

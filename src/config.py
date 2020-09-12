@@ -16,9 +16,15 @@ FLOYD_EXTRACTOR_PERIOD_MULTIPLIER = 0.5
 
 class EXCHANGES(Enum):
     FLOYD_DATA = ("DIRECT", "direct", "floyd_data", json.dumps, json.loads)
-    CONNECTION_QUERY = ("BASIC", "", "connection_query", ConnectionQuery.to_json, ConnectionQuery.from_json)
-    CONNECTION_RESULTS = ("BASIC", "", "connection_results", ConnectionResults.to_json, ConnectionResults.from_json)
-    MEETING_QUERY = ("BASIC", "", "meeting_query", MeetingQuery.to_json, MeetingQuery.from_json)
-    MEETING_RESULTS = ("BASIC", "", "meeting_results", MeetingResults.to_json, MeetingResults.from_json)
-    SEQUENCE_QUERY = ("BASIC", "", "sequence_query", SequenceQuery.to_json, SequenceQuery.from_json)
-    SEQUENCE_RESULTS = ("BASIC", "", "sequence_results", SequenceResults.to_json, SequenceResults.from_json)
+    CONNECTION_QUERY = ("BASIC", "", "connection_query", json.dumps, ConnectionQuery.from_json)
+    CONNECTION_RESULTS = ("BASIC", "", "connection_results_", ConnectionResults.to_json, json.loads)
+    MEETING_QUERY = ("BASIC", "", "meeting_query", json.dumps, MeetingQuery.from_json)
+    MEETING_RESULTS = ("BASIC", "", "meeting_results_", MeetingResults.to_json, json.loads)
+    SEQUENCE_QUERY = ("BASIC", "", "sequence_query", json.dumps, SequenceQuery.from_json)
+    SEQUENCE_RESULTS = ("BASIC", "", "sequence_results_", SequenceResults.to_json, json.loads)
+
+
+class URL(Enum):
+    CONNECTION = "http://127.0.0.1:5000/connection"
+    MEETING = "http://127.0.0.1:5000/meeting"
+    SEQUENCE = "http://127.0.0.1:5000/sequence"

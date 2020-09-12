@@ -5,11 +5,11 @@ from src.data_provider.Parser import Parser
 from src.data_provider.Selector import Selector
 
 if __name__ == '__main__':
-    data_dir = Path(__file__).parent.parent / 'data_provider' / 'data'
+    data_dir = Path(__file__).parent.parent.parent / 'data_provider' / 'data'
 
     parser = Parser()
-    parsed_data_A = parser.parse(data_dir / 'GTFS_KRK_A')
-    parsed_data_T = parser.parse(data_dir / 'GTFS_KRK_T')
+    parsed_data_A = parser.parse(data_dir / 'GTFS_KRK_A.zip')
+    parsed_data_T = parser.parse(data_dir / 'GTFS_KRK_T.zip')
 
     selector = Selector()
     selected_data_A = selector.select(parsed_data_A, service_id=1)

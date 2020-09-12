@@ -1,10 +1,10 @@
 from src.data_classes.SequenceQuery import SequenceQuery
-from src.data_provider.FloydDataProvider import DataProvider
+from src.data_provider.FloydDataProvider import FloydDataProvider
 from src.solver.FloydSolver import FloydConnectionSolver
 
 if __name__ == "__main__":
     # floyd_data = DataProvider.parse_and_extract_floyd_data()
-    floyd_data = DataProvider.load_floyd_data()
+    floyd_data = FloydDataProvider.load_floyd_data()
     solver = FloydConnectionSolver(floyd_data)
 
     stops_to_visit = ['Biprostal', 'Kawiory', 'Czarnowiejska']

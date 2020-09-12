@@ -3,6 +3,8 @@ import json
 import time
 from datetime import datetime
 
+from src.data_classes.ParsedData import ParsedData
+from src.data_provider.Downloader import Downloader
 from src.data_provider.Merger import Merger
 from src.data_provider.FloydDataExtractor import FloydDataExtractor
 from src.data_provider.Parser import Parser
@@ -13,41 +15,37 @@ from src.rabbitmq.RmqProducer import RmqProducer
 from src.config import EXCHANGES
 
 FLOYD_DATA_PATH = Path(__file__).parent / 'data' / 'tmp' / 'floyd_data.pickle'
-LAST_UPDATE_PATH = Path(__file__).parent / 'data' / 'tmp' / 'config.json'
+CONFIG_JSON_PATH = Path(__file__).parent / 'data' / 'tmp' / 'config.json'
 
 
 def start_data_provider():
-    data_provider = DataProvider()
+    data_provider = FloydDataProvider()
     data_provider.start()
 
 
-class DataProvider:
+class FloydDataProvider:
     def __init__(self):
         self.floyd_data_producer = RmqProducer(EXCHANGES.FLOYD_DATA.value)
-        self.last_update_date = self.load_update_data()
+        self.downloader = Downloader()
 
     def start(self):
-        print("FloydDataProvider has started.")
+        print("FloydDataProvider: has started.")
         while True:
-            # TODO here check if data needs to be updated
-            # new_update_date =
-            if False:  # if new_update_date > last_update_date
-                self.parse_and_extract_floyd_data()
+            new_update_date = self.downloader.get_last_update_time()
+            last_update_date = self.load_update_date()
+            if new_update_date > last_update_date:
+                merged_data = self.downloader.download_merged_data()
+                self.extract_floyd_data(merged_data)
+                self.save_update_date(new_update_date)
                 self.floyd_data_producer.send_msg("update data")
+                print("FloydDataProvider: data updated")
             time.sleep(3600)
 
     def stop(self):
         pass
 
     @staticmethod
-    def parse_and_extract_floyd_data():
-        parser = Parser()
-        parsed_data_A = parser.parse(Path(__file__).parent / 'data' / 'GTFS_KRK_A')
-        parsed_data_T = parser.parse(Path(__file__).parent / 'data' / 'GTFS_KRK_T')
-
-        merger = Merger()
-        merged_data = merger.merge(parsed_data_A, parsed_data_T)
-
+    def extract_floyd_data(merged_data: ParsedData):
         extractor = FloydDataExtractor()
         stops_df = merged_data.stops_df
         transfers_df = merged_data.transfers_df
@@ -65,8 +63,9 @@ class DataProvider:
         transfers_df = extractor.create_transfers_trips_df(transfers_df, route_ids_df)
         stop_times_0_df = extractor.create_stop_times_trips_df_for_service_id(stop_times_df, route_ids_df)
         day_to_services_dict = extractor.get_day_to_services_dict(calendar_df)
-        routes_df = extractor.create_routes_trips_df(trips_df, routes_df)
+        routes_df = extractor.create_routes_trips_df(trips_df, routes_df, route_ids_df)
         services_list = extractor.get_services_list(calendar_df)
+        routes_to_stops_dict = extractor.create_route_to_stops_dict(stop_times_df, route_ids_df)
 
         # Floyd extraction
         stop_times_0_df['service'] = stop_times_0_df.index.get_level_values('service_id')
@@ -83,7 +82,7 @@ class DataProvider:
         stop_times_24_dict = extractor.transform_stop_times_df_to_dict(stops_df, stop_times_24_df, services_list)
 
         floyd_data = FloydSolverData(floyd_graph, kernelized_floyd_graph, distances, day_to_services_dict,
-                                    stop_times_0_dict, stop_times_24_dict, stops_df, routes_df, stops_df_by_name)
+                                    stop_times_0_dict, stop_times_24_dict, routes_to_stops_dict, stops_df, routes_df, stops_df_by_name)
         floyd_data.save(FLOYD_DATA_PATH)
         return floyd_data
 
@@ -93,15 +92,20 @@ class DataProvider:
         return floyd_data
 
     @staticmethod
-    def load_update_data():
-        with open(LAST_UPDATE_PATH) as json_file:
-            config = json.load(json_file)
-            last_update_date = datetime.strptime(config['update_date'], "%d/%m/%Y %H:%M:%S")
-        return last_update_date
+    def load_update_date():
+        with open(CONFIG_JSON_PATH) as json_file:
+            update_date = json.load(json_file)["update_date"]
+            update_date = datetime.strptime(update_date, "%Y-%m-%d %H:%M:%S")
+        return update_date
 
-    def save_update_date(self):
-        with open(LAST_UPDATE_PATH, 'w') as json_file:
-            config = json.load(json_file)
-            config['update_date'] = self.last_update_date
-            json.dump(config, json_file)
+    @staticmethod
+    def save_update_date(update_date):
+        with open(CONFIG_JSON_PATH, 'w') as json_file:
+            update_date = {
+                "update_date": update_date.strftime("%Y-%m-%d %H:%M:%S")
+            }
+            json.dump(update_date, json_file)
 
+
+if __name__ == "__main__":
+    start_data_provider()

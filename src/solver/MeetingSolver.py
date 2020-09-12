@@ -1,10 +1,11 @@
+from time import sleep
+
 from src.data_classes.MeetingQuery import MeetingQuery
 from src.data_classes.MeetingResults import MeetingResults
 from src.rabbitmq.RmqConsumer import RmqConsumer
 from src.rabbitmq.RmqProducer import RmqProducer
 from src.solver.DataUpdater import DataUpdater
 from src.solver.IMeetingSolver import IMeetingSolver
-
 from src.config import EXCHANGES
 
 
@@ -21,7 +22,7 @@ class MeetingSolver(DataUpdater, IMeetingSolver):
 
     def start(self):
         DataUpdater.start(self)
-        print("MeetingSolver has started.")
+        print("MeetingSolver: started.")
         self.query_consumer.start()
 
     def stop(self):
@@ -32,7 +33,8 @@ class MeetingSolver(DataUpdater, IMeetingSolver):
     def consume_meeting_query(self, query: MeetingQuery):
         with self.lock:
             meeting_points = self.find_meeting_points(query)
-            self.results_producer.send_msg(meeting_points)
+        sleep(0.001)
+        self.results_producer.send_msg(meeting_points, query.query_id)
 
     def find_meeting_points(self, query: MeetingQuery) -> MeetingResults:
         start_stop_ids = list(map(lambda x: int(self.stops_df_by_name.at[x, 'stop_id']), query.start_stop_names))

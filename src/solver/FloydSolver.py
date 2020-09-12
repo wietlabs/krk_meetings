@@ -31,7 +31,6 @@ class FloydSolver(IConnectionSolver):
         for node in self.graph.nodes():
             self.paths[node] = dict()
 
-
     def find_connections(self, query: ConnectionQuery) -> List[ConnectionResults]:
         current_time = time_to_int(query.start_time)
         current_date = query.start_date
