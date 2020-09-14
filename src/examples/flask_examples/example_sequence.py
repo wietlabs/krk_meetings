@@ -12,6 +12,6 @@ if __name__ == "__main__":
     }
 
     response = requests.post(URL.SEQUENCE.value, json=json.dumps(query_json))
-    sequence = json.dumps(response.json())
+    sequence = json.dumps(response.json(), ensure_ascii=False)
     sequence = SequenceResults.from_json(sequence)
     print(sequence.best_sequence)

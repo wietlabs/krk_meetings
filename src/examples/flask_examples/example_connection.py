@@ -2,7 +2,6 @@ import json
 import requests
 
 from src.config import URL
-from src.data_classes.ConnectionResults import ConnectionResults
 
 if __name__ == "__main__":
     query_json = {
@@ -13,5 +12,5 @@ if __name__ == "__main__":
     }
 
     response = requests.post(URL.CONNECTION.value, json=json.dumps(query_json))
-    connections = json.dumps(response.json())
+    connections = json.dumps(response.json(), ensure_ascii=False)
     print(connections)

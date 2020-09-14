@@ -125,7 +125,7 @@ class Extractor:
         df = stop_times_df.join(route_ids_df, on=['block_id', 'trip_num', 'service_id'])
         df.drop_duplicates(subset=['route_id', 'stop_sequence'], inplace=True)
         df = df[['route_id', 'stop_sequence', 'stop_id', 'peron_id']]
-        df.sort_values('stop_sequence', inplace=True)
+        df.sort_values('stop_sequence', inplace=True, ascending=False)
         route_to_stops_dict = {}
         for _, route_id, stop_sequence, stop_id, peron_id in df.itertuples():
             if route_id not in route_to_stops_dict:
