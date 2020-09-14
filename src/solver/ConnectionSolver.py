@@ -97,8 +97,6 @@ class ConnectionSolver(DataUpdater, IConnectionSolver):
             cst_df = cst_df[cst_df.departure_time <= start_time + FLOYD_SOLVER_SEARCHING_TIME]
             nst_df = nst_df[start_time <= nst_df.departure_time]
             nst_df = nst_df[nst_df.departure_time <= start_time + FLOYD_SOLVER_SEARCHING_TIME]
-            print(cst_df)
-            print(nst_df)
 
             transfers_df = cst_df.join(nst_df, how='inner', lsuffix='_c', rsuffix='_n')
             transfers_df = transfers_df[transfers_df.departure_time_c < transfers_df.departure_time_n]

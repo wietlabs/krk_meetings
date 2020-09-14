@@ -1,6 +1,7 @@
 import copy
 import json
 import time
+import pika
 from datetime import datetime
 
 from src.data_classes.ParsedData import ParsedData
@@ -34,10 +35,11 @@ class FloydDataProvider:
             new_update_date = self.downloader.get_last_update_time()
             last_update_date = self.load_update_date()
             if new_update_date > last_update_date:
+                print("FloydDataProvider: updating data")
                 merged_data = self.downloader.download_merged_data()
                 self.extract_floyd_data(merged_data)
                 self.save_update_date(new_update_date)
-                self.floyd_data_producer.send_msg("update data")
+                self.floyd_data_producer.send_msg("update data", lost_stream_msg="Solvers are down.")
                 print("FloydDataProvider: data updated")
             time.sleep(3600)
 

@@ -18,6 +18,7 @@ class FlaskServer:
 
     def __init__(self, name):
         self.app = Flask(name)
+        self.app.config['JSON_AS_ASCII'] = False
         self.task_id = Value('i', 0)
         self.connection_producer = RmqProducer(EXCHANGES.CONNECTION_QUERY.value)
         self.meeting_producer = RmqProducer(EXCHANGES.MEETING_QUERY.value)
@@ -56,6 +57,12 @@ class FlaskServer:
                                       {
                                           "transfers": list(map(lambda t:
                                                                 {
+                                                                    "route_name": self.routes_df.at[
+                                                                        t["route_id"], 'route_name'],
+                                                                    "headsign": self.routes_df.at[
+                                                                        t["route_id"], 'headsign'],
+                                                                    "start_stop": self.stops_df.at[t["start_stop_id"], 'stop_name'],
+                                                                    "end_stop": self.stops_df.at[t["end_stop_id"], 'stop_name'],
                                                                     "start_date": t["start_date"],
                                                                     "start_time": t["start_time"],
                                                                     "end_date": t["end_date"],
@@ -106,3 +113,7 @@ class FlaskServer:
                              "longitude": self.stops_df.at[s, 'stop_lon'],
                          }, stops))
         return stops
+
+
+if __name__ == "__main__":
+    start_flask_server()

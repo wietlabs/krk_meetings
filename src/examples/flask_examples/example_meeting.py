@@ -11,6 +11,6 @@ if __name__ == "__main__":
     }
 
     response = requests.post(URL.MEETING.value, json=json.dumps(query_json))
-    meeting = json.dumps(response.json())
+    meeting = json.dumps(response.json(), ensure_ascii=False)
     meeting = MeetingResults.from_json(meeting)
     print(meeting.meeting_points)
