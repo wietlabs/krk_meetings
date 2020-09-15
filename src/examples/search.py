@@ -4,7 +4,7 @@ import time
 from src.alternative_solvers.BfsSolverDataProvider import BfsSolverDataProvider
 from src.data_classes.ConnectionQuery import ConnectionQuery
 from src.data_provider.GtfsStaticDataProvider import GtfsStaticDataProvider
-from src.alternative_solvers.BfsSolver import BfsConnectionSolver
+from src.alternative_solvers.BfsConnectionSolver import BfsConnectionSolver
 from src.alternative_solvers.BfsSolverExtractor import BfsSolverExtractor
 
 if __name__ == '__main__':
