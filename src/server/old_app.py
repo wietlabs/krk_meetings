@@ -6,7 +6,7 @@ from flask import Flask, request, render_template
 from src.data_classes.ConnectionResults import ConnectionResults
 from src.data_classes.ConnectionQuery import ConnectionQuery
 from src.solver.FloydSolver import FloydSolver
-from src.alternative_solvers.BfsSolver import BfsConnectionSolver
+from src.alternative_solvers.BfsConnectionSolver import BfsConnectionSolver
 from src.alternative_solvers.BfsSolverDataProvider import BfsSolverDataProvider
 from src.data_provider.FloydDataProvider import FloydDataProvider
 
