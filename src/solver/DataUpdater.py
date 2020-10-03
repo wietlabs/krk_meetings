@@ -31,6 +31,8 @@ class DataUpdater:
 
     def update_data(self):
         data = FloydDataProvider.load_floyd_data()
+        if data is None:
+            return
         with self.lock:
             self.graph = data.graph
             self.kernelized_graph = data.kernelized_graph

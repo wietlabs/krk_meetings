@@ -3,11 +3,12 @@ from src.data_provider.Extractor import Extractor
 
 import pandas as pd
 import networkx as nx
-from src.config import FLOYD_EXTRACTOR_PERIOD_MULTIPLIER
+from src.config import FLOYD_EXTRACTOR_PERIOD_MULTIPLIER, WALKING_ROUTE_ID
 
 
 class FloydDataExtractor(Extractor):
-    def create_kernelized_floyd_graph(self, graph: nx.DiGraph, stops_df):
+    @staticmethod
+    def create_kernelized_floyd_graph(graph: nx.DiGraph, stops_df):
         kernelized_graph = nx.DiGraph()
         stops_df = stops_df[stops_df['hub']]
 
@@ -26,7 +27,8 @@ class FloydDataExtractor(Extractor):
         kernelized_graph.add_edges_from(edge_generator())
         return kernelized_graph
 
-    def get_distances(self, floyd_graph):
+    @staticmethod
+    def get_distances(floyd_graph):
         distances = nx.floyd_warshall(floyd_graph)
         for key in distances.keys():
             distances[key] = dict(distances[key])
@@ -46,7 +48,8 @@ class FloydDataExtractor(Extractor):
 
         return floyd_graph
 
-    def generate_floyd_nodes(self, graph, stops_df):
+    @staticmethod
+    def generate_floyd_nodes(graph, stops_df):
         stops_df = stops_df.reset_index()
 
         def node_generator():
@@ -56,12 +59,24 @@ class FloydDataExtractor(Extractor):
 
         graph.add_nodes_from(node_generator())
 
-    def generate_floyd_edges(self, graph, transfers_df):
+    @staticmethod
+    def generate_floyd_edges(graph, transfers_df):
         def edge_generator():
             for _, row in transfers_df.iterrows():
                 yield int(row['start_stop_id']), int(row['end_stop_id']), \
                       {'weight': int(row['duration'] + row['period'] * FLOYD_EXTRACTOR_PERIOD_MULTIPLIER),
                        'route_ids': row['route_id'], 'path': row['path']}
+
+        graph.add_edges_from(edge_generator())
+
+    @staticmethod
+    def add_by_foot_edges_to_graph(graph, adjacent_stops):
+        def edge_generator():
+            for start_stop_id in adjacent_stops:
+                for end_stop in adjacent_stops[start_stop_id]:
+                    yield int(start_stop_id), int(end_stop["id"]), \
+                          {'weight': int(end_stop['duration']), 'route_ids': WALKING_ROUTE_ID,
+                           'path': [start_stop_id, end_stop["id"]]}
 
         graph.add_edges_from(edge_generator())
 

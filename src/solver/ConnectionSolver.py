@@ -3,20 +3,15 @@ from queue import PriorityQueue
 from typing import List
 from itertools import chain
 import pandas as pd
-from time import sleep
 
 from src.data_classes.ConnectionResults import ConnectionResults
-from src.rabbitmq.RmqConsumer import RmqConsumer
-from src.rabbitmq.RmqProducer import RmqProducer
 from src.solver.DataManager import DataManager
-from src.solver.DataUpdater import DataUpdater
 from src.utils import *
 from src.solver.IConnectionSolver import IConnectionSolver
 from src.data_classes.Transfer import Transfer
 from src.data_classes.ConnectionQuery import ConnectionQuery
 
-from src.config import FLOYD_SOLVER_SEARCHING_TIME, FLOYD_SOLVER_MAX_PRIORITY_MULTIPLIER, FLOYD_SOLVER_MAX_PATHS, \
-    EXCHANGES
+from src.config import FLOYD_SOLVER_SEARCHING_TIME, FLOYD_SOLVER_MAX_PRIORITY_MULTIPLIER, FLOYD_SOLVER_MAX_PATHS
 
 
 class ConnectionSolver(IConnectionSolver):
