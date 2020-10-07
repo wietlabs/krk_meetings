@@ -16,9 +16,12 @@ class BfsSolverExtractor:
         trips_df = parsed_data.trips_df
         transfers_df = parsed_data.transfers_df
 
+        DAY = 24 * 60 * 60
+        WEEK = 7 * DAY
+
         offsets = {
             service_id: [
-                weekday * (24 * 60 * 60)
+                weekday * DAY
                 for weekday, is_valid in enumerate(weekdays)
                 if is_valid
             ]
@@ -38,7 +41,7 @@ class BfsSolverExtractor:
         # TODO: check offsets_df & join
 
         transfers_min_df = pd.concat(gen())
-        transfers_min_df[['start_time', 'end_time']] %= 7 * 24 * 60 * 60
+        transfers_min_df[['start_time', 'end_time']] %= WEEK
 
         unique_stop_times_df = transfers_min_df[['start_stop_id', 'start_time']].drop_duplicates()
         unique_stop_times_df.columns = ['stop_id', 'departure_time']
@@ -60,7 +63,7 @@ class BfsSolverExtractor:
             (
                 (stop_id, start_time),
                 (stop_id, end_time),
-                (end_time - start_time) % (7 * 24 * 60 * 60)
+                (end_time - start_time) % WEEK
             )
             for stop_id, df in unique_stop_times_df.groupby('stop_id')
             for (_, start_time), (_, end_time) in nx.utils.pairwise(df.index, cyclic=True)
@@ -121,7 +124,7 @@ class BfsSolverExtractor:
             (
                 (stop_id, start_time, None, None, None),
                 (stop_id, end_time, None, None, None),
-                (end_time - start_time) % (7 * 24 * 60 * 60)
+                (end_time - start_time) % WEEK
             )
             for stop_id, df in unique_stop_times_df.groupby('stop_id')
             for (_, start_time), (_, end_time) in nx.utils.pairwise(df.index, cyclic=True)
