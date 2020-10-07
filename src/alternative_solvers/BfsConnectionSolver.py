@@ -27,8 +27,10 @@ class BfsConnectionSolver(IConnectionSolver):
         self.minimal_transfers_count = minimal_transfers_count
 
     def find_connections(self, query: ConnectionQuery) -> List[ConnectionResults]:
-        # TODO: handle start_date
-        start_time = query.start_time.hour * 3600 + query.start_time.minute * 60 + query.start_time.second
+        start_time = query.start_date.weekday() * 24 * 60 * 60 \
+                     + query.start_time.hour * 60 * 60 \
+                     + query.start_time.minute * 60 \
+                     + query.start_time.second
         start_stop_id = query.start_stop_id
         end_stop_id = query.end_stop_id
 
@@ -69,7 +71,8 @@ class BfsConnectionSolver(IConnectionSolver):
                 changes.append(node)
 
         def transfers_gen():
-            for (start_stop_id, start_time, block_id, trip_num, service_id), (end_stop_id, end_time, _, _, _) in zip(changes[1::2], changes[2::2]):
+            for (start_stop_id, start_time, block_id, trip_num, service_id), (end_stop_id, end_time, _, _, _) in zip(
+                changes[1::2], changes[2::2]):
                 route_id = self.data.trips_df.at[(service_id, block_id, trip_num), 'route_id']
                 start_date = end_date = query.start_date  # TODO: retrieve start and end date
                 start_time = int_to_time(start_time)
