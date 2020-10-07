@@ -47,21 +47,14 @@ class BfsSolverExtractor:
 
         G = nx.DiGraph()
 
-        # G.add_nodes_from(unique_stop_times_df.index)
-
         G.add_weighted_edges_from(
             (
                 (start_stop_id, start_time),
                 (end_stop_id, end_time),
                 duration
             )
-            for _, start_time, end_time, start_stop_id, end_stop_id, duration, _, _, _ in transfers_min_df.itertuples()
+            for start_time, end_time, start_stop_id, end_stop_id, duration, _, _, _ in transfers_min_df.itertuples(index=False)
         )
-
-        # G.add_nodes_from(
-        #     (stop_id, None)
-        #     for stop_id in stops_df.index
-        # )
 
         G.add_weighted_edges_from(
             (
@@ -131,7 +124,7 @@ class BfsSolverExtractor:
                 (end_time - start_time) % (7 * 24 * 60 * 60)
             )
             for stop_id, df in unique_stop_times_df.groupby('stop_id')
-            for (_, start_time), (_, end_time) in nx.utils.pairwise(df.index, cyclic=True)  # TODO remove "_, "
+            for (_, start_time), (_, end_time) in nx.utils.pairwise(df.index, cyclic=True)
         ))
 
         G_T.add_edges_from((
