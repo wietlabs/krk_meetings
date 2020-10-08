@@ -27,6 +27,8 @@ class BfsConnectionSolver(IConnectionSolver):
         self.minimal_transfers_count = minimal_transfers_count
 
     def find_connections(self, query: ConnectionQuery) -> List[ConnectionResults]:
+        WEEK = 7 * 24 * 60 * 60
+
         start_time = query.start_date.weekday() * 24 * 60 * 60 \
                      + query.start_time.hour * 60 * 60 \
                      + query.start_time.minute * 60 \
@@ -47,14 +49,14 @@ class BfsConnectionSolver(IConnectionSolver):
             source = (start_stop_id, start_time)
             target = (end_stop_id, None)
             shortest_path_length = nx.shortest_path_length(self.data.G, source, target, 'weight')
-            end_time = (start_time + shortest_path_length) % (24 * 60 * 60)
+            end_time = (start_time + shortest_path_length) % WEEK
 
             if self.latest_departure_time:
                 # step 3: calculate the latest departure time by finding the shortest path length in the reversed graph
                 source = (end_stop_id, end_time)
                 target = (start_stop_id, None)
                 shortest_path_length = nx.shortest_path_length(self.data.G_R, source, target, 'weight')
-                start_time = (end_time - shortest_path_length) % (24 * 60 * 60)
+                start_time = (end_time - shortest_path_length) % WEEK
 
         # step 4: find sequence of transfers
         source = (start_stop_id, start_time, None, None, None)
@@ -71,8 +73,7 @@ class BfsConnectionSolver(IConnectionSolver):
                 changes.append(node)
 
         def transfers_gen():
-            for (start_stop_id, start_time, block_id, trip_num, service_id), (end_stop_id, end_time, _, _, _) in zip(
-                changes[1::2], changes[2::2]):
+            for (start_stop_id, start_time, block_id, trip_num, service_id), (end_stop_id, end_time, _, _, _) in zip(changes[1::2], changes[2::2]):
                 route_id = self.data.trips_df.at[(service_id, block_id, trip_num), 'route_id']
                 start_date = end_date = query.start_date  # TODO: retrieve start and end date
                 start_time = int_to_time(start_time)
