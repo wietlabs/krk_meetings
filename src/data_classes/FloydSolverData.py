@@ -16,6 +16,7 @@ class FloydSolverData(Data):  # server has reference to its instance
     stop_times_0_dict: dict
     stop_times_24_dict: dict
     routes_to_stops_dict: dict
+    adjacent_stops: dict
     stops_df: pd.DataFrame
     routes_df: pd.DataFrame
     stops_df_by_name: pd.DataFrame

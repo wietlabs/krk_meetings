@@ -11,7 +11,8 @@ from src.solver.IConnectionSolver import IConnectionSolver
 from src.data_classes.Transfer import Transfer
 from src.data_classes.ConnectionQuery import ConnectionQuery
 
-from src.config import FLOYD_SOLVER_SEARCHING_TIME, FLOYD_SOLVER_MAX_PRIORITY_MULTIPLIER, FLOYD_SOLVER_MAX_PATHS
+from src.config import FLOYD_SOLVER_SEARCHING_TIME, FLOYD_SOLVER_MAX_PRIORITY_MULTIPLIER, FLOYD_SOLVER_MAX_PATHS, \
+    WALKING_ROUTE_ID
 
 
 class ConnectionSolver(IConnectionSolver):
@@ -27,6 +28,7 @@ class ConnectionSolver(IConnectionSolver):
         self.stop_times_24 = None
         self.paths = None
         self.day_to_services_dict = None
+        self.adjacent_stops = None
 
         self.data_manager.start()
         self.data_manager.update_data()
@@ -43,6 +45,7 @@ class ConnectionSolver(IConnectionSolver):
             self.stop_times_0 = data.stop_times_0_dict
             self.stop_times_24 = data.stop_times_24_dict
             self.day_to_services_dict = data.day_to_services_dict
+            self.adjacent_stops = data.adjacent_stops
             self.paths = dict()
             for node in self.graph.nodes():
                 self.paths[node] = dict()
@@ -106,8 +109,21 @@ class ConnectionSolver(IConnectionSolver):
             transfers_df = transfers_df[transfers_df.departure_time_c < transfers_df.departure_time_n]
             transfers_df['index'] = transfers_df.index
 
+            if (current_stop, next_stop) in self.adjacent_stops:
+                adjacent_df = cst_df
+                adjacent_df = adjacent_df.assign(c=1)
+                adjacent_df = adjacent_df.merge(transfers_df.assign(c=1))
+                adjacent_df.drop(columns=['c', 'route_id_c'], axis=1, inplace=True)
+
+                end_time = start_time + self.adjacent_stops[(current_stop, next_stop)]
+                walking_row = pd.DataFrame({'departure_time': start_time, 'departure_time': end_time,
+                                            'route_id': WALKING_ROUTE_ID, 'route_id': WALKING_ROUTE_ID,
+                                            'index': (WALKING_ROUTE_ID, WALKING_ROUTE_ID, WALKING_ROUTE_ID)})
+                transfers_df = transfers_df.append(walking_row)
             if transfers_df.empty:
                 return []
+
+            print(transfers_df)
 
             if results_df.empty:
                 results_df = transfers_df
@@ -171,6 +187,7 @@ class ConnectionSolver(IConnectionSolver):
         max_priority = self.distances[start_node_id][end_node_id] * FLOYD_SOLVER_MAX_PRIORITY_MULTIPLIER
         priority = 0
 
+
         last_hubs = []
         if end_node_id not in self.kernelized_graph.nodes:
             for neighbor_id in self.graph.neighbors(end_node_id):
@@ -184,7 +201,7 @@ class ConnectionSolver(IConnectionSolver):
                 if neighbor_id in self.kernelized_graph.nodes:
                     resolve_neighbor(start_node_id, neighbor_id, 0, [start_node_id], [],  self.graph)
 
-        while queue and priority <= max_priority and len(paths) <= FLOYD_SOLVER_MAX_PATHS:
+        while not queue.empty() and priority <= max_priority and len(paths) <= FLOYD_SOLVER_MAX_PATHS:
             priority, weight, node_id, path, routes = queue.get()
             subset_route = False
             current_route_set = set()
@@ -200,7 +217,6 @@ class ConnectionSolver(IConnectionSolver):
             else:
                 routes_to_node[node_id] = []
             routes_to_node[node_id].append(current_route_set)
-
             if node_id == end_node_id:
                 count = count + 1
                 paths.append(path)
@@ -208,7 +224,6 @@ class ConnectionSolver(IConnectionSolver):
                 continue
             if node_id in last_hubs:
                 resolve_neighbor(node_id, end_node_id, weight, path, routes, self.graph)
-
             for neighbor_id in self.kernelized_graph.neighbors(node_id):
                 resolve_neighbor(node_id, neighbor_id, weight, path, routes, self.kernelized_graph)
 

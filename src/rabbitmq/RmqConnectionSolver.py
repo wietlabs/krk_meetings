@@ -27,5 +27,7 @@ class RmqConnectionSolver:
         self.connection_solver.data_manager.stop()
 
     def consume_connection_query(self, query: ConnectionQuery):
+        print("consume_connection_query")
         connections = self.connection_solver.find_connections(query)
         self.results_producer.send_msg(connections, query.query_id)
+        print("results_sent")

@@ -6,6 +6,7 @@ from src.config import EXCHANGES
 from src.rabbitmq.RmqConsumer import RmqOneMsgConsumer
 from src.rabbitmq.RmqProducer import RmqProducer
 from src.data_provider.FloydDataProvider import FloydDataProvider
+from src.config import WALKING_ROUTE_ID
 
 
 def start_flask_server():
@@ -54,25 +55,7 @@ class FlaskServer:
         connection_results = self.handle_query_post(EXCHANGES.CONNECTION_RESULTS.value, self.connection_producer,
                                                     request_json)
         connection_results = list(map(lambda transfers:
-                                      {
-                                          "transfers": list(map(lambda t:
-                                                                {
-                                                                    "route_name": self.routes_df.at[
-                                                                        t["route_id"], 'route_name'],
-                                                                    "headsign": self.routes_df.at[
-                                                                        t["route_id"], 'headsign'],
-                                                                    "start_stop": self.stops_df.at[t["start_stop_id"], 'stop_name'],
-                                                                    "end_stop": self.stops_df.at[t["end_stop_id"], 'stop_name'],
-                                                                    "start_date": t["start_date"],
-                                                                    "start_time": t["start_time"],
-                                                                    "end_date": t["end_date"],
-                                                                    "end_time": t["end_time"],
-                                                                    "stops": self.get_stop_list(
-                                                                        t["route_id"], t["start_stop_id"],
-                                                                        t["end_stop_id"])
-                                                                }
-                                                                , transfers))
-                                      }, connection_results))
+                                      {"transfers": list(map(self.parse_transfers, transfers))}, connection_results))
         connection_results = {"connections": connection_results}
         return jsonify(connection_results), 202
 
@@ -94,6 +77,25 @@ class FlaskServer:
         producer.send_msg(request_json)
         connection_consumer = RmqOneMsgConsumer(exchange, task_id)
         result = connection_consumer.receive_msg()
+        return result
+
+    def parse_transfers(self, transfer):
+        result = {}
+        if transfer['route_id'] != WALKING_ROUTE_ID:
+            result["route_name"] = self.routes_df.at[transfer["route_id"], 'route_name']
+            result["headsign"] = self.routes_df.at[transfer["route_id"], 'headsign']
+            result["stops"] = self.get_stop_list(transfer["route_id"], transfer["start_stop_id"],
+                                                 transfer["end_stop_id"])
+        else:
+            result["route_name"] = "Walk to"
+            result["headsign"] = self.stops_df.at[transfer["start_stop_id"], 'stop_name']
+        result["start_stop"] = self.stops_df.at[transfer["start_stop_id"], 'stop_name']
+        result["end_stop"] = self.stops_df.at[transfer["end_stop_id"], 'stop_name']
+        result["start_date"] = transfer["start_date"]
+        result["start_time"] = transfer["start_time"]
+        result["end_date"] = transfer["end_date"]
+        result["end_time"] = transfer["end_time"]
+        result["stops"] = [result["start_stop"], result["end_stop"]]
         return result
 
     def get_stop_list(self, route_id, start_stop_id, end_stop_id):

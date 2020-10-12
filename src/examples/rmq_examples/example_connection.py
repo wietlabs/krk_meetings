@@ -34,10 +34,10 @@ if __name__ == "__main__":
     mocked_api = MockedApi(task_id)
     query_json = {
         "query_id": task_id,
-        "start_date": "24/5/2020",
+        "start_date": "2020-5-24",
         "start_time": "20:00:00",
-        "start_stop_name": 'Teatr Słowackiego',
-        "end_stop_name": 'Kurdwanów P+R'
+        "start_stop_id": 1,
+        "end_stop_id": 2
     }
     mocked_api.query_producer.send_msg(query_json)
     print_connections(mocked_api.receive_msg())
