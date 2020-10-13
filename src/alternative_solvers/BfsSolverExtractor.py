@@ -16,7 +16,9 @@ class BfsSolverExtractor:
         trips_df = parsed_data.trips_df
         transfers_df = parsed_data.transfers_df
 
-        DAY = 24 * 60 * 60
+        MINUTE = 60
+        HOUR = 60 * MINUTE
+        DAY = 24 * HOUR
         WEEK = 7 * DAY
 
         offsets = {
