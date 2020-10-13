@@ -7,6 +7,7 @@ from src.rabbitmq.RmqConsumer import RmqOneMsgConsumer
 from src.rabbitmq.RmqProducer import RmqProducer
 from src.data_provider.FloydDataProvider import FloydDataProvider
 from src.config import WALKING_ROUTE_ID
+from datetime import datetime
 
 
 def start_flask_server():
@@ -81,21 +82,23 @@ class FlaskServer:
 
     def parse_transfers(self, transfer):
         result = {}
+        result["start_stop"] = self.stops_df.at[transfer["start_stop_id"], 'stop_name']
+        result["end_stop"] = self.stops_df.at[transfer["end_stop_id"], 'stop_name']
         if transfer['route_id'] != WALKING_ROUTE_ID:
+            result["type"] = "transfer"
+            result["start_date"] = transfer["start_date"]
+            result["start_time"] = transfer["start_time"]
+            result["end_date"] = transfer["end_date"]
+            result["end_time"] = transfer["end_time"]
             result["route_name"] = self.routes_df.at[transfer["route_id"], 'route_name']
             result["headsign"] = self.routes_df.at[transfer["route_id"], 'headsign']
             result["stops"] = self.get_stop_list(transfer["route_id"], transfer["start_stop_id"],
                                                  transfer["end_stop_id"])
         else:
-            result["route_name"] = "Walk to"
-            result["headsign"] = self.stops_df.at[transfer["start_stop_id"], 'stop_name']
-        result["start_stop"] = self.stops_df.at[transfer["start_stop_id"], 'stop_name']
-        result["end_stop"] = self.stops_df.at[transfer["end_stop_id"], 'stop_name']
-        result["start_date"] = transfer["start_date"]
-        result["start_time"] = transfer["start_time"]
-        result["end_date"] = transfer["end_date"]
-        result["end_time"] = transfer["end_time"]
-        result["stops"] = [result["start_stop"], result["end_stop"]]
+            result["type"] = "walking"
+            day_dur = datetime.strptime(transfer["end_date"], "%Y-%m-%d") - datetime.strptime(transfer["start_date"], "%Y-%m-%d")
+            hour_dur = datetime.strptime(transfer["end_time"], "%H:%M:%S") - datetime.strptime(transfer["start_time"], "%H:%M:%S")
+            result["duration_in_minutes"] = int((day_dur + hour_dur).seconds / 60)
         return result
 
     def get_stop_list(self, route_id, start_stop_id, end_stop_id):

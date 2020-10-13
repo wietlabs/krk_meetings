@@ -12,5 +12,5 @@ if __name__ == "__main__":
     }
 
     response = requests.post(URL.CONNECTION.value, json=json.dumps(query_json))
-    connections = json.dumps(response.json(), ensure_ascii=False)
-    print(connections)
+    connections = response.json()
+    print({'connections': [connections['connections'][0]]})

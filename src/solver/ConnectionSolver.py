@@ -32,6 +32,7 @@ class ConnectionSolver(IConnectionSolver):
 
         self.data_manager.start()
         self.data_manager.update_data()
+        self.update_data()
 
     def update_data(self):
         if not self.data_manager.up_to_date:
@@ -109,21 +110,8 @@ class ConnectionSolver(IConnectionSolver):
             transfers_df = transfers_df[transfers_df.departure_time_c < transfers_df.departure_time_n]
             transfers_df['index'] = transfers_df.index
 
-            if (current_stop, next_stop) in self.adjacent_stops:
-                adjacent_df = cst_df
-                adjacent_df = adjacent_df.assign(c=1)
-                adjacent_df = adjacent_df.merge(transfers_df.assign(c=1))
-                adjacent_df.drop(columns=['c', 'route_id_c'], axis=1, inplace=True)
-
-                end_time = start_time + self.adjacent_stops[(current_stop, next_stop)]
-                walking_row = pd.DataFrame({'departure_time': start_time, 'departure_time': end_time,
-                                            'route_id': WALKING_ROUTE_ID, 'route_id': WALKING_ROUTE_ID,
-                                            'index': (WALKING_ROUTE_ID, WALKING_ROUTE_ID, WALKING_ROUTE_ID)})
-                transfers_df = transfers_df.append(walking_row)
-            if transfers_df.empty:
+            if transfers_df.empty and not (current_stop, next_stop) in self.adjacent_stops:
                 return []
-
-            print(transfers_df)
 
             if results_df.empty:
                 results_df = transfers_df
@@ -132,7 +120,23 @@ class ConnectionSolver(IConnectionSolver):
                 results_df = results_df.drop_duplicates(subset='departure_time_c_0', keep='first')
                 results_df.rename(columns={'route_id_n_0': 'route_id_0'}, inplace=True)
                 results_df.drop(columns=['route_id_c_0'], axis=1, inplace=True)
+                if (current_stop, next_stop) in self.adjacent_stops:
+                    end_time = start_time + self.adjacent_stops[(current_stop, next_stop)]
+                    walking_row = pd.DataFrame({'departure_time_c_0': start_time, 'departure_time_n_0': end_time,
+                                                'route_id_0': WALKING_ROUTE_ID,
+                                                'index_0': (WALKING_ROUTE_ID, WALKING_ROUTE_ID, WALKING_ROUTE_ID)})
+                    results_df = results_df.append(walking_row)
             else:
+                if (current_stop, next_stop) in self.adjacent_stops:
+                    walking_time = self.adjacent_stops[(current_stop, next_stop)]
+                    walking_df = copy(results_df)
+                    walking_df['route_id_' + str(i)] = WALKING_ROUTE_ID
+                    walking_df['index_' + str(i)] = [(
+                        WALKING_ROUTE_ID, WALKING_ROUTE_ID, WALKING_ROUTE_ID)] * len(walking_df)
+                    walking_df['departure_time_c_' + str(i)] = walking_df.apply(
+                        lambda row: row['departure_time_n_' + str(i-1)], axis=1)
+                    walking_df['departure_time_n_' + str(i)] = walking_df.apply(
+                        lambda row: row['departure_time_n_' + str(i-1)] + walking_time, axis=1)
                 results_df = results_df.assign(c=1)
                 results_df = results_df.merge(transfers_df.assign(c=1))
                 results_df.drop(columns=['c', 'route_id_c'], axis=1, inplace=True)
@@ -143,6 +147,8 @@ class ConnectionSolver(IConnectionSolver):
                                   inplace=True)
                 results_df = results_df[
                     results_df['departure_time_n_' + str(i - 1)] < results_df['departure_time_c_' + str(i)]]
+                if (current_stop, next_stop) in self.adjacent_stops:
+                    results_df = results_df.append(walking_df)
                 results_df = results_df.sort_values(by=['departure_time_n_' + str(i)])
                 results_df = results_df.drop_duplicates(subset='departure_time_c_0', keep='first')
 

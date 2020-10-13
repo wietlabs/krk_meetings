@@ -3,8 +3,6 @@ from src.data_classes.ConnectionQuery import ConnectionQuery
 from src.rabbitmq.RmqConsumer import RmqConsumer
 from src.rabbitmq.RmqProducer import RmqProducer
 from src.solver.ConnectionSolver import ConnectionSolver
-from src.solver.DataManager import DataManager
-
 
 def start_connection_solver():
     meeting_solver = RmqConnectionSolver()
@@ -31,3 +29,7 @@ class RmqConnectionSolver:
         connections = self.connection_solver.find_connections(query)
         self.results_producer.send_msg(connections, query.query_id)
         print("results_sent")
+
+
+if __name__ == "__main__":
+    start_connection_solver()
