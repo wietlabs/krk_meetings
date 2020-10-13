@@ -27,11 +27,14 @@ class BfsConnectionSolver(IConnectionSolver):
         self.minimal_transfers_count = minimal_transfers_count
 
     def find_connections(self, query: ConnectionQuery) -> List[ConnectionResults]:
-        WEEK = 7 * 24 * 60 * 60
+        MINUTE = 60
+        HOUR = 60 * MINUTE
+        DAY = 24 * HOUR
+        WEEK = 7 * DAY
 
-        start_time = query.start_date.weekday() * 24 * 60 * 60 \
-                     + query.start_time.hour * 60 * 60 \
-                     + query.start_time.minute * 60 \
+        start_time = query.start_date.weekday() * DAY \
+                     + query.start_time.hour * HOUR \
+                     + query.start_time.minute * MINUTE \
                      + query.start_time.second
         start_stop_id = query.start_stop_id
         end_stop_id = query.end_stop_id

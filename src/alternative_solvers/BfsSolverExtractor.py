@@ -16,7 +16,9 @@ class BfsSolverExtractor:
         trips_df = parsed_data.trips_df
         transfers_df = parsed_data.transfers_df
 
-        DAY = 24 * 60 * 60
+        MINUTE = 60
+        HOUR = 60 * MINUTE
+        DAY = 24 * HOUR
         WEEK = 7 * DAY
 
         offsets = {
@@ -34,9 +36,9 @@ class BfsSolverExtractor:
         def gen():
             for service_id, group in transfers_min_df.groupby('service_id'):
                 for offset in offsets[service_id]:
-                    group = group.copy()
-                    group[['start_time', 'end_time']] += offset
-                    yield group
+                    shifted = group.copy()
+                    shifted[['start_time', 'end_time']] += offset
+                    yield shifted
 
         # TODO: check offsets_df & join
 
