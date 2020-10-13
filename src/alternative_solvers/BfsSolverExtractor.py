@@ -34,9 +34,9 @@ class BfsSolverExtractor:
         def gen():
             for service_id, group in transfers_min_df.groupby('service_id'):
                 for offset in offsets[service_id]:
-                    group = group.copy()
-                    group[['start_time', 'end_time']] += offset
-                    yield group
+                    shifted = group.copy()
+                    shifted[['start_time', 'end_time']] += offset
+                    yield shifted
 
         # TODO: check offsets_df & join
 
