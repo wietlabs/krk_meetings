@@ -27,8 +27,15 @@ class BfsConnectionSolver(IConnectionSolver):
         self.minimal_transfers_count = minimal_transfers_count
 
     def find_connections(self, query: ConnectionQuery) -> List[ConnectionResults]:
-        # TODO: handle start_date
-        start_time = query.start_time.hour * 3600 + query.start_time.minute * 60 + query.start_time.second
+        MINUTE = 60
+        HOUR = 60 * MINUTE
+        DAY = 24 * HOUR
+        WEEK = 7 * DAY
+
+        start_time = query.start_date.weekday() * DAY \
+                     + query.start_time.hour * HOUR \
+                     + query.start_time.minute * MINUTE \
+                     + query.start_time.second
         start_stop_id = query.start_stop_id
         end_stop_id = query.end_stop_id
 
@@ -45,14 +52,14 @@ class BfsConnectionSolver(IConnectionSolver):
             source = (start_stop_id, start_time)
             target = (end_stop_id, None)
             shortest_path_length = nx.shortest_path_length(self.data.G, source, target, 'weight')
-            end_time = (start_time + shortest_path_length) % (24 * 60 * 60)
+            end_time = (start_time + shortest_path_length) % WEEK
 
             if self.latest_departure_time:
                 # step 3: calculate the latest departure time by finding the shortest path length in the reversed graph
                 source = (end_stop_id, end_time)
                 target = (start_stop_id, None)
                 shortest_path_length = nx.shortest_path_length(self.data.G_R, source, target, 'weight')
-                start_time = (end_time - shortest_path_length) % (24 * 60 * 60)
+                start_time = (end_time - shortest_path_length) % WEEK
 
         # step 4: find sequence of transfers
         source = (start_stop_id, start_time, None, None, None)
