@@ -1,3 +1,5 @@
+src/data_provider/data/tmp/config.json
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

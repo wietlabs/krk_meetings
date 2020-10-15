@@ -8,7 +8,7 @@ from src.rabbitmq.RmqProducer import RmqProducer
 from src.solver.DataUpdater import DataUpdater
 from src.solver.ISequenceSolver import ISequenceSolver
 
-from src.config import EXCHANGES
+from src.exchanges import EXCHANGES
 
 
 def start_sequence_solver():

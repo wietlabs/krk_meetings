@@ -1,3 +1,5 @@
+from math import sin, cos, sqrt, atan2, radians
+from src.config import MAX_WALKING_TIME_IN_MINUTES, WALKING_SPEED
 import pandas as pd
 
 
@@ -7,8 +9,19 @@ class Extractor:
         pass
 
     @staticmethod
-    def get_day_to_services_dict(calendar_df: pd.DataFrame):
-        day_to_services = {0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: []}
+    def get_adjacent_stops_dict(stops_df: pd.DataFrame) -> dict:
+        adjacent_stops = {}
+        for id_1, _, lat_1, lon_1, _, _ in stops_df.itertuples():
+            for id_2, _, lat_2, lon_2, _, _ in stops_df.itertuples():
+                duration = Extractor._get_walking_time(lon_1, lat_1, lon_2, lat_2)
+                if id_1 != id_2 and duration <= MAX_WALKING_TIME_IN_MINUTES * 60:
+                    adjacent_stops[id_1, id_2] = duration
+        return adjacent_stops
+
+
+    @staticmethod
+    def get_day_to_services_dict(calendar_df: pd.DataFrame) -> dict:
+        day_to_services = {i: [] for i in range(7)}
         for service_id, monday, tuesday, wednesday, thursday, friday, saturday, sunday in calendar_df.itertuples():
             if monday: day_to_services[0].append(service_id)
             if tuesday: day_to_services[1].append(service_id)
@@ -20,14 +33,11 @@ class Extractor:
         return day_to_services
 
     @staticmethod
-    def get_services_list(calendar_df):
-        services = []
-        for service_id, _, _, _, _, _, _, _ in calendar_df.itertuples():
-            services.append(service_id)
-        return services
+    def get_services_list(calendar_df) -> list:
+        return list(calendar_df.index)
 
     @staticmethod
-    def create_route_ids_df(stop_times_df):
+    def create_route_ids_df(stop_times_df: pd.DataFrame) -> pd.DataFrame:
         routes_path_df = stop_times_df.groupby(['block_id', 'trip_num', 'service_id']).agg(
             {'peron_id': lambda x: tuple(x)})
         routes_ids_df = routes_path_df.drop_duplicates('peron_id')
@@ -40,7 +50,8 @@ class Extractor:
         return routes_ids_df
 
     @staticmethod
-    def create_routes_trips_df(trips_df, routes_df, routes_ids_df):
+    def create_routes_trips_df(trips_df: pd.DataFrame, routes_df: pd.DataFrame, routes_ids_df: pd.DataFrame
+                               ) -> pd.DataFrame:
         routes_df = trips_df.reset_index().merge(routes_df, on='route_id')[
             ['service_id', 'block_id', 'trip_num', 'trip_headsign', 'route_short_name']]
         routes_df = routes_df.rename(columns={'route_short_name': 'route_name', 'trip_headsign': 'headsign'})
@@ -56,14 +67,16 @@ class Extractor:
         return df
 
     @staticmethod
-    def create_stop_times_trips_df_for_service_id(stop_times_df: pd.DataFrame, route_ids_df: pd.DataFrame) -> pd.DataFrame:
+    def create_stop_times_trips_df_for_service_id(stop_times_df: pd.DataFrame, route_ids_df: pd.DataFrame
+                                                  ) -> pd.DataFrame:
         df = stop_times_df.join(route_ids_df, on=['block_id', 'trip_num', 'service_id'])
         df = df[['stop_id', 'peron_id', 'departure_time', 'route_id']]
         return df
 
     @staticmethod
     def create_avg_durations_df(transfers_df: pd.DataFrame) -> pd.DataFrame:
-        return transfers_df[['start_stop_id', 'end_stop_id', 'duration']].groupby(['start_stop_id', 'end_stop_id']).mean()
+        return transfers_df[['start_stop_id', 'end_stop_id', 'duration']]\
+            .groupby(['start_stop_id', 'end_stop_id']).mean()
 
     # TODO HOW TO CALCULATE PERIOD?
     # TODO for now we return 24 * 3600 / count
@@ -82,7 +95,8 @@ class Extractor:
         return df
 
     @staticmethod
-    def set_first_and_last_stop(stop_times_df: pd.DataFrame, route_ids_df: pd.DataFrame, stops_df: pd.DataFrame) -> pd.DataFrame:
+    def set_first_and_last_stop(stop_times_df: pd.DataFrame, route_ids_df: pd.DataFrame, stops_df: pd.DataFrame
+                                ) -> pd.DataFrame:
         stop_times_df = stop_times_df
 
         stop_times_df = stop_times_df.join(route_ids_df)
@@ -100,7 +114,7 @@ class Extractor:
         return stops_df
 
     @staticmethod
-    def extend_stops_df(transfer_df: pd.DataFrame, stops_df: pd.DataFrame):
+    def extend_stops_df(transfer_df: pd.DataFrame, stops_df: pd.DataFrame) -> pd.DataFrame:
         hubs_df = transfer_df[['start_stop_id', 'end_stop_id']]
         hubs_df = hubs_df.drop_duplicates(subset=['start_stop_id', 'end_stop_id'])
         hubs_df = hubs_df.groupby('start_stop_id').count()
@@ -132,3 +146,21 @@ class Extractor:
                 route_to_stops_dict[route_id] = []
             route_to_stops_dict[route_id].append(stop_id)
         return route_to_stops_dict
+
+    @staticmethod
+    def _get_walking_time(lon_1, lat_1, lon_2, lat_2) -> int:
+        lon_1 = radians(lon_1)
+        lon_2 = radians(lon_2)
+        lat_1 = radians(lat_1)
+        lat_2 = radians(lat_2)
+        earth_radius = 6373000.0
+        dlon = lon_2 - lon_1
+        dlat = lat_2 - lat_1
+
+        a = sin(dlat / 2) ** 2 + cos(lat_1) * cos(lat_2) * sin(dlon / 2) ** 2
+        c = 2 * atan2(sqrt(a), sqrt(1 - a))
+
+        distance = earth_radius * c
+        walking_time = distance / WALKING_SPEED
+        walking_time = round(walking_time)
+        return walking_time

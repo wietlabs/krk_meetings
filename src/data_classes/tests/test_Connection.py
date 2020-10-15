@@ -6,17 +6,17 @@ from src.data_classes.ConnectionResults import ConnectionResults
 from src.data_classes.Transfer import Transfer
 
 connection1 = ConnectionResults([
-    Transfer('139', 'Czarnowiejska', 'Miasteczko Studenckie AGH', date(2019, 1, 1), time(12, 34), date(2019, 1, 1), time(12, 37)),
+    Transfer(1, 1, 2, datetime(2019, 1, 1, 12, 34), datetime(2019, 1, 1, 12,37)),
 ])
 
 connection2 = ConnectionResults([
-    Transfer('611', 'Czarnowiejska', 'Miasteczko Studenckie AGH', date(2019, 12, 31), time(23, 59), date(2020, 1, 1), time(0, 1)),
+    Transfer(1, 1, 2, datetime(2019, 12, 31, 23, 59), datetime(2020, 1, 1, 0, 1)),
 ])
 
 connection3 = ConnectionResults([
-    Transfer('139', 'Czarnowiejska', 'Plac Inwalidów', date(2020, 6, 13), time(13, 3), date(2020, 6, 13), time(13, 6)),
-    Transfer('179', 'Plac Inwalidów', 'Jubilat', date(2020, 6, 13), time(13, 7), date(2020, 6, 13), time(13, 12)),
-    Transfer('252', 'Jubilat', 'Kraków Airport', date(2020, 6, 13), time(13, 14), date(2020, 6, 13), time(13, 40)),
+    Transfer(1, 1, 2, datetime(2020, 6, 13, 13, 3), datetime(2020, 6, 13, 13, 6)),
+    Transfer(2, 2, 3, datetime(2020, 6, 13, 13, 7), datetime(2020, 6, 13, 13, 12)),
+    Transfer(3, 3, 4, datetime(2020, 6, 13, 13, 14), datetime(2020, 6, 13, 13, 40)),
 ])
 
 

@@ -1,10 +1,8 @@
-from src.config import EXCHANGES
+from src.exchanges import EXCHANGES
 from src.data_classes.ConnectionQuery import ConnectionQuery
 from src.rabbitmq.RmqConsumer import RmqConsumer
 from src.rabbitmq.RmqProducer import RmqProducer
 from src.solver.ConnectionSolver import ConnectionSolver
-from src.solver.DataManager import DataManager
-
 
 def start_connection_solver():
     meeting_solver = RmqConnectionSolver()
@@ -27,5 +25,11 @@ class RmqConnectionSolver:
         self.connection_solver.data_manager.stop()
 
     def consume_connection_query(self, query: ConnectionQuery):
+        print("consume_connection_query")
         connections = self.connection_solver.find_connections(query)
         self.results_producer.send_msg(connections, query.query_id)
+        print("results_sent")
+
+
+if __name__ == "__main__":
+    start_connection_solver()

@@ -1,7 +1,7 @@
 from threading import Lock
 from threading import Thread
 
-from src.config import EXCHANGES
+from src.exchanges import EXCHANGES
 from src.data_provider.FloydDataProvider import FloydDataProvider
 from src.rabbitmq.RmqConsumer import RmqConsumer
 
@@ -31,6 +31,8 @@ class DataUpdater:
 
     def update_data(self):
         data = FloydDataProvider.load_floyd_data()
+        if data is None:
+            return
         with self.lock:
             self.graph = data.graph
             self.kernelized_graph = data.kernelized_graph

@@ -6,7 +6,7 @@ from src.rabbitmq.RmqConsumer import RmqConsumer
 from src.rabbitmq.RmqProducer import RmqProducer
 from src.solver.DataUpdater import DataUpdater
 from src.solver.IMeetingSolver import IMeetingSolver
-from src.config import EXCHANGES
+from src.exchanges import EXCHANGES
 
 
 def start_meeting_solver():

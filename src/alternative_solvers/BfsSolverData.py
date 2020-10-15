@@ -13,3 +13,4 @@ class BfsSolverData(Data):
     G_T: nx.DiGraph
     unique_stop_times_df: pd.DataFrame
     trips_df: pd.DataFrame
+

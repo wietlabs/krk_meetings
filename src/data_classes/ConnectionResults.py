@@ -17,10 +17,10 @@ class ConnectionResults:
         return len(self.transfers)
 
     def departure_time(self) -> datetime:
-        return datetime.combine(self.transfers[0].start_date, self.transfers[0].start_time)
+        return self.transfers[0].start_datetime
 
     def arrival_time(self) -> datetime:
-        return datetime.combine(self.transfers[-1].end_date, self.transfers[-1].end_time)
+        return self.transfers[-1].end_datetime
 
     def duration(self, departure_time: datetime = None) -> timedelta:
         if departure_time is None:
