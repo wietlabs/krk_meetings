@@ -1,3 +1,4 @@
+from datetime import timedelta
 from typing import List
 
 import networkx as nx
@@ -7,7 +8,6 @@ from src.data_classes.ConnectionQuery import ConnectionQuery
 from src.data_classes.ConnectionResults import ConnectionResults
 from src.data_classes.Transfer import Transfer
 from src.solver.IConnectionSolver import IConnectionSolver
-from src.utils import int_to_time
 
 
 class BfsConnectionSolver(IConnectionSolver):
@@ -32,19 +32,21 @@ class BfsConnectionSolver(IConnectionSolver):
         DAY = 24 * HOUR
         WEEK = 7 * DAY
 
-        start_time = query.start_date.weekday() * DAY \
-                     + query.start_time.hour * HOUR \
-                     + query.start_time.minute * MINUTE \
-                     + query.start_time.second
+        start_time = query.start_datetime.weekday() * DAY \
+                     + query.start_datetime.hour * HOUR \
+                     + query.start_datetime.minute * MINUTE \
+                     + query.start_datetime.second
+        base_datetime = query.start_datetime - timedelta(seconds=start_time)
+
         start_stop_id = query.start_stop_id
         end_stop_id = query.end_stop_id
 
         # step 1: find next earliest possible departure time
-        unique_stop_times = self.data.unique_stop_times_df.xs(start_stop_id).index
-        idx = unique_stop_times.searchsorted(start_time)
-        if idx == len(unique_stop_times):
+        unique_departure_times = self.data.unique_departure_times_df.xs(start_stop_id).index
+        idx = unique_departure_times.searchsorted(start_time)
+        if idx == len(unique_departure_times):
             idx = 0
-        start_time = unique_stop_times[idx]
+        start_time = unique_departure_times[idx]
         end_time = None
 
         if self.earliest_arrival_time:
@@ -78,10 +80,9 @@ class BfsConnectionSolver(IConnectionSolver):
         def transfers_gen():
             for (start_stop_id, start_time, block_id, trip_num, service_id), (end_stop_id, end_time, _, _, _) in zip(changes[1::2], changes[2::2]):
                 route_id = self.data.trips_df.at[(service_id, block_id, trip_num), 'route_id']
-                start_date = end_date = query.start_date  # TODO: retrieve start and end date
-                start_time = int_to_time(start_time)
-                end_time = int_to_time(end_time)
-                yield Transfer(route_id, start_stop_id, end_stop_id, start_date, start_time, end_date, end_time)
+                start_datetime = base_datetime + timedelta(seconds=start_time)
+                end_datetime = base_datetime + timedelta(seconds=end_time)
+                yield Transfer(route_id, start_stop_id, end_stop_id, start_datetime, end_datetime)
 
         transfers = list(transfers_gen())
         connection = ConnectionResults(transfers)

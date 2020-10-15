@@ -45,9 +45,23 @@ class BfsSolverExtractor:
         transfers_min_df = pd.concat(gen())
         transfers_min_df[['start_time', 'end_time']] %= WEEK
 
-        unique_stop_times_df = transfers_min_df[['start_stop_id', 'start_time']].drop_duplicates()
-        unique_stop_times_df.columns = ['stop_id', 'departure_time']
-        unique_stop_times_df.set_index(['stop_id', 'departure_time'], inplace=True)
+        unique_departure_times_df = transfers_min_df[['start_stop_id', 'start_time']].copy()
+        unique_departure_times_df.columns = ['stop_id', 'time']
+        unique_departure_times_df.drop_duplicates(inplace=True)
+
+        unique_arrival_times_df = transfers_min_df[['end_stop_id', 'end_time']].copy()
+        unique_arrival_times_df.columns = ['stop_id', 'time']
+        unique_arrival_times_df.drop_duplicates(inplace=True)
+
+        unique_stop_times_df = pd.concat((unique_departure_times_df, unique_arrival_times_df))
+        unique_stop_times_df.drop_duplicates(inplace=True)
+
+        unique_departure_times_df.set_index(['stop_id', 'time'], inplace=True)
+        unique_arrival_times_df.set_index(['stop_id', 'time'], inplace=True)
+        unique_stop_times_df.set_index(['stop_id', 'time'], inplace=True)
+
+        unique_departure_times_df.sort_index(inplace=True)
+        unique_arrival_times_df.sort_index(inplace=True)
         unique_stop_times_df.sort_index(inplace=True)
 
         G = nx.DiGraph()
@@ -78,7 +92,7 @@ class BfsSolverExtractor:
                 (stop_id, time),
                 (stop_id, None)
             )
-            for stop_id, time in unique_stop_times_df.index
+            for stop_id, time in unique_arrival_times_df.index
         ), weight=0)
 
         G_R.add_edges_from((
@@ -86,7 +100,7 @@ class BfsSolverExtractor:
                 (stop_id, time),
                 (stop_id, None)
             )
-            for stop_id, time in unique_stop_times_df.index
+            for stop_id, time in unique_departure_times_df.index
         ), weight=0)
 
         if self.boarding_edge_weight is not None:
@@ -137,7 +151,7 @@ class BfsSolverExtractor:
                 (stop_id, time, None, None, None),
                 (stop_id, None, None, None, None)
             )
-            for stop_id, time in unique_stop_times_df.index
+            for stop_id, time in unique_arrival_times_df.index
         ), weight=0)
 
-        return BfsSolverData(G, G_R, G_T, unique_stop_times_df, trips_df)
+        return BfsSolverData(G, G_R, G_T, unique_departure_times_df, trips_df)
