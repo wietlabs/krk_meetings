@@ -42,11 +42,11 @@ class BfsConnectionSolver(IConnectionSolver):
         end_stop_id = query.end_stop_id
 
         # step 1: find next earliest possible departure time
-        unique_stop_times = self.data.unique_stop_times_df.xs(start_stop_id).index
-        idx = unique_stop_times.searchsorted(start_time)
-        if idx == len(unique_stop_times):
+        unique_departure_times = self.data.unique_departure_times_df.xs(start_stop_id).index
+        idx = unique_departure_times.searchsorted(start_time)
+        if idx == len(unique_departure_times):
             idx = 0
-        start_time = unique_stop_times[idx]
+        start_time = unique_departure_times[idx]
         end_time = None
 
         if self.earliest_arrival_time:
@@ -78,8 +78,7 @@ class BfsConnectionSolver(IConnectionSolver):
                 changes.append(node)
 
         def transfers_gen():
-            for (start_stop_id, start_time, block_id, trip_num, service_id), (end_stop_id, end_time, _, _, _) in zip(
-                changes[1::2], changes[2::2]):
+            for (start_stop_id, start_time, block_id, trip_num, service_id), (end_stop_id, end_time, _, _, _) in zip(changes[1::2], changes[2::2]):
                 route_id = self.data.trips_df.at[(service_id, block_id, trip_num), 'route_id']
                 start_datetime = base_datetime + timedelta(seconds=start_time)
                 end_datetime = base_datetime + timedelta(seconds=end_time)

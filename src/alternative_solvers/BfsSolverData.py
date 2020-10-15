@@ -11,5 +11,5 @@ class BfsSolverData(Data):
     G: nx.DiGraph
     G_R: nx.DiGraph
     G_T: nx.DiGraph
-    unique_stop_times_df: pd.DataFrame
+    unique_departure_times_df: pd.DataFrame
     trips_df: pd.DataFrame
