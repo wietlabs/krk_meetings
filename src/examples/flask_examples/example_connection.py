@@ -5,8 +5,7 @@ from src.config import URL
 
 if __name__ == "__main__":
     query_json = {
-        "start_date": "2020-5-24",
-        "start_time": "20:00:00",
+        "start_datetime": "2020-05-24 20:00:00",
         "start_stop_name": 'Jubilat',
         "end_stop_name": 'Kostrze Szkoła'
     }

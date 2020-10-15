@@ -1,4 +1,4 @@
-from src.config import EXCHANGES
+from src.exchanges import EXCHANGES
 from src.data_classes.ConnectionQuery import ConnectionQuery
 from src.rabbitmq.RmqConsumer import RmqConsumer
 from src.rabbitmq.RmqProducer import RmqProducer

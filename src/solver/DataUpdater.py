@@ -1,7 +1,7 @@
 from threading import Lock
 from threading import Thread
 
-from src.config import EXCHANGES
+from src.exchanges import EXCHANGES
 from src.data_provider.FloydDataProvider import FloydDataProvider
 from src.rabbitmq.RmqConsumer import RmqConsumer
 

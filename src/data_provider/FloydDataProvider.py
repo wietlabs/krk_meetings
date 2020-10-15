@@ -1,19 +1,15 @@
 import copy
 import json
 import time
-import pika
 from datetime import datetime
 
 from src.data_classes.ParsedData import ParsedData
 from src.data_provider.Downloader import Downloader
-from src.data_provider.Merger import Merger
 from src.data_provider.FloydDataExtractor import FloydDataExtractor
-from src.data_provider.Parser import Parser
 from src.data_classes.FloydSolverData import FloydSolverData
 from pathlib import Path
-from src.rabbitmq.RmqConsumer import RmqConsumer
 from src.rabbitmq.RmqProducer import RmqProducer
-from src.config import EXCHANGES
+from src.exchanges import EXCHANGES
 
 FLOYD_DATA_PATH = Path(__file__).parent / 'data' / 'tmp' / 'floyd_data.pickle'
 CONFIG_JSON_PATH = Path(__file__).parent / 'data' / 'tmp' / 'config.json'

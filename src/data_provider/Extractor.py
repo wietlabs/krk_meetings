@@ -21,7 +21,7 @@ class Extractor:
 
     @staticmethod
     def get_day_to_services_dict(calendar_df: pd.DataFrame) -> dict:
-        day_to_services = {0: [], 1: [], 2: [], 3: [], 4: [], 5: [], 6: []}
+        day_to_services = {i: [] for i in range(7)}
         for service_id, monday, tuesday, wednesday, thursday, friday, saturday, sunday in calendar_df.itertuples():
             if monday: day_to_services[0].append(service_id)
             if tuesday: day_to_services[1].append(service_id)
@@ -34,10 +34,7 @@ class Extractor:
 
     @staticmethod
     def get_services_list(calendar_df) -> list:
-        services = []
-        for service_id, _, _, _, _, _, _, _ in calendar_df.itertuples():
-            services.append(service_id)
-        return services
+        return list(calendar_df.index)
 
     @staticmethod
     def create_route_ids_df(stop_times_df: pd.DataFrame) -> pd.DataFrame:
