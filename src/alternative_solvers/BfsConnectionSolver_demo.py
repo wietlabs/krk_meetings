@@ -36,7 +36,7 @@ if __name__ == '__main__':
     end_stop_id = 333
     start_dt = datetime(2020, 9, 13, 23, 30)
 
-    query = ConnectionQuery(42, start_dt.date(), start_dt.time(), start_stop_id, end_stop_id)
+    query = ConnectionQuery(42, start_dt, start_stop_id, end_stop_id)
 
     t1 = time.time()
     connections = solver.find_connections(query)
@@ -45,9 +45,9 @@ if __name__ == '__main__':
 
     connection = connections[0]
     for transfer in connection.transfers:
-        start_time = transfer.start_time
-        end_time = transfer.end_time
+        start_datetime = transfer.start_datetime
+        end_datetime = transfer.end_datetime
         route_name = merged_data.routes_df.loc[transfer.route_id, 'route_short_name']
         start_stop_name = merged_data.stops_df.loc[transfer.start_stop_id, 'stop_name']
         end_stop_name = merged_data.stops_df.loc[transfer.end_stop_id, 'stop_name']
-        print(f'{route_name} {start_time:%H:%M} {start_stop_name} -> {end_time:%H:%M} {end_stop_name}')
+        print(f'{route_name} {start_datetime:%H:%M} {start_stop_name} -> {end_datetime:%H:%M} {end_stop_name}')
