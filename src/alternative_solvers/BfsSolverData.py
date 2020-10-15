@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-import pandas as pd
 import networkx as nx
+import pandas as pd
 
 from src.data_classes.Data import Data
 
@@ -13,4 +13,3 @@ class BfsSolverData(Data):
     G_T: nx.DiGraph
     unique_stop_times_df: pd.DataFrame
     trips_df: pd.DataFrame
-
