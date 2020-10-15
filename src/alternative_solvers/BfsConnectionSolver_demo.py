@@ -3,10 +3,8 @@ from datetime import datetime
 from pathlib import Path
 
 from src.alternative_solvers.BfsConnectionSolver import BfsConnectionSolver
-from src.alternative_solvers.BfsSolverData import BfsSolverData
 from src.alternative_solvers.BfsSolverExtractor import BfsSolverExtractor
 from src.data_classes.ConnectionQuery import ConnectionQuery
-from src.data_classes.ParsedData import ParsedData
 from src.data_provider.Merger import Merger
 from src.data_provider.Parser import Parser
 
@@ -23,8 +21,8 @@ if __name__ == '__main__':
     extractor = BfsSolverExtractor()
     bfs_solver_data = extractor.extract(merged_data)
 
-    merged_data.save('merged_data.pickle')
-    bfs_solver_data.save('bfs_solver_data.pickle')
+    # merged_data.save('merged_data.pickle')
+    # bfs_solver_data.save('bfs_solver_data.pickle')
 
     # merged_data = ParsedData.load('merged_data.pickle')
     # bfs_solver_data = BfsSolverData.load('bfs_solver_data.pickle')
