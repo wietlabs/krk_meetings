@@ -28,13 +28,13 @@ if __name__ == '__main__':
     # bfs_solver_data = BfsSolverData.load('bfs_solver_data.pickle')
 
     solver = BfsConnectionSolver(bfs_solver_data,
-                                 earliest_arrival_time=False,
-                                 latest_departure_time=False,
+                                 earliest_arrival_time=True,
+                                 latest_departure_time=True,
                                  minimal_transfers_count=True)
 
     start_stop_id = 1362
     end_stop_id = 333
-    start_dt = datetime(2020, 9, 13, 23, 30)
+    start_dt = datetime(2020, 10, 14, 12, 34)
 
     query = ConnectionQuery(42, start_dt, start_stop_id, end_stop_id)
 
