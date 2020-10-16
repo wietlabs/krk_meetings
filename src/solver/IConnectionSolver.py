@@ -7,5 +7,5 @@ from typing import List
 
 class IConnectionSolver(ABC):
     @abstractmethod
-    def find_connections(self, query: ConnectionQuery) -> List[ConnectionResults]:
+    def find_connections(self, query: ConnectionQuery) -> (int, List[ConnectionResults]):
         pass

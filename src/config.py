@@ -14,3 +14,9 @@ class URL(Enum):
     CONNECTION = "http://127.0.0.1:5000/connection"
     MEETING = "http://127.0.0.1:5000/meeting"
     SEQUENCE = "http://127.0.0.1:5000/sequence"
+
+
+class SolverStatusCodes(Enum):
+    OK = ""
+    BAD_START_STOP_NAME = "Error: Bad start stop name."
+    BAD_END_STOP_NAME = "Error: Bad end stop name."

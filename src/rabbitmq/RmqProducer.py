@@ -24,5 +24,14 @@ class RmqProducer:
         except pika.exceptions.StreamLostError:
             print(lost_stream_msg)
 
+    def send_error(self, message, task_id=None, lost_stream_msg="Rabbitmq error: Stream connection lost"):
+        try:
+            if task_id is None:
+                routing_key = self.routing_key
+            else:
+                routing_key = self.routing_key + str(task_id)
+            self.channel.basic_publish(exchange=self.exchange_name, routing_key=routing_key, body=message)
+        except pika.exceptions.StreamLostError:
+            print(lost_stream_msg)
 
 

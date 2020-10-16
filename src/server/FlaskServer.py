@@ -6,8 +6,7 @@ from src.exchanges import EXCHANGES
 from src.rabbitmq.RmqConsumer import RmqOneMsgConsumer
 from src.rabbitmq.RmqProducer import RmqProducer
 from src.data_provider.FloydDataProvider import FloydDataProvider
-from src.config import WALKING_ROUTE_ID, DATETIME_FORMAT
-from datetime import datetime
+from src.config import SolverStatusCodes
 
 
 def start_flask_server():
@@ -46,21 +45,11 @@ class FlaskServer:
         self.run()
 
     def handle_connection(self):
-        try:
-            request_json = json.loads(request.get_json())
-            request_json = {
-                'start_datetime': request_json['start_datetime'],
-                'start_stop_id': int(self.stops_df_by_name.at[request_json['start_stop_name'], 'stop_id']),
-                'end_stop_id': int(self.stops_df_by_name.at[request_json['end_stop_name'], 'stop_id'])
-            }
-            connection_results = self.handle_query_post(EXCHANGES.CONNECTION_RESULTS.value, self.connection_producer,
-                                                        request_json)
-            connection_results = [{'transfers': [self.parse_transfers(t) for t in transfers]} for transfers in
-                                  connection_results]
-            connection_results = {'connections': connection_results}
-            return jsonify(connection_results), 202
-        except Exception as e:
-            return jsonify(str(e)), 400
+        request_json = json.loads(request.get_json())
+        result = self.handle_query_post(EXCHANGES.CONNECTION_RESULTS.value, self.connection_producer, request_json)
+        if result in [SolverStatusCodes.BAD_END_STOP_NAME.value, SolverStatusCodes.BAD_START_STOP_NAME.value]:
+            return jsonify(result), 400
+        return jsonify(result), 202
 
     def handle_meeting(self):
         try:
@@ -87,43 +76,6 @@ class FlaskServer:
         connection_consumer = RmqOneMsgConsumer(exchange, task_id)
         result = connection_consumer.receive_msg()
         return result
-
-    def parse_transfers(self, transfer):
-        result = {}
-        result['start_stop'] = self.stops_df.at[transfer['start_stop_id'], 'stop_name']
-        result['end_stop'] = self.stops_df.at[transfer['end_stop_id'], 'stop_name']
-        if transfer['route_id'] != WALKING_ROUTE_ID:
-            result['type'] = 'transfer'
-            result['start_datetime'] = transfer['start_datetime']
-            result['end_datetime'] = transfer['end_datetime']
-            result['route_name'] = self.routes_df.at[transfer['route_id'], 'route_name']
-            result['headsign'] = self.routes_df.at[transfer['route_id'], 'headsign']
-            result['stops'] = self.get_stop_list(transfer['route_id'], transfer['start_stop_id'],
-                                                 transfer['end_stop_id'])
-        else:
-            result['type'] = 'walking'
-            duration = datetime.strptime(transfer['end_datetime'], DATETIME_FORMAT) - \
-                       datetime.strptime(transfer['start_datetime'], DATETIME_FORMAT)
-            result['duration_in_minutes'] = int(duration.seconds / 60)
-        return result
-
-    def get_stop_list(self, route_id, start_stop_id, end_stop_id):
-        stop_ids_list = self.routes_to_stops_dict[route_id]
-        stops = []
-        for stop_id in stop_ids_list:
-            if stop_id == start_stop_id:
-                stops = [start_stop_id]
-            elif stops:
-                stops.append(stop_id)
-                if stop_id == end_stop_id:
-                    break
-        stops = list(map(lambda s:
-                         {
-                             'name': self.stops_df.at[s, 'stop_name'],
-                             'latitude': self.stops_df.at[s, 'stop_lat'],
-                             'longitude': self.stops_df.at[s, 'stop_lon'],
-                         }, stops))
-        return stops
 
 
 if __name__ == '__main__':

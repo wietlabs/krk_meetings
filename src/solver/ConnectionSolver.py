@@ -1,3 +1,4 @@
+import json
 from copy import copy
 from queue import PriorityQueue
 from typing import List
@@ -6,14 +7,17 @@ import pandas as pd
 from datetime import datetime, timedelta
 
 from src.data_classes.ConnectionResults import ConnectionResults
+from src.data_classes.WalkingTransfer import WalkingTransfer
+from src.solver import solver_utils
 from src.solver.DataManager import DataManager
 from src.utils import *
 from src.solver.IConnectionSolver import IConnectionSolver
 from src.data_classes.Transfer import Transfer
 from src.data_classes.ConnectionQuery import ConnectionQuery
+from src.solver.solver_utils import get_stop_id_by_name, get_stop_name_by_id, parse_transfers
 
 from src.config import FLOYD_SOLVER_SEARCHING_TIME, FLOYD_SOLVER_MAX_PRIORITY_MULTIPLIER, FLOYD_SOLVER_MAX_PATHS, \
-    WALKING_ROUTE_ID
+    WALKING_ROUTE_ID, SolverStatusCodes
 
 
 class ConnectionSolver(IConnectionSolver):
@@ -30,6 +34,7 @@ class ConnectionSolver(IConnectionSolver):
         self.paths = None
         self.day_to_services_dict = None
         self.adjacent_stops = None
+        self.routes_to_stops_dict = None
 
         self.data_manager.start()
         self.data_manager.update_data()
@@ -48,17 +53,21 @@ class ConnectionSolver(IConnectionSolver):
             self.stop_times_24 = data.stop_times_24_dict
             self.day_to_services_dict = data.day_to_services_dict
             self.adjacent_stops = data.adjacent_stops
+            self.routes_to_stops_dict = data.routes_to_stops_dict
             self.paths = dict()
             for node in self.graph.nodes():
                 self.paths[node] = dict()
 
-    def find_connections(self, query: ConnectionQuery) -> List[ConnectionResults]:
+    def find_connections(self, query: ConnectionQuery) -> (int, List[ConnectionResults]):
         self.update_data()
         current_datetime = query.start_datetime
         current_time = time_to_int(current_datetime.time())
-
-        start_stop_id = query.start_stop_id
-        end_stop_id = query.end_stop_id
+        start_stop_id = solver_utils.get_stop_id_by_name(query.start_stop_name, self.stops_df_by_name)
+        if start_stop_id is None:
+            return SolverStatusCodes.BAD_START_STOP_NAME.value, []
+        end_stop_id = solver_utils.get_stop_id_by_name(query.end_stop_name, self.stops_df_by_name)
+        if start_stop_id is None:
+            return SolverStatusCodes.BAD_END_STOP_NAME.value, []
 
         paths = self.get_paths(start_stop_id, end_stop_id)
         connections = []
@@ -69,16 +78,27 @@ class ConnectionSolver(IConnectionSolver):
                     transfers = []
                     for transfer in result:
                         route_id, current_stop_id, next_stop_id, departure_time, arrival_time = transfer
+                        current_stop_name = solver_utils.get_stop_name_by_id(current_stop_id, self.stops_df)
+                        next_stop_name = solver_utils.get_stop_name_by_id(next_stop_id, self.stops_df)
                         format_datetime = datetime(current_datetime.year, current_datetime.month, current_datetime.day)
                         start_datetime = format_datetime + timedelta(seconds=departure_time)
                         end_datetime = format_datetime + timedelta(seconds=arrival_time)
-                        transfers.append(
-                            Transfer(route_id, current_stop_id, next_stop_id, start_datetime, end_datetime))
+                        if route_id != WALKING_ROUTE_ID:
+                            route_name = solver_utils.get_route_name_by_id(route_id, self.routes_df)
+                            headsign = solver_utils.get_headsign_by_id(route_id, self.routes_df)
+                            stops = solver_utils.get_stop_list(route_id, current_stop_id, next_stop_id, self.stops_df,
+                                                               self.routes_to_stops_dict)
+                            transfers.append(
+                                Transfer(route_name, headsign, current_stop_name, next_stop_name, start_datetime, end_datetime, stops))
+                        else:
+                            duration_in_minutes = int((arrival_time - departure_time) / 60)
+                            transfers.append(WalkingTransfer(current_stop_name, next_stop_name, duration_in_minutes,
+                                                             start_datetime, end_datetime))
 
                     connection = ConnectionResults(transfers)
                     connections.append(connection)
             connections.sort(key=lambda c: c.transfers[0].start_datetime)
-        return connections
+        return SolverStatusCodes.OK.value, connections
 
     def find_routes(self, path: List[int], start_time: int, start_datetime: datetime):
         # TODO smart join could return paths for all hours at once
@@ -132,9 +152,9 @@ class ConnectionSolver(IConnectionSolver):
                     walking_df[f'index_{str(i)}'] = [(
                         WALKING_ROUTE_ID, WALKING_ROUTE_ID, WALKING_ROUTE_ID)] * len(walking_df)
                     walking_df[f'departure_time_c_{str(i)}'] = walking_df.apply(
-                        lambda row: row[f'departure_time_n_{str(i-1)}'], axis=1)
+                        lambda row: row[f'departure_time_n_{str(i - 1)}'], axis=1)
                     walking_df[f'departure_time_n_{str(i)}'] = walking_df.apply(
-                        lambda row: row[f'departure_time_n_{str(i-1)}'] + walking_time, axis=1)
+                        lambda row: row[f'departure_time_n_{str(i - 1)}'] + walking_time, axis=1)
                 results_df = results_df.assign(c=1)
                 results_df = results_df.merge(transfers_df.assign(c=1))
                 results_df.drop(columns=['c', 'route_id_c'], axis=1, inplace=True)
@@ -144,7 +164,7 @@ class ConnectionSolver(IConnectionSolver):
                                            'index': f'index_{str(i)}'},
                                   inplace=True)
                 results_df = results_df[
-                    results_df[f'departure_time_n_{str(i-1)}'] < results_df[f'departure_time_c_{str(i)}']]
+                    results_df[f'departure_time_n_{str(i - 1)}'] < results_df[f'departure_time_c_{str(i)}']]
                 if (current_stop, next_stop) in self.adjacent_stops:
                     results_df = results_df.append(walking_df)
                 results_df = results_df.sort_values(by=[f'departure_time_n_{str(i)}'])
@@ -156,7 +176,7 @@ class ConnectionSolver(IConnectionSolver):
                 route_id = row[4 * i + 3]
                 departure_time = row[4 * i + 1]
                 arrival_time = row[4 * i + 2]
-                result.append((route_id, path[i], path[i+1], departure_time, arrival_time))
+                result.append((route_id, path[i], path[i + 1], departure_time, arrival_time))
             results.append(result)
         return results
 
@@ -191,7 +211,6 @@ class ConnectionSolver(IConnectionSolver):
         max_priority = self.distances[start_node_id][end_node_id] * FLOYD_SOLVER_MAX_PRIORITY_MULTIPLIER
         priority = 0
 
-
         last_hubs = []
         if end_node_id not in self.kernelized_graph.nodes:
             for neighbor_id in self.graph.neighbors(end_node_id):
@@ -203,7 +222,7 @@ class ConnectionSolver(IConnectionSolver):
         else:
             for neighbor_id in self.graph.neighbors(start_node_id):
                 if neighbor_id in self.kernelized_graph.nodes:
-                    resolve_neighbor(start_node_id, neighbor_id, 0, [start_node_id], [],  self.graph)
+                    resolve_neighbor(start_node_id, neighbor_id, 0, [start_node_id], [], self.graph)
 
         while not queue.empty() and priority <= max_priority and len(paths) <= FLOYD_SOLVER_MAX_PATHS:
             priority, weight, node_id, path, routes = queue.get()

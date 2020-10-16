@@ -12,4 +12,4 @@ if __name__ == "__main__":
 
     response = requests.post(URL.CONNECTION.value, json=json.dumps(query_json))
     connections = response.json()
-    print({'connections': [connections['connections'][0]]})
+    print({'connections': [connections['connections'][1]]})
