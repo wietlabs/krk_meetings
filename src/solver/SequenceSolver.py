@@ -1,44 +1,33 @@
 from copy import copy
-from time import sleep
+
 
 from src.data_classes.SequenceQuery import SequenceQuery
 from src.data_classes.SequenceResults import SequenceResults
-from src.rabbitmq.RmqConsumer import RmqConsumer
-from src.rabbitmq.RmqProducer import RmqProducer
-from src.solver.DataUpdater import DataUpdater
 from src.solver.ISequenceSolver import ISequenceSolver
-
-from src.exchanges import EXCHANGES
-
-
-def start_sequence_solver():
-    sequence_solver = SequenceSolver()
-    sequence_solver.start()
+from src.solver.DataManager import DataManager
 
 
-class SequenceSolver(DataUpdater, ISequenceSolver):
-    def __init__(self):
-        DataUpdater.__init__(self)
-        self.query_consumer = RmqConsumer(EXCHANGES.SEQUENCE_QUERY.value, self.consume_sequence_query)
-        self.results_producer = RmqProducer(EXCHANGES.SEQUENCE_RESULTS.value)
+class SequenceSolver(ISequenceSolver):
+    def __init__(self, ):
+        self.data_manager = DataManager()
+        self.distances = None
+        self.stops_df = None
+        self.stops_df_by_name = None
 
-    def start(self):
-        DataUpdater.start(self)
-        print("SequenceSolver: started.")
-        self.query_consumer.start()
+        self.data_manager.start()
+        self.data_manager.update_data()
+        self.update_data()
 
-    def stop(self):
-        DataUpdater.stop(self)
-        self.query_consumer.stop()
-        self.results_producer.stop()
-
-    def consume_sequence_query(self, query: SequenceQuery):
-        with self.lock:
-            best_sequence = self.find_best_sequence(query)
-        sleep(0.001)
-        self.results_producer.send_msg(best_sequence, query.query_id)
+    def update_data(self):
+        if not self.data_manager.up_to_date:
+            data = self.data_manager.get_updated_data()
+            self.distances = data.distances_dict
+            self.stops_df = data.stops_df
+            self.stops_df_by_name = data.stops_df_by_name
 
     def find_best_sequence(self, query: SequenceQuery) -> SequenceResults:
+        self.update_data()
+
         def gen(stop_ids: list, current_stop_id, last_stop_id, sequence: list, weight: int):
             if stop_ids:
                 for next_stop_id in stop_ids:

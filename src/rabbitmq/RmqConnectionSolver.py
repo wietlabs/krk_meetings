@@ -4,15 +4,16 @@ from src.rabbitmq.RmqConsumer import RmqConsumer
 from src.rabbitmq.RmqProducer import RmqProducer
 from src.solver.ConnectionSolver import ConnectionSolver
 
+
 def start_connection_solver():
-    meeting_solver = RmqConnectionSolver()
-    meeting_solver.start()
+    connection_solver = RmqConnectionSolver()
+    connection_solver.start()
 
 
 class RmqConnectionSolver:
     def __init__(self):
         self.connection_solver = ConnectionSolver()
-        self.query_consumer = RmqConsumer(EXCHANGES.CONNECTION_QUERY.value, self.consume_connection_query)
+        self.query_consumer = RmqConsumer(EXCHANGES.CONNECTION_QUERY.value, self.consume_query)
         self.results_producer = RmqProducer(EXCHANGES.CONNECTION_RESULTS.value)
 
     def start(self):
@@ -24,11 +25,12 @@ class RmqConnectionSolver:
         self.results_producer.stop()
         self.connection_solver.data_manager.stop()
 
-    def consume_connection_query(self, query: ConnectionQuery):
-        print("consume_connection_query")
-        connections = self.connection_solver.find_connections(query)
-        self.results_producer.send_msg(connections, query.query_id)
-        print("results_sent")
+    def consume_query(self, query: ConnectionQuery):
+        error, connections = self.connection_solver.find_connections(query)
+        if error:
+            self.results_producer.send_error(error)
+        else:
+            self.results_producer.send_msg(connections, query.query_id)
 
 
 if __name__ == "__main__":

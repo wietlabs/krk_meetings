@@ -4,11 +4,13 @@ from datetime import datetime, timedelta
 from typing import List
 
 from src.data_classes.Transfer import Transfer
+from src.data_classes.WalkingTransfer import WalkingTransfer
+from src.data_classes.ITransfer import ITransfer
 
 
 @dataclass
 class ConnectionResults:
-    transfers: List[Transfer]
+    transfers: List[ITransfer]
 
     def __str__(self) -> str:
         return '\n'.join(map(str, self.transfers))
@@ -29,7 +31,7 @@ class ConnectionResults:
 
     @staticmethod
     def to_json(connections):
-        return json.dumps(list(map(lambda c: ConnectionResults.to_serializable(c), connections)), ensure_ascii=False)
+        return json.dumps({"connections": [ConnectionResults.to_serializable(c) for c in connections]}, ensure_ascii=False)
 
     @staticmethod
     def from_json(json_file):
@@ -38,10 +40,15 @@ class ConnectionResults:
 
     @staticmethod
     def to_serializable(connection):
-        #print(connection)
-        return list(map(lambda t: Transfer.to_serializable(t), connection.transfers))
+        return {'transfers': [ConnectionResults.serialize_transfer(t) for t in connection.transfers]}
+
+    @staticmethod
+    def serialize_transfer(t):
+        if type(t) is Transfer:
+            return Transfer.to_serializable(t)
+        return WalkingTransfer.to_serializable(t)
 
     @staticmethod
     def from_serializable(connection):
-        connection_result = list(map(lambda t: Transfer.from_serializable(t), connection))
+        connection_result = list(map(lambda t: t.from_serializable(t), connection))
         return ConnectionResults(connection_result)

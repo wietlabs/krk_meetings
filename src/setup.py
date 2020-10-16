@@ -1,8 +1,8 @@
 from src.data_provider.FloydDataProvider import start_data_provider
 from src.server.FlaskServer import start_flask_server
 from src.rabbitmq.RmqConnectionSolver import start_connection_solver
-from src.solver.MeetingSolver import start_meeting_solver
-from src.solver.SequenceSolver import start_sequence_solver
+from src.rabbitmq.RmqMeetingSolver import start_meeting_solver
+from src.rabbitmq.RmqSequenceSolver import start_sequence_solver
 import multiprocessing
 
 
