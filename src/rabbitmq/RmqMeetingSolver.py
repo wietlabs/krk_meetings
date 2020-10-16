@@ -17,7 +17,7 @@ class RmqMeetingSolver:
         self.results_producer = RmqProducer(EXCHANGES.MEETING_RESULTS.value)
 
     def start(self):
-        print("ConnectionSolver: started.")
+        print("MeetingSolver: started.")
         self.query_consumer.start()
 
     def stop(self):
@@ -26,10 +26,8 @@ class RmqMeetingSolver:
         self.meeting_solver.data_manager.stop()
 
     def consume_query(self, query: MeetingQuery):
-        print("consume_connection_query")
-        connections = self.meeting_solver.find_meeting_points(query)
-        self.results_producer.send_msg(connections, query.query_id)
-        print("results_sent")
+        meeting = self.meeting_solver.find_meeting_points(query)
+        self.results_producer.send_msg(meeting, query.query_id)
 
 
 if __name__ == "__main__":

@@ -43,10 +43,6 @@ def parse_transfers(transfer, stops_df, routes_df, routes_to_stops_dict):
 
 def get_stop_list(route_id, start_stop_id, end_stop_id, stops_df, routes_to_stops_dict):
     stop_ids_list = routes_to_stops_dict[route_id]
-    print(start_stop_id)
-    print(end_stop_id)
-    print(stop_ids_list)
-    print("*" * 50)
     stops = []
     for stop_id in stop_ids_list:
         if stop_id == start_stop_id:

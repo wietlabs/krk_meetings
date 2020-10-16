@@ -52,12 +52,9 @@ class FlaskServer:
         return jsonify(result), 202
 
     def handle_meeting(self):
-        try:
-            request_json = json.loads(request.get_json())
-            result = self.handle_query_post(EXCHANGES.MEETING_RESULTS.value, self.meeting_producer, request_json)
-            return jsonify(result), 202
-        except Exception as e:
-            return jsonify(e), 400
+        request_json = json.loads(request.get_json())
+        result = self.handle_query_post(EXCHANGES.MEETING_RESULTS.value, self.meeting_producer, request_json)
+        return jsonify(result), 202
 
     def handle_sequence(self):
         try:
@@ -72,8 +69,8 @@ class FlaskServer:
             self.task_id.value += 1
             task_id = self.task_id.value
         request_json['query_id'] = task_id
-        producer.send_msg(request_json)
         connection_consumer = RmqOneMsgConsumer(exchange, task_id)
+        producer.send_msg(request_json)
         result = connection_consumer.receive_msg()
         return result
 
