@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from typing import List
 
 from src.data_classes.Transfer import Transfer
-from src.data_classes.WalkingTransfer import Walk
+from src.data_classes.Walk import Walk
 from src.data_classes.IAction import IAction
 
 

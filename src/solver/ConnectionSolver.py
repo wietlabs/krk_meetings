@@ -7,7 +7,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 
 from src.data_classes.ConnectionResults import ConnectionResults
-from src.data_classes.WalkingTransfer import Walk
+from src.data_classes.Walk import Walk
 from src.solver import solver_utils
 from src.solver.DataManager import DataManager
 from src.utils import *
