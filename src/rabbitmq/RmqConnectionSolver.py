@@ -1,3 +1,4 @@
+from src.data_classes.ConnectionResults import ConnectionResults
 from src.exchanges import EXCHANGES
 from src.data_classes.ConnectionQuery import ConnectionQuery
 from src.rabbitmq.RmqConsumer import RmqConsumer
@@ -14,7 +15,7 @@ class RmqConnectionSolver:
     def __init__(self):
         self.connection_solver = ConnectionSolver()
         self.query_consumer = RmqConsumer(EXCHANGES.CONNECTION_QUERY.value, self.consume_query)
-        self.results_producer = RmqProducer(EXCHANGES.CONNECTION_RESULTS.value)
+        self.results_producer = RmqProducer(EXCHANGES.FLASK_SERVER_CONNECTION.value)
 
     def start(self):
         print("ConnectionSolver: started.")
@@ -30,7 +31,8 @@ class RmqConnectionSolver:
         if error:
             self.results_producer.send_error(error)
         else:
-            self.results_producer.send_msg(connections, query.query_id)
+            connection_results = ConnectionResults(query.query_id, connections)
+            self.results_producer.send_msg(connection_results)
 
 
 if __name__ == "__main__":

@@ -3,14 +3,14 @@ from datetime import date, time
 
 from src.config import EXCHANGES
 from src.data_classes.ConnectionQuery import ConnectionQuery
-from src.data_classes.ConnectionResults import ConnectionResults
+from src.data_classes.Connection import Connection
 from src.rabbitmq.RmqConsumer import RmqConsumer, RmqOneMsgConsumer
 from src.rabbitmq.RmqProducer import RmqProducer
 
 
 class MockedApi:
     def __init__(self, task_id):
-        self.results_consumer = RmqOneMsgConsumer(EXCHANGES.CONNECTION_RESULTS.value, task_id)
+        self.results_consumer = RmqOneMsgConsumer(EXCHANGES.FLASK_SERVER.value, task_id)
         self.query_producer = RmqProducer(EXCHANGES.CONNECTION_QUERY.value)
 
     def receive_msg(self):
@@ -23,7 +23,7 @@ class MockedApi:
 
 
 def print_connections(connections):
-    connections = ConnectionResults.from_json(json.dumps(connections))
+    connections = Connection.from_json(json.dumps(connections))
     for connection in connections:
         print(connection)
         print('-' * 30)

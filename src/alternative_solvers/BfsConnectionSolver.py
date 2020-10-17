@@ -5,7 +5,7 @@ import networkx as nx
 
 from src.alternative_solvers.BfsSolverData import BfsSolverData
 from src.data_classes.ConnectionQuery import ConnectionQuery
-from src.data_classes.ConnectionResults import ConnectionResults
+from src.data_classes.Connection import Connection
 from src.data_classes.Transfer import Transfer
 from src.solver.IConnectionSolver import IConnectionSolver
 
@@ -26,7 +26,7 @@ class BfsConnectionSolver(IConnectionSolver):
         self.latest_departure_time = latest_departure_time
         self.minimal_transfers_count = minimal_transfers_count
 
-    def find_connections(self, query: ConnectionQuery) -> List[ConnectionResults]:
+    def find_connections(self, query: ConnectionQuery) -> List[Connection]:
         MINUTE = 60
         HOUR = 60 * MINUTE
         DAY = 24 * HOUR
@@ -85,6 +85,6 @@ class BfsConnectionSolver(IConnectionSolver):
                 yield Transfer(route_id, start_stop_id, end_stop_id, start_datetime, end_datetime)
 
         transfers = list(transfers_gen())
-        connection = ConnectionResults(transfers)
+        connection = Connection(transfers)
         results = [connection]
         return results

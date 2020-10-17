@@ -39,4 +39,4 @@ class MeetingSolver(IMeetingSolver):
             meeting_metrics.append((end_stop_id, metric(distances_to_destination)))
         meeting_metrics.sort(key=lambda x: x[1])
         meeting_points = list(map(lambda x: self.stops_df.at[x[0], 'stop_name'], meeting_metrics[0:10]))
-        return MeetingResults(meeting_points)
+        return MeetingResults(query.query_id, meeting_points)

@@ -14,7 +14,7 @@ class RmqMeetingSolver:
     def __init__(self):
         self.meeting_solver = MeetingSolver()
         self.query_consumer = RmqConsumer(EXCHANGES.MEETING_QUERY.value, self.consume_query)
-        self.results_producer = RmqProducer(EXCHANGES.MEETING_RESULTS.value)
+        self.results_producer = RmqProducer(EXCHANGES.FLASK_SERVER_MEETING.value)
 
     def start(self):
         print("MeetingSolver: started.")
@@ -27,7 +27,7 @@ class RmqMeetingSolver:
 
     def consume_query(self, query: MeetingQuery):
         meeting = self.meeting_solver.find_meeting_points(query)
-        self.results_producer.send_msg(meeting, query.query_id)
+        self.results_producer.send_msg(meeting)
 
 
 if __name__ == "__main__":

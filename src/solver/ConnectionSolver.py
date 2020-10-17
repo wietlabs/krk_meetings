@@ -6,7 +6,7 @@ from itertools import chain
 import pandas as pd
 from datetime import datetime, timedelta
 
-from src.data_classes.ConnectionResults import ConnectionResults
+from src.data_classes.Connection import Connection
 from src.data_classes.Walk import Walk
 from src.solver import solver_utils
 from src.solver.DataManager import DataManager
@@ -58,7 +58,7 @@ class ConnectionSolver(IConnectionSolver):
             for node in self.graph.nodes():
                 self.paths[node] = dict()
 
-    def find_connections(self, query: ConnectionQuery) -> (int, List[ConnectionResults]):
+    def find_connections(self, query: ConnectionQuery) -> (int, List[Connection]):
         self.update_data()
         current_datetime = query.start_datetime
         current_time = time_to_int(current_datetime.time())
@@ -95,7 +95,7 @@ class ConnectionSolver(IConnectionSolver):
                             transfers.append(Walk(current_stop_name, next_stop_name, duration_in_minutes,
                                                   start_datetime, end_datetime))
 
-                    connection = ConnectionResults(transfers)
+                    connection = Connection(transfers)
                     connections.append(connection)
             connections.sort(key=lambda c: c.transfers[0].start_datetime)
         return SolverStatusCodes.OK.value, connections

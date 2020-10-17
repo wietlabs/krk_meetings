@@ -48,4 +48,4 @@ class SequenceSolver(ISequenceSolver):
         sequences = list(gen(stops_to_visit_ids, start_stop_id, end_stop_id, [start_stop_id], 0))
         best_sequence = min(sequences, key=lambda x: x[1])
         best_sequence = list(map(lambda x: self.stops_df.at[x, 'stop_name'], best_sequence[0]))
-        return SequenceResults(best_sequence)
+        return SequenceResults(query.query_id, best_sequence)
