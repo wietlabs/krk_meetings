@@ -1,11 +1,11 @@
 import json
 from dataclasses import dataclass
 from datetime import datetime
-from src.data_classes.ITransfer import ITransfer
+from src.data_classes.IAction import IAction
 
 
 @dataclass
-class WalkingTransfer(ITransfer):
+class Walk(IAction):
     start_stop_name: int
     end_stop_name: int
     duration_in_minutes: int
@@ -23,7 +23,7 @@ class WalkingTransfer(ITransfer):
 
     @staticmethod
     def from_serializable(walking_transfer):
-        return WalkingTransfer(
+        return Walk(
             walking_transfer["start_stop_name"],
             walking_transfer["end_stop_name"],
             walking_transfer["duration_in_minutes"],
@@ -32,4 +32,4 @@ class WalkingTransfer(ITransfer):
         )
 
     def __str__(self):
-        return str(self.start_stop_name) + " ==> " + str(self.end_stop_name) + " " + str(self.duration_in_minutes)
+        return f"{self.start_stop_name} ==> {self.end_stop_name} {self.duration_in_minutes}"
