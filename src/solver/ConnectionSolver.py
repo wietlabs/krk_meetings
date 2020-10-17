@@ -7,7 +7,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 
 from src.data_classes.ConnectionResults import ConnectionResults
-from src.data_classes.WalkingTransfer import WalkingTransfer
+from src.data_classes.WalkingTransfer import Walk
 from src.solver import solver_utils
 from src.solver.DataManager import DataManager
 from src.utils import *
@@ -92,8 +92,8 @@ class ConnectionSolver(IConnectionSolver):
                                 Transfer(route_name, headsign, current_stop_name, next_stop_name, start_datetime, end_datetime, stops))
                         else:
                             duration_in_minutes = int((arrival_time - departure_time) / 60)
-                            transfers.append(WalkingTransfer(current_stop_name, next_stop_name, duration_in_minutes,
-                                                             start_datetime, end_datetime))
+                            transfers.append(Walk(current_stop_name, next_stop_name, duration_in_minutes,
+                                                  start_datetime, end_datetime))
 
                     connection = ConnectionResults(transfers)
                     connections.append(connection)

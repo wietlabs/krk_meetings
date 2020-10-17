@@ -4,13 +4,13 @@ from datetime import datetime, timedelta
 from typing import List
 
 from src.data_classes.Transfer import Transfer
-from src.data_classes.WalkingTransfer import WalkingTransfer
-from src.data_classes.ITransfer import ITransfer
+from src.data_classes.WalkingTransfer import Walk
+from src.data_classes.IAction import IAction
 
 
 @dataclass
 class ConnectionResults:
-    transfers: List[ITransfer]
+    transfers: List[IAction]
 
     def __str__(self) -> str:
         return '\n'.join(map(str, self.transfers))
@@ -46,7 +46,7 @@ class ConnectionResults:
     def serialize_transfer(t):
         if type(t) is Transfer:
             return Transfer.to_serializable(t)
-        return WalkingTransfer.to_serializable(t)
+        return Walk.to_serializable(t)
 
     @staticmethod
     def from_serializable(connection):

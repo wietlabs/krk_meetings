@@ -2,11 +2,11 @@ import json
 from dataclasses import dataclass
 from datetime import date, time, datetime
 from src.config import DATETIME_FORMAT
-from src.data_classes.ITransfer import ITransfer
+from src.data_classes.IAction import IAction
 
 
 @dataclass
-class Transfer(ITransfer):
+class Transfer(IAction):
     route_name: str
     headsign: str
     start_stop_name: str
@@ -41,4 +41,4 @@ class Transfer(ITransfer):
         )
 
     def __str__(self):
-        return f"{self.route_id} {self.start_stop_name} {self.start_datetime} ==> {self.end_stop_name} {self.end_datetime}"
+        return f"{self.route_name} {self.headsign} {self.start_stop_name} {self.start_datetime} ==> {self.end_stop_name} {self.end_datetime}"

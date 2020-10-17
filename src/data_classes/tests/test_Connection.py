@@ -6,7 +6,7 @@ from src.data_classes.ConnectionResults import ConnectionResults
 from src.data_classes.Transfer import Transfer
 
 connection1 = ConnectionResults([
-    Transfer('139', 'headsign', 'Czarnowiejska', 'Miasteczko Studenckie AGH', datetime(2019, 1, 1, 12, 34), datetime(2019, 1, 1, 12,37), []),
+    Transfer('139', 'headsign', 'Czarnowiejska', 'Miasteczko Studenckie AGH', datetime(2019, 1, 1, 12, 34), datetime(2019, 1, 1, 12, 37), []),
 ])
 
 connection2 = ConnectionResults([
