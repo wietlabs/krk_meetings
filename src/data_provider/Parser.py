@@ -22,6 +22,9 @@ class Parser:
             with zipfile.open('calendar.txt') as f:
                 calendar_df = self.parse_calendar_df(f)
 
+            with zipfile.open('calendar_dates.txt') as f:
+                calendar_dates_df = self.parse_calendar_dates_df(f)
+
             with zipfile.open('routes.txt') as f:
                 routes_df = self.parse_routes_df(f)
 
@@ -36,7 +39,8 @@ class Parser:
 
         transfers_df = self.create_transfers_df(stop_times_df)
 
-        return ParsedData(calendar_df, routes_df, trips_df, stops_df, perons_df, stop_times_df, transfers_df)
+        return ParsedData(calendar_df, calendar_dates_df, routes_df, trips_df, stops_df, perons_df, stop_times_df,
+                          transfers_df)
 
     def parse_calendar_df(self, calendar_txt: FilePathOrBuffer) -> pd.DataFrame:
         df = pd.read_csv(calendar_txt,
@@ -44,6 +48,12 @@ class Parser:
                                   'sunday'])
         df['service_id'] = df['service_id'].map(parse_service_id)
         df.set_index('service_id', inplace=True)
+        return df
+
+    def parse_calendar_dates_df(self, calendar_dates_txt: FilePathOrBuffer) -> pd.DataFrame:
+        df = pd.read_csv(calendar_dates_txt, usecols=['service_id', 'date', 'exception_type'], parse_dates=['date'])
+        df['service_id'] = df['service_id'].map(parse_service_id)
+        df['date'] = df['date'].dt.date
         return df
 
     def parse_routes_df(self, routes_txt: FilePathOrBuffer) -> pd.DataFrame:
