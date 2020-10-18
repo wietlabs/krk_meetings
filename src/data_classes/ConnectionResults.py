@@ -1,54 +1,16 @@
 import json
 from dataclasses import dataclass
-from datetime import datetime, timedelta
 from typing import List
-
-from src.data_classes.Transfer import Transfer
-from src.data_classes.Walk import Walk
-from src.data_classes.IAction import IAction
+from src.data_classes.Connection import Connection
 
 
 @dataclass
 class ConnectionResults:
-    transfers: List[IAction]
-
-    def __str__(self) -> str:
-        return '\n'.join(map(str, self.transfers))
-
-    def transfers_count(self) -> int:
-        return len(self.transfers)
-
-    def departure_time(self) -> datetime:
-        return self.transfers[0].start_datetime
-
-    def arrival_time(self) -> datetime:
-        return self.transfers[-1].end_datetime
-
-    def duration(self, departure_time: datetime = None) -> timedelta:
-        if departure_time is None:
-            departure_time = self.departure_time()
-        return self.arrival_time() - departure_time
+    query_id: int
+    connections: List[Connection]
 
     @staticmethod
-    def to_json(connections):
-        return json.dumps({"connections": [ConnectionResults.to_serializable(c) for c in connections]}, ensure_ascii=False)
-
-    @staticmethod
-    def from_json(json_file):
-        json_dict = json.loads(json_file)
-        return list(map(lambda c: ConnectionResults.from_serializable(c), json_dict))
-
-    @staticmethod
-    def to_serializable(connection):
-        return {'transfers': [ConnectionResults.serialize_transfer(t) for t in connection.transfers]}
-
-    @staticmethod
-    def serialize_transfer(t):
-        if type(t) is Transfer:
-            return Transfer.to_serializable(t)
-        return Walk.to_serializable(t)
-
-    @staticmethod
-    def from_serializable(connection):
-        connection_result = list(map(lambda t: t.from_serializable(t), connection))
-        return ConnectionResults(connection_result)
+    def to_json(connection_results):
+        return json.dumps({"query_id": connection_results.query_id, "result": {
+            "connections": [Connection.to_serializable(c) for c in connection_results.connections]}},
+                          ensure_ascii=False)

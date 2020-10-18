@@ -14,7 +14,7 @@ class RmqSequenceSolver:
     def __init__(self):
         self.sequence_solver = SequenceSolver()
         self.query_consumer = RmqConsumer(EXCHANGES.SEQUENCE_QUERY.value, self.consume_query)
-        self.results_producer = RmqProducer(EXCHANGES.SEQUENCE_RESULTS.value)
+        self.results_producer = RmqProducer(EXCHANGES.FLASK_SERVER_SEQUENCE.value)
 
     def start(self):
         print("SequenceSolver: started.")
@@ -27,7 +27,7 @@ class RmqSequenceSolver:
 
     def consume_query(self, query: SequenceQuery):
         sequence = self.sequence_solver.find_best_sequence(query)
-        self.results_producer.send_msg(sequence, query.query_id)
+        self.results_producer.send_msg(sequence)
 
 
 if __name__ == "__main__":

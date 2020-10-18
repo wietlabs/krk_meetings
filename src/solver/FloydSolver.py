@@ -5,7 +5,7 @@ from itertools import chain
 import pandas as pd
 
 from src.data_classes.FloydSolverData import FloydSolverData
-from src.data_classes.ConnectionResults import ConnectionResults
+from src.data_classes.Connection import Connection
 from src.utils import *
 from src.solver.IConnectionSolver import IConnectionSolver
 from src.data_classes.Transfer import Transfer
@@ -31,7 +31,7 @@ class FloydSolver(IConnectionSolver):
         for node in self.graph.nodes():
             self.paths[node] = dict()
 
-    def find_connections(self, query: ConnectionQuery) -> List[ConnectionResults]:
+    def find_connections(self, query: ConnectionQuery) -> List[Connection]:
         current_time = time_to_int(query.start_time)
         current_date = query.start_date
         start_stop_id = self.stops_df_by_name.at[query.start_stop_name, 'stop_id']
@@ -58,7 +58,7 @@ class FloydSolver(IConnectionSolver):
                             Transfer(route_name, current_stop_name, next_stop_name, start_date, start_time, end_date,
                                      end_time))
 
-                    connection = ConnectionResults(transfers)
+                    connection = Connection(transfers)
                     connections.append(connection)
             connections.sort(key=lambda c: c.transfers[0].start_time)
         return connections

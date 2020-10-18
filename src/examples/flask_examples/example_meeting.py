@@ -1,8 +1,7 @@
 import json
 import requests
-
+import time
 from src.config import URL
-from src.data_classes.MeetingResults import MeetingResults
 
 if __name__ == "__main__":
     query_json = {
@@ -10,7 +9,12 @@ if __name__ == "__main__":
         "metric": "square"
     }
 
-    response = requests.post(URL.MEETING.value, json=json.dumps(query_json))
-    meeting = json.dumps(response.json(), ensure_ascii=False)
-    meeting = MeetingResults.from_json(meeting)
-    print(meeting.meeting_points)
+    response = requests.post(URL.MEETING.value, json=json.dumps(query_json), timeout=1.0)
+    query_id = response.json()
+    response = requests.get(URL.GET.value.format(query_id), json=json.dumps(query_json), timeout=1.0)
+    result = response.json()
+    print(result)
+    time.sleep(3)
+    response = requests.get(URL.GET.value.format(query_id), json=json.dumps(query_json), timeout=1.0)
+    result = response.json()
+    print(result)
