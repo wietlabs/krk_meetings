@@ -1,14 +1,14 @@
+from datetime import date
 from pathlib import Path
 from statistics import mean
 
-import pytest
 import pandas as pd
+import pytest
 from pandas.testing import assert_frame_equal
 
 from src.data_classes.ParsedData import ParsedData
 from src.data_provider.Parser import Parser
 from src.data_provider.utils import parse_time
-
 
 gtfs_zip_path = Path(__file__).parent / 'resources' / 'GTFS_TEST.zip'
 
@@ -39,10 +39,21 @@ def test_parse_calendar_df(parsed_data: ParsedData) -> None:
     expected = pd.DataFrame([
         [3, 0, 0, 0, 0, 0, 0, 1],
         [1, 1, 1, 1, 0, 0, 0, 0],
-        ],
+    ],
         columns=['service_id', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday']) \
         .set_index('service_id')
     actual = parsed_data.calendar_df
+    assert_frame_equal(expected, actual, check_dtype=False)
+
+
+def test_parse_calendar_dates_df(parsed_data: ParsedData) -> None:
+    expected = pd.DataFrame([
+        [3, date(2020, 5, 1), 1],
+        [1, date(2020, 5, 1), 2],
+        [3, date(2020, 5, 3), 1],
+        [2, date(2020, 5, 3), 2],
+    ], columns=['service_id', 'date', 'exception_type'])
+    actual = parsed_data.calendar_dates_df
     assert_frame_equal(expected, actual, check_dtype=False)
 
 
@@ -54,7 +65,7 @@ def test_parse_routes_df(parsed_data: ParsedData) -> None:
         [134, '501'],
         [143, '611'],
         [42, 'A'],
-        ], columns=['route_id', 'route_short_name']).set_index('route_id')
+    ], columns=['route_id', 'route_short_name']).set_index('route_id')
     actual = parsed_data.routes_df
     assert_frame_equal(expected, actual, check_dtype=False)
 
@@ -68,7 +79,7 @@ def test_parse_trips_df(parsed_data: ParsedData) -> None:
         [337, 3, 3, 583, 'Kombinat'],
         [337, 4, 3, 583, 'Mydlniki'],
         [337, 5, 3, 583, 'Kombinat'],
-        ], columns=['block_id', 'trip_num', 'service_id', 'route_id', 'trip_headsign']) \
+    ], columns=['block_id', 'trip_num', 'service_id', 'route_id', 'trip_headsign']) \
         .set_index(['service_id', 'block_id', 'trip_num'])
     actual = parsed_data.trips_df
     assert_frame_equal(expected, actual, check_dtype=False)
@@ -81,13 +92,14 @@ def test_parse_stops_df(parsed_data: ParsedData) -> None:
         [57, 'Czarnowiejska', mean((50.066172, 50.066574)), mean((19.923052, 19.922154))],
         [1230, 'Chopina', 50.067551, 19.917338],
         [58, 'Kawiory', mean((50.068419, 50.068372, 50.068801)), mean((19.913791, 19.912865, 19.91391))],
-        [61, 'Miasteczko Studenckie AGH', mean((50.0697, 50.069923, 50.069619, 50.070321)), mean((19.903701, 19.905468, 19.906581, 19.904225))],
+        [61, 'Miasteczko Studenckie AGH', mean((50.0697, 50.069923, 50.069619, 50.070321)),
+         mean((19.903701, 19.905468, 19.906581, 19.904225))],
         [60, 'Biprostal', mean((50.07351, 50.072412, 50.073446)), mean((19.91368, 19.91522, 19.915894))],
         [544, 'Brücknera', mean((50.011982, 50.012561)), mean((19.875804, 19.876017))],
         [1785, 'Petőfiego (nż)', mean((50.094152, 50.094174)), mean((20.035397, 20.035502))],
         [1368, 'Rżąka', 50.006257, 20.0111],
         [475, 'Bieżanów', 50.017537, 20.068257],
-        ], columns=['stop_id', 'stop_name', 'stop_lat', 'stop_lon']).set_index('stop_id').sort_index()
+    ], columns=['stop_id', 'stop_name', 'stop_lat', 'stop_lon']).set_index('stop_id').sort_index()
     actual = parsed_data.stops_df
     assert_frame_equal(expected, actual, check_dtype=False)
 
@@ -117,7 +129,7 @@ def test_parse_perons_df(parsed_data: ParsedData) -> None:
         [1785, 319102, 'Petőfiego (nż)', 50.094174, 20.035502],
         [1368, 304401, 'Rżąka', 50.006257, 20.01116],
         [475, 66701, 'Bieżanów', 50.017537, 20.068257],
-        ], columns=['stop_id', 'peron_id', 'peron_name', 'peron_lat', 'peron_lon']) \
+    ], columns=['stop_id', 'peron_id', 'peron_name', 'peron_lat', 'peron_lon']) \
         .set_index('peron_id')
     actual = parsed_data.perons_df
     assert_frame_equal(expected, actual, check_dtype=False)
@@ -137,7 +149,7 @@ def test_parse_stop_times_df(parsed_data: ParsedData) -> None:
         [337, 3, 3, parse_time('23:59:00'), 1230, 287801, 13],
         [337, 3, 3, parse_time('24:00:00'), 57, 8101, 14],
         [337, 3, 3, parse_time('24:02:00'), 55, 7904, 15],
-        ], columns=['block_id', 'trip_num', 'service_id', 'departure_time', 'stop_id', 'peron_id', 'stop_sequence']) \
+    ], columns=['block_id', 'trip_num', 'service_id', 'departure_time', 'stop_id', 'peron_id', 'stop_sequence']) \
         .set_index(['service_id', 'block_id', 'trip_num', 'stop_sequence']) \
         [['stop_id', 'peron_id', 'departure_time']]
     actual = parsed_data.stop_times_df
@@ -155,7 +167,7 @@ def test_create_transfers_df(parsed_data: ParsedData) -> None:
         [337, 3, 3, parse_time('23:57:00'), parse_time('23:59:00'), 61, 1230, 8503, 287801, 12, 120],
         [337, 3, 3, parse_time('23:59:00'), parse_time('24:00:00'), 1230, 57, 287801, 8101, 13, 60],
         [337, 3, 3, parse_time('24:00:00'), parse_time('24:02:00'), 57, 55, 8101, 7904, 14, 120],
-        ], columns=['block_id', 'trip_num', 'service_id', 'start_time', 'end_time',
-                    'start_stop_id', 'end_stop_id', 'start_peron_id', 'end_peron_id', 'stop_sequence', 'duration'])
+    ], columns=['block_id', 'trip_num', 'service_id', 'start_time', 'end_time',
+                'start_stop_id', 'end_stop_id', 'start_peron_id', 'end_peron_id', 'stop_sequence', 'duration'])
     actual = parsed_data.transfers_df
     assert_frame_equal(expected, actual, check_dtype=False)

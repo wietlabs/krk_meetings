@@ -1,11 +1,14 @@
-import pandas as pd
 from dataclasses import dataclass
+
+import pandas as pd
+
 from src.data_classes.Data import Data
 
 
 @dataclass
 class ParsedData(Data):
     calendar_df: pd.DataFrame
+    calendar_dates_df: pd.DataFrame
     routes_df: pd.DataFrame
     trips_df: pd.DataFrame
     stops_df: pd.DataFrame
