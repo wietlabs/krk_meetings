@@ -9,12 +9,12 @@ if __name__ == "__main__":
         "metric": "square"
     }
 
-    response = requests.post(URL.MEETING.value, json=json.dumps(query_json), timeout=1.0)
+    response = requests.post(URL.MEETING.value, json=query_json, timeout=1.0)
     query_id = response.json()
-    response = requests.get(URL.GET.value.format(query_id), json=json.dumps(query_json), timeout=1.0)
+    response = requests.get(URL.GET.value.format(query_id), json=query_json, timeout=1.0)
     result = response.json()
     print(result)
     time.sleep(3)
-    response = requests.get(URL.GET.value.format(query_id), json=json.dumps(query_json), timeout=1.0)
+    response = requests.get(URL.GET.value.format(query_id), json=query_json, timeout=1.0)
     result = response.json()
     print(result)
