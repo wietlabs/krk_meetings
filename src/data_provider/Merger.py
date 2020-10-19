@@ -155,6 +155,7 @@ class Merger:
         transfers_df_2.loc[:, 'end_peron_id'] += peron_id_offset
 
         transfers_df = transfers_df_1.append(transfers_df_2)
+        transfers_df.reset_index(drop=True, inplace=True)
         return transfers_df
 
     def _map_stop_id(self, original_stop_id: pd.Series, stop_id_offset: int, stop_id_mapping: pd.Series) -> pd.Series:
