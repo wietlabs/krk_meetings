@@ -14,7 +14,6 @@ from src.utils import *
 from src.solver.IConnectionSolver import IConnectionSolver
 from src.data_classes.Transfer import Transfer
 from src.data_classes.ConnectionQuery import ConnectionQuery
-from src.solver.solver_utils import get_stop_id_by_name, get_stop_name_by_id, parse_transfers
 
 from src.config import FLOYD_SOLVER_SEARCHING_TIME, FLOYD_SOLVER_MAX_PRIORITY_MULTIPLIER, FLOYD_SOLVER_MAX_PATHS, \
     WALKING_ROUTE_ID, SolverStatusCodes
@@ -114,10 +113,10 @@ class ConnectionSolver(IConnectionSolver):
             current_stop = path[i]
             next_stop = path[i + 1]
 
-            cst_df = pd.concat(chain([self.stop_times_0[next_stop][service] for service in current_services],
-                                     [self.stop_times_24[next_stop][service] for service in next_services]))
-            nst_df = pd.concat(chain([self.stop_times_0[current_stop][service] for service in current_services],
+            cst_df = pd.concat(chain([self.stop_times_0[current_stop][service] for service in current_services],
                                      [self.stop_times_24[current_stop][service] for service in next_services]))
+            nst_df = pd.concat(chain([self.stop_times_0[next_stop][service] for service in current_services],
+                                     [self.stop_times_24[next_stop][service] for service in next_services]))
 
             cst_df = cst_df[start_time <= cst_df.departure_time]
             cst_df = cst_df[cst_df.departure_time <= start_time + FLOYD_SOLVER_SEARCHING_TIME]
