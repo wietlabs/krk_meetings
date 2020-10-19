@@ -6,6 +6,9 @@ class Selector:
         calendar_df = parsed_data.calendar_df
         calendar_df_selected = parsed_data.calendar_df[calendar_df.index == service_id]
 
+        calendar_dates_df = parsed_data.calendar_dates_df
+        calendar_dates_df_selected = parsed_data.calendar_dates_df[calendar_dates_df['service_id'] == service_id]
+
         trips_df = parsed_data.trips_df
         trips_df_selected = trips_df.loc[trips_df.index.get_level_values(0) == service_id]
 
@@ -16,6 +19,7 @@ class Selector:
         transfers_df_selected = transfers_df.loc[transfers_df['service_id'] == service_id]
 
         return ParsedData(calendar_df=calendar_df_selected,
+                          calendar_dates_df=calendar_dates_df_selected,
                           routes_df=parsed_data.routes_df,
                           trips_df=trips_df_selected,
                           stops_df=parsed_data.stops_df,

@@ -12,6 +12,9 @@ from src.server.FlaskServer import start_flask_server
 from src.rabbitmq.RmqConnectionSolver import start_connection_solver
 
 
+pytestmark = pytest.mark.skip
+
+
 def make_request(query_json):
     response = requests.post(URL.CONNECTION.value, json=json.dumps(query_json), timeout=1.0)
     query_id = response.json()
