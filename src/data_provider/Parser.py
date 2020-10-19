@@ -39,8 +39,14 @@ class Parser:
 
         transfers_df = self.create_transfers_df(stop_times_df)
 
-        return ParsedData(calendar_df, calendar_dates_df, routes_df, trips_df, stops_df, perons_df, stop_times_df,
-                          transfers_df)
+        return ParsedData(calendar_df=calendar_df,
+                          calendar_dates_df=calendar_dates_df,
+                          routes_df=routes_df,
+                          trips_df=trips_df,
+                          stops_df=stops_df,
+                          perons_df=perons_df,
+                          stop_times_df=stop_times_df,
+                          transfers_df=transfers_df)
 
     def parse_calendar_df(self, calendar_txt: FilePathOrBuffer) -> pd.DataFrame:
         df = pd.read_csv(calendar_txt,
