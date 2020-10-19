@@ -13,6 +13,10 @@ class Merger:
         calendar_df, service_id_offset = self._merge_calendar_dfs(parsed_data_1.calendar_df,
                                                                   parsed_data_2.calendar_df)
 
+        calendar_dates_df = self._merge_calendar_dates_dfs(parsed_data_1.calendar_dates_df,
+                                                           parsed_data_2.calendar_dates_df,
+                                                           service_id_offset)
+
         routes_df, route_id_offset = self._merge_routes_df(parsed_data_1.routes_df,
                                                            parsed_data_2.routes_df)
 
@@ -36,6 +40,7 @@ class Merger:
                                                 service_id_offset, stop_id_offset, stop_id_mapping, peron_id_offset)
 
         return ParsedData(calendar_df=calendar_df,
+                          calendar_dates_df=calendar_dates_df,
                           routes_df=routes_df,
                           trips_df=trips_df,
                           stops_df=stops_df,
@@ -53,6 +58,15 @@ class Merger:
 
         calendar_df = calendar_df_1.append(calendar_df_2)
         return calendar_df, service_id_offset
+
+    def _merge_calendar_dates_dfs(self, calendar_dates_df_1: pd.DataFrame, calendar_dates_df_2: pd.DataFrame,
+                                  service_id_offset: int) -> Tuple[pd.DataFrame, int]:
+        calendar_dates_df_2.loc[:, 'service_id'] += service_id_offset
+
+        calendar_dates_df = calendar_dates_df_1.append(calendar_dates_df_2)
+        calendar_dates_df.reset_index(drop=True, inplace=True)
+        calendar_dates_df.sort_values(by=['date', 'exception_type', 'service_id'], inplace=True)
+        return calendar_dates_df
 
     def _merge_routes_df(self, routes_df_1: pd.DataFrame, routes_df_2: pd.DataFrame) -> Tuple[pd.DataFrame, int]:
         route_id_offset = routes_df_1.index.max()
