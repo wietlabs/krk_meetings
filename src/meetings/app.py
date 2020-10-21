@@ -53,7 +53,7 @@ def create_user():
     return make_response({
         'uuid': user.uuid,
     }, 201, {
-        'Location': f'/users/{user.uuid}'
+        'Location': f'/api/v1/users/{user.uuid}'
     })
 
 
@@ -88,7 +88,7 @@ def create_meeting():
     return make_response({
         'uuid': meeting.uuid,
     }, 201, {
-        'Location': f'/meetings/{meeting.uuid}'
+        'Location': f'/api/v1/meetings/{meeting.uuid}'
     })
 
 
