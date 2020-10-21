@@ -16,17 +16,6 @@ db = SQLAlchemy(app)
 NICKNAME_MAX_LENGTH = 50
 
 
-class Membership(db.Model):
-    __tablename__ = 'memberships'
-    meeting_uuid = db.Column(CHAR(36), db.ForeignKey('meetings.uuid'), primary_key=True)
-    user_uuid = db.Column(CHAR(36), db.ForeignKey('users.uuid'), primary_key=True)
-    nickname = db.Column(db.String(NICKNAME_MAX_LENGTH))
-    joined_at = db.Column(db.DateTime(), default=datetime.now, nullable=False)
-
-    user = db.relationship('User', back_populates='meetings')
-    meeting = db.relationship('Meeting', back_populates='users')
-
-
 class User(db.Model):
     __tablename__ = 'users'
     uuid = db.Column(CHAR(36), default=lambda: str(uuid.uuid4()), primary_key=True)
@@ -42,6 +31,17 @@ class Meeting(db.Model):
 
     owner = db.relationship('User')
     users = db.relationship('Membership', back_populates='meeting')
+
+
+class Membership(db.Model):
+    __tablename__ = 'memberships'
+    meeting_uuid = db.Column(CHAR(36), db.ForeignKey('meetings.uuid'), primary_key=True)
+    user_uuid = db.Column(CHAR(36), db.ForeignKey('users.uuid'), primary_key=True)
+    nickname = db.Column(db.String(NICKNAME_MAX_LENGTH))
+    joined_at = db.Column(db.DateTime(), default=datetime.now, nullable=False)
+
+    user = db.relationship('User', back_populates='meetings')
+    meeting = db.relationship('Meeting', back_populates='users')
 
 
 @app.route('/api/v1/users', methods=['POST'])
