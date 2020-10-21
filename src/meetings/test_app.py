@@ -1,7 +1,6 @@
-from uuid import UUID
-
 import pytest
 from flask.testing import FlaskClient
+from sqlalchemy.testing import mock
 
 from src.meetings.app import app, db
 
@@ -16,13 +15,12 @@ def client() -> FlaskClient:
         yield client
 
 
+expected_uuid = '12345678-1234-5678-1234-567812345678'
+
+@mock.patch('uuid.uuid4', lambda: expected_uuid)
 def test_create_user(client: FlaskClient) -> None:
     response = client.post('/api/v1/users')
 
-    uuid = response.json['uuid']
-    UUID(uuid, version=4)
-    # TODO: mock uuid4 function
-
     assert response.status_code == 201
-    assert response.json == {'uuid': uuid}
-    assert response.headers['Location'] == f'http://localhost/users/{uuid}'
+    assert response.json == {'uuid': expected_uuid}
+    assert response.headers['Location'].endswith(f'/api/v1/users/{expected_uuid}')
