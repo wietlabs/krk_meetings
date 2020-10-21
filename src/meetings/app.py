@@ -44,7 +44,7 @@ class Meeting(db.Model):
     users = db.relationship('Membership', back_populates='meeting')
 
 
-@app.route('/users', methods=['POST'])
+@app.route('/api/v1/users', methods=['POST'])
 def create_user():
     user = User()
     db.session.add(user)
@@ -57,7 +57,7 @@ def create_user():
     })
 
 
-@app.route('/meetings', methods=['POST'])
+@app.route('/api/v1/meetings', methods=['POST'])
 def create_meeting():
     if 'user_uuid' not in request.args:
         return {'error': 'Missing user_uuid'}, 400
@@ -92,7 +92,7 @@ def create_meeting():
     })
 
 
-@app.route('/meetings/<meeting_uuid>', methods=['GET'])
+@app.route('/api/v1/meetings/<meeting_uuid>', methods=['GET'])
 def get_meeting(meeting_uuid: str):
     try:
         uuid.UUID(meeting_uuid, version=4)
@@ -116,7 +116,7 @@ def get_meeting(meeting_uuid: str):
     }, 200
 
 
-@app.route('/meetings/<meeting_uuid>/members', methods=['POST'])
+@app.route('/api/v1/meetings/<meeting_uuid>/members', methods=['POST'])
 def join_meeting(meeting_uuid: str):
     try:
         uuid.UUID(meeting_uuid, version=4)
