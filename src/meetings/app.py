@@ -1,9 +1,8 @@
 import uuid
-from datetime import datetime
 
 from flask import Flask, request, make_response
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import CHAR
+from sqlalchemy import CHAR, func
 from sqlalchemy.exc import IntegrityError
 
 app = Flask(__name__)
@@ -19,6 +18,7 @@ NICKNAME_MAX_LENGTH = 50
 class User(db.Model):
     __tablename__ = 'users'
     uuid = db.Column(CHAR(36), default=lambda: str(uuid.uuid4()), primary_key=True)
+    created_at = db.Column(db.DateTime(), default=func.now(), nullable=False)
 
     meetings = db.relationship('Membership', back_populates='user')
 
@@ -27,7 +27,7 @@ class Meeting(db.Model):
     __tablename__ = 'meetings'
     uuid = db.Column(CHAR(36), default=lambda: str(uuid.uuid4()), primary_key=True)
     owner_uuid = owner_uuid = db.Column(CHAR(36), db.ForeignKey('users.uuid'), nullable=False)
-    created_at = db.Column(db.DateTime(), default=datetime.now, nullable=False)
+    created_at = db.Column(db.DateTime(), default=func.now(), nullable=False)
 
     owner = db.relationship('User')
     users = db.relationship('Membership', back_populates='meeting')
@@ -38,7 +38,7 @@ class Membership(db.Model):
     meeting_uuid = db.Column(CHAR(36), db.ForeignKey('meetings.uuid'), primary_key=True)
     user_uuid = db.Column(CHAR(36), db.ForeignKey('users.uuid'), primary_key=True)
     nickname = db.Column(db.String(NICKNAME_MAX_LENGTH))
-    joined_at = db.Column(db.DateTime(), default=datetime.now, nullable=False)
+    joined_at = db.Column(db.DateTime(), default=func.now(), nullable=False)
 
     user = db.relationship('User', back_populates='meetings')
     meeting = db.relationship('Meeting', back_populates='users')
@@ -59,21 +59,24 @@ def create_user():
 
 @app.route('/api/v1/meetings', methods=['POST'])
 def create_meeting():
-    if 'user_uuid' not in request.args:
+    if request.json is None:
+        return {'error': 'Missing JSON data'}, 400
+
+    if 'user_uuid' not in request.json:
         return {'error': 'Missing user_uuid'}, 400
-    user_uuid = request.args['user_uuid']
+    user_uuid = request.json['user_uuid']
 
     try:
         uuid.UUID(user_uuid, version=4)
     except ValueError:
         return {'error': 'Invalid user_uuid'}, 400
 
-    if 'nickname' not in request.args:
-        return {'error': 'Missing nickname'}, 400
-    nickname = request.args['nickname']
-
-    if len(nickname) > NICKNAME_MAX_LENGTH:
-        return {'error': 'Nickname too long'}, 400
+    if 'nickname' in request.json:
+        nickname = request.json['nickname']
+        if len(nickname) > NICKNAME_MAX_LENGTH:
+            return {'error': 'Nickname too long'}, 400
+    else:
+        nickname = None
 
     user = User.query.get(user_uuid)
     if not user:
