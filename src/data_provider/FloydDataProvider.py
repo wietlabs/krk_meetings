@@ -7,12 +7,10 @@ from src.data_classes.ParsedData import ParsedData
 from src.data_provider.Downloader import Downloader
 from src.data_provider.FloydDataExtractor import FloydDataExtractor
 from src.data_classes.FloydSolverData import FloydSolverData
-from pathlib import Path
 from src.rabbitmq.RmqProducer import RmqProducer
 from src.exchanges import EXCHANGES
-
-FLOYD_DATA_PATH = Path(__file__).parent / 'data' / 'tmp' / 'floyd_data.pickle'
-CONFIG_JSON_PATH = Path(__file__).parent / 'data' / 'tmp' / 'config.json'
+from src.config import FloydDataPaths, CONFIG_JSON_PATH
+from src.utils import save_pickle
 
 
 def start_data_provider():
@@ -82,16 +80,17 @@ class FloydDataProvider:
         stop_times_0_dict = extractor.transform_stop_times_df_to_dict(stops_df, stop_times_0_df, services_list)
         stop_times_24_dict = extractor.transform_stop_times_df_to_dict(stops_df, stop_times_24_df, services_list)
 
-        floyd_data = FloydSolverData(floyd_graph, kernelized_floyd_graph, distances, day_to_services_dict,
-                                     stop_times_0_dict, stop_times_24_dict, routes_to_stops_dict, adjacent_stops,
-                                     stops_df, routes_df, stops_df_by_name)
-        floyd_data.save(FLOYD_DATA_PATH)
-        return floyd_data
-
-    @staticmethod
-    def load_floyd_data() -> FloydSolverData:
-        floyd_data = FloydSolverData.load(FLOYD_DATA_PATH)
-        return floyd_data
+        save_pickle(floyd_graph, FloydDataPaths.floyd_graph.value)
+        save_pickle(kernelized_floyd_graph, FloydDataPaths.kernelized_floyd_graph.value)
+        save_pickle(distances, FloydDataPaths.distances.value)
+        save_pickle(day_to_services_dict, FloydDataPaths.day_to_services_dict.value)
+        save_pickle(stop_times_0_dict, FloydDataPaths.stop_times_0_dict.value)
+        save_pickle(stop_times_24_dict, FloydDataPaths.stop_times_24_dict.value)
+        save_pickle(routes_to_stops_dict, FloydDataPaths.routes_to_stops_dict.value)
+        save_pickle(adjacent_stops, FloydDataPaths.adjacent_stops.value)
+        save_pickle(stops_df, FloydDataPaths.stops_df.value)
+        save_pickle(routes_df, FloydDataPaths.routes_df.value)
+        save_pickle(stops_df_by_name, FloydDataPaths.stops_df_by_name.value)
 
     @staticmethod
     def load_update_date():

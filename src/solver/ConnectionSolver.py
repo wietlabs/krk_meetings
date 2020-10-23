@@ -1,15 +1,14 @@
-import json
 from copy import copy
 from queue import PriorityQueue
 from typing import List
 from itertools import chain
 import pandas as pd
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from src.data_classes.Connection import Connection
 from src.data_classes.Walk import Walk
 from src.solver import solver_utils
-from src.solver.DataManager import DataManager
+from src.solver.data_managers.ConnectionDataManager import ConnectionDataManager
 from src.utils import *
 from src.solver.IConnectionSolver import IConnectionSolver
 from src.data_classes.Transfer import Transfer
@@ -21,7 +20,7 @@ from src.config import FLOYD_SOLVER_SEARCHING_TIME, FLOYD_SOLVER_MAX_PRIORITY_MU
 
 class ConnectionSolver(IConnectionSolver):
     def __init__(self, ):
-        self.data_manager = DataManager()
+        self.data_manager = ConnectionDataManager()
         self.graph = None
         self.kernelized_graph = None
         self.distances = None
@@ -42,17 +41,17 @@ class ConnectionSolver(IConnectionSolver):
     def update_data(self):
         if not self.data_manager.up_to_date:
             data = self.data_manager.get_updated_data()
-            self.graph = data.graph
-            self.kernelized_graph = data.kernelized_graph
-            self.distances = data.distances_dict
-            self.stops_df = data.stops_df
-            self.routes_df = data.routes_df
-            self.stops_df_by_name = data.stops_df_by_name
-            self.stop_times_0 = data.stop_times_0_dict
-            self.stop_times_24 = data.stop_times_24_dict
-            self.day_to_services_dict = data.day_to_services_dict
-            self.adjacent_stops = data.adjacent_stops
-            self.routes_to_stops_dict = data.routes_to_stops_dict
+            self.graph = data["graph"]
+            self.kernelized_graph = data["kernelized_graph"]
+            self.distances = data["distances_dict"]
+            self.stops_df = data["stops_df"]
+            self.routes_df = data["routes_df"]
+            self.stops_df_by_name = data["stops_df_by_name"]
+            self.stop_times_0 = data["stop_times_0_dict"]
+            self.stop_times_24 = data["stop_times_24_dict"]
+            self.day_to_services_dict = data["day_to_services_dict"]
+            self.adjacent_stops = data["adjacent_stops"]
+            self.routes_to_stops_dict = data["routes_to_stops_dict"]
             self.paths = dict()
             for node in self.graph.nodes():
                 self.paths[node] = dict()
