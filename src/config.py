@@ -11,22 +11,22 @@ WALKING_SPEED: float = 1.0
 WALKING_ROUTE_ID: int = -1
 DATETIME_FORMAT: str = "%Y-%m-%d %H:%M:%S"
 
-FLOYD_DATA_DIR_PATH = Path(__file__).parent / 'data' / 'floyd_data.pickle'
+FLOYD_DATA_DIR_PATH = Path(__file__).parent / 'data'
 CONFIG_JSON_PATH = Path(__file__).parent / 'data' / 'config.json'
 
 
 class FloydDataPaths(Enum):
-    floyd_graph = f"{CONFIG_JSON_PATH}\\floyd_graph.pickle"
-    kernelized_floyd_graph = f"{CONFIG_JSON_PATH}\\kernelized_floyd_graph.pickle"
-    distances = f"{CONFIG_JSON_PATH}\\distances.pickle"
-    day_to_services_dict = f"{CONFIG_JSON_PATH}\\day_to_services_dict.pickle"
-    stop_times_0_dict = f"{CONFIG_JSON_PATH}\\stop_times_0_dict.pickle"
-    stop_times_24_dict = f"{CONFIG_JSON_PATH}\\stop_times_24_dict.pickle"
-    routes_to_stops_dict = f"{CONFIG_JSON_PATH}\\routes_to_stops_dict.pickle"
-    adjacent_stops = f"{CONFIG_JSON_PATH}\\adjacent_stops.pickle"
-    stops_df = f"{CONFIG_JSON_PATH}\\stops_df.pickle"
-    routes_df = f"{CONFIG_JSON_PATH}\\routes_df.pickle"
-    stops_df_by_name = f"{CONFIG_JSON_PATH}\\stops_df_by_name.pickle"
+    floyd_graph = f"{FLOYD_DATA_DIR_PATH}\\floyd_graph.pickle"
+    kernelized_floyd_graph = f"{FLOYD_DATA_DIR_PATH}\\kernelized_floyd_graph.pickle"
+    distances = f"{FLOYD_DATA_DIR_PATH}\\distances.pickle"
+    day_to_services_dict = f"{FLOYD_DATA_DIR_PATH}\\day_to_services_dict.pickle"
+    stop_times_0_dict = f"{FLOYD_DATA_DIR_PATH}\\stop_times_0_dict.pickle"
+    stop_times_24_dict = f"{FLOYD_DATA_DIR_PATH}\\stop_times_24_dict.pickle"
+    routes_to_stops_dict = f"{FLOYD_DATA_DIR_PATH}\\routes_to_stops_dict.pickle"
+    adjacent_stops = f"{FLOYD_DATA_DIR_PATH}\\adjacent_stops.pickle"
+    stops_df = f"{FLOYD_DATA_DIR_PATH}\\stops_df.pickle"
+    routes_df = f"{FLOYD_DATA_DIR_PATH}\\routes_df.pickle"
+    stops_df_by_name = f"{FLOYD_DATA_DIR_PATH}\\stops_df_by_name.pickle"
 
 
 class URL(Enum):
