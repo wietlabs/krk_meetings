@@ -3,6 +3,8 @@ import json
 import time
 from datetime import datetime
 
+import networkx as nx
+
 from src.data_classes.ParsedData import ParsedData
 from src.data_provider.Downloader import Downloader
 from src.data_provider.FloydDataExtractor import FloydDataExtractor
@@ -80,17 +82,17 @@ class FloydDataProvider:
         stop_times_0_dict = extractor.transform_stop_times_df_to_dict(stops_df, stop_times_0_df, services_list)
         stop_times_24_dict = extractor.transform_stop_times_df_to_dict(stops_df, stop_times_24_df, services_list)
 
-        save_pickle(floyd_graph, FloydDataPaths.floyd_graph.value)
-        save_pickle(kernelized_floyd_graph, FloydDataPaths.kernelized_floyd_graph.value)
+        nx.write_gpickle(floyd_graph, FloydDataPaths.floyd_graph.value)
+        nx.write_gpickle(kernelized_floyd_graph, FloydDataPaths.kernelized_floyd_graph.value)
         save_pickle(distances, FloydDataPaths.distances.value)
         save_pickle(day_to_services_dict, FloydDataPaths.day_to_services_dict.value)
         save_pickle(stop_times_0_dict, FloydDataPaths.stop_times_0_dict.value)
         save_pickle(stop_times_24_dict, FloydDataPaths.stop_times_24_dict.value)
         save_pickle(routes_to_stops_dict, FloydDataPaths.routes_to_stops_dict.value)
         save_pickle(adjacent_stops, FloydDataPaths.adjacent_stops.value)
-        save_pickle(stops_df, FloydDataPaths.stops_df.value)
-        save_pickle(routes_df, FloydDataPaths.routes_df.value)
-        save_pickle(stops_df_by_name, FloydDataPaths.stops_df_by_name.value)
+        stops_df.to_pickle(FloydDataPaths.stops_df.value)
+        routes_df.to_pickle(FloydDataPaths.routes_df.value)
+        stops_df_by_name.to_pickle(FloydDataPaths.stops_df_by_name.value)
 
     @staticmethod
     def load_update_date():
