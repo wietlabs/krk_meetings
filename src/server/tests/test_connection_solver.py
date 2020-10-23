@@ -16,10 +16,10 @@ pytestmark = pytest.mark.skip
 
 
 def make_request(query_json):
-    response = requests.post(URL.CONNECTION.value, json=json.dumps(query_json), timeout=1.0)
+    response = requests.post(URL.CONNECTION.value, json=query_json, timeout=1.0)
     query_id = response.json()
     for _ in range(30):
-        response = requests.get(URL.GET.value.format(query_id), json=json.dumps(query_json), timeout=1.0)
+        response = requests.get(URL.GET.value.format(query_id), query_json, timeout=1.0)
         result = response.json()
         if 'connections' in result:
             break
@@ -36,10 +36,10 @@ class ConnectionSolverTests(TestCase):
     flask_server_process = multiprocessing.Process(target=start_flask_server)
 
     def ask_for_one_connection(self):
-        response = requests.post(URL.CONNECTION.value, json=json.dumps(self.query_json), timeout=1.0)
+        response = requests.post(URL.CONNECTION.value, json=self.query_json, timeout=1.0)
         query_id = response.json()
         time.sleep(5)
-        response = requests.get(URL.GET.value.format(query_id), json=json.dumps(self.query_json), timeout=1.0)
+        response = requests.get(URL.GET.value.format(query_id), json=self.query_json, timeout=1.0)
         result = response.json()
         self.assertTrue("connections" in result)
 
