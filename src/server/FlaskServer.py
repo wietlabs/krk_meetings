@@ -66,17 +66,17 @@ class FlaskServer:
         return jsonify(result), 202
 
     def handle_connection(self):
-        request_json = json.loads(request.get_json())
+        request_json = request.get_json()
         result = self.handle_query_post(self.connection_producer, request_json)
         return jsonify(result), 202
 
     def handle_meeting(self):
-        request_json = json.loads(request.get_json())
+        request_json = request.get_json()
         result = self.handle_query_post(self.meeting_producer, request_json)
         return jsonify(result), 202
 
     def handle_sequence(self):
-        request_json = json.loads(request.get_json())
+        request_json = request.get_json()
         result = self.handle_query_post(self.sequence_producer, request_json)
         return jsonify(result), 202
 
