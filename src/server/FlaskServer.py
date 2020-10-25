@@ -56,12 +56,14 @@ class FlaskServer:
         self.run()
 
     def consume_rabbit_results(self, result):
+        result["result"]["is_done"] = True
         self.cache[result["query_id"]] = result["result"]
 
     def handle_get(self, query_id):
         query_id = int(query_id)
         result = self.cache[query_id]
         if result in [SolverStatusCodes.BAD_END_STOP_NAME.value, SolverStatusCodes.BAD_START_STOP_NAME.value]:
+            print(result)
             return jsonify(result), 400
         return jsonify(result), 202
 
@@ -86,7 +88,7 @@ class FlaskServer:
             query_id = self.query_id.value
         request_json['query_id'] = query_id
         producer.send_msg(request_json)
-        self.cache[query_id] = "Results not ready yet."
+        self.cache[query_id] = {"is_done": False}
         return query_id
 
 
