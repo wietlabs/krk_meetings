@@ -7,6 +7,7 @@ FLOYD_SOLVER_MAX_PRIORITY_MULTIPLIER: float = 1.5
 FLOYD_SOLVER_MAX_PATHS: int = 10
 FLOYD_EXTRACTOR_PERIOD_MULTIPLIER: float = 0.5
 MAX_WALKING_TIME_IN_MINUTES: float = 10
+MAX_WALKING_DISTANCE = 1000  # m
 WALKING_SPEED: float = 1.0
 WALKING_ROUTE_ID: int = -1
 DATETIME_FORMAT: str = "%Y-%m-%d %H:%M:%S"
@@ -27,6 +28,7 @@ class FloydDataPaths(Enum):
     stops_df = FLOYD_DATA_DIR_PATH / "stops_df.pickle"
     routes_df = FLOYD_DATA_DIR_PATH / "routes_df.pickle"
     stops_df_by_name = FLOYD_DATA_DIR_PATH / "stops_df_by_name.pickle"
+    api_walking_distances = FLOYD_DATA_DIR_PATH / "api_walking_distances.pickle"
 
 
 class URL(Enum):

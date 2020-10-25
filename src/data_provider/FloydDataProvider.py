@@ -8,7 +8,6 @@ import networkx as nx
 from src.data_classes.ParsedData import ParsedData
 from src.data_provider.Downloader import Downloader
 from src.data_provider.FloydDataExtractor import FloydDataExtractor
-from src.data_classes.FloydSolverData import FloydSolverData
 from src.rabbitmq.RmqProducer import RmqProducer
 from src.exchanges import EXCHANGES
 from src.config import FloydDataPaths, CONFIG_JSON_PATH
