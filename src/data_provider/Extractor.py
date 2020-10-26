@@ -1,4 +1,4 @@
-from math import sin, cos, sqrt, atan2, radians
+from src.data_provider.utils import get_walking_time
 from src.config import MAX_WALKING_TIME_IN_MINUTES, WALKING_SPEED
 import pandas as pd
 
@@ -13,7 +13,7 @@ class Extractor:
         adjacent_stops = {}
         for id_1, _, lat_1, lon_1, _, _ in stops_df.itertuples():
             for id_2, _, lat_2, lon_2, _, _ in stops_df.itertuples():
-                duration = Extractor._get_walking_time(lon_1, lat_1, lon_2, lat_2)
+                duration = get_walking_time(lon_1, lat_1, lon_2, lat_2)
                 if id_1 != id_2 and duration <= MAX_WALKING_TIME_IN_MINUTES * 60:
                     adjacent_stops[id_1, id_2] = duration
         return adjacent_stops
@@ -146,21 +146,3 @@ class Extractor:
                 route_to_stops_dict[route_id] = []
             route_to_stops_dict[route_id].append(stop_id)
         return route_to_stops_dict
-
-    @staticmethod
-    def _get_walking_time(lon_1, lat_1, lon_2, lat_2) -> int:
-        lon_1 = radians(lon_1)
-        lon_2 = radians(lon_2)
-        lat_1 = radians(lat_1)
-        lat_2 = radians(lat_2)
-        earth_radius = 6373000.0
-        dlon = lon_2 - lon_1
-        dlat = lat_2 - lat_1
-
-        a = sin(dlat / 2) ** 2 + cos(lat_1) * cos(lat_2) * sin(dlon / 2) ** 2
-        c = 2 * atan2(sqrt(a), sqrt(1 - a))
-
-        distance = earth_radius * c
-        walking_time = distance / WALKING_SPEED
-        walking_time = round(walking_time)
-        return walking_time

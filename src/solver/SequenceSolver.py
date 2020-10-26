@@ -4,12 +4,12 @@ from copy import copy
 from src.data_classes.SequenceQuery import SequenceQuery
 from src.data_classes.SequenceResults import SequenceResults
 from src.solver.ISequenceSolver import ISequenceSolver
-from src.solver.DataManager import DataManager
+from src.solver.data_managers.SequenceDataManager import SequenceDataManager
 
 
 class SequenceSolver(ISequenceSolver):
     def __init__(self, ):
-        self.data_manager = DataManager()
+        self.data_manager = SequenceDataManager()
         self.distances = None
         self.stops_df = None
         self.stops_df_by_name = None
@@ -21,9 +21,9 @@ class SequenceSolver(ISequenceSolver):
     def update_data(self):
         if not self.data_manager.up_to_date:
             data = self.data_manager.get_updated_data()
-            self.distances = data.distances_dict
-            self.stops_df = data.stops_df
-            self.stops_df_by_name = data.stops_df_by_name
+            self.distances = data["distances"]
+            self.stops_df = data["stops_df"]
+            self.stops_df_by_name = data["stops_df_by_name"]
 
     def find_best_sequence(self, query: SequenceQuery) -> SequenceResults:
         self.update_data()
