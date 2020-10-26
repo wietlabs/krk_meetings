@@ -19,7 +19,7 @@ def make_request(query_json):
     response = requests.post(URL.CONNECTION.value, json=query_json, timeout=1.0)
     query_id = response.json()
     for _ in range(30):
-        response = requests.get(URL.GET.value.format(query_id), query_json, timeout=1.0)
+        response = requests.get(URL.GET_QUERY.value.format(query_id), query_json, timeout=1.0)
         result = response.json()
         if 'connections' in result:
             break
@@ -39,7 +39,7 @@ class ConnectionSolverTests(TestCase):
         response = requests.post(URL.CONNECTION.value, json=self.query_json, timeout=1.0)
         query_id = response.json()
         time.sleep(5)
-        response = requests.get(URL.GET.value.format(query_id), json=self.query_json, timeout=1.0)
+        response = requests.get(URL.GET_QUERY.value.format(query_id), json=self.query_json, timeout=1.0)
         result = response.json()
         self.assertTrue("connections" in result)
 
