@@ -4,7 +4,7 @@ from src.data_provider.Extractor import Extractor
 import pandas as pd
 import numpy as np
 import networkx as nx
-from src.config import FLOYD_EXTRACTOR_PERIOD_MULTIPLIER, WALKING_ROUTE_ID
+from src.config import FLOYD_EXTRACTOR_PERIOD_MULTIPLIER, WALKING_ROUTE_ID, FLOYD_EXTRACTOR_CHANGE_PENALTY
 
 
 class FloydDataExtractor(Extractor):
@@ -42,9 +42,8 @@ class FloydDataExtractor(Extractor):
         stops_df = stops_df[stops_df['hub']]
 
         def node_generator():
-            for index, row in stops_df.iterrows():
-                yield index, {'stop_name': row['stop_name'], 'stop_lat': row['stop_lat'],
-                              'stop_lon': row['stop_lon'], 'hub': row['hub']}
+            for stop_id, stop_name, stop_lat, stop_lon, is_first, is_last, hub in stops_df.itertuples():
+                yield stop_id, {'stop_name': stop_name, 'stop_lat': stop_lat, 'stop_lon': stop_lon, 'hub': hub}
 
         def edge_generator():
             for first, second in graph.edges:
@@ -63,17 +62,17 @@ class FloydDataExtractor(Extractor):
             distances[key] = dict(distances[key])
         return distances
 
-    def create_floyd_graph(self, extended_transfers_df: pd.DataFrame, stops_df: pd.DataFrame) -> nx.DiGraph:
+    @staticmethod
+    def create_floyd_graph(extended_transfers_df: pd.DataFrame, stops_df: pd.DataFrame) -> nx.DiGraph:
         def node_generator():
-            for index, row in stops_df.iterrows():
-                yield index, {'stop_name': row['stop_name'], 'stop_lat': row['stop_lat'],
-                              'stop_lon': row['stop_lon'], 'hub': row['hub']}
+            for stop_id, stop_name, stop_lat, stop_lon, is_first, is_last, hub in stops_df.itertuples():
+                yield stop_id, {'stop_name': stop_name, 'stop_lat': stop_lat, 'stop_lon': stop_lon, 'hub': hub}
 
         def edge_generator():
-            for _, row in extended_transfers_df.iterrows():
-                yield int(row['start_stop_id']), int(row['end_stop_id']), \
-                      {'weight': int(row['duration'] + row['period'] * FLOYD_EXTRACTOR_PERIOD_MULTIPLIER),
-                       'route_ids': row['route_id'], 'path': row['path']}
+            for _, start_stop_id, end_stop_id, path, duration, period, route_id in extended_transfers_df.itertuples():
+                weight = int(duration + period * FLOYD_EXTRACTOR_PERIOD_MULTIPLIER +
+                             FLOYD_EXTRACTOR_CHANGE_PENALTY)
+                yield int(start_stop_id), int(end_stop_id), {'weight': weight, 'route_ids': route_id, 'path': path}
 
         floyd_graph = nx.DiGraph()
         floyd_graph.add_nodes_from(node_generator())
@@ -194,15 +193,17 @@ class FloydDataExtractor(Extractor):
                     'path': path
                 }
 
-    def get_next_stop(self, G: nx.MultiDiGraph, node_id: int, route_id: int, already_visited: list) -> tuple:
-        for neighbour_id in G.neighbors(node_id):
+    @staticmethod
+    def get_next_stop(graph: nx.MultiDiGraph, node_id: int, route_id: int, already_visited: list) -> tuple:
+        for neighbour_id in graph.neighbors(node_id):
             if neighbour_id not in already_visited:
-                edge = G.get_edge_data(node_id, neighbour_id, route_id)
+                edge = graph.get_edge_data(node_id, neighbour_id, route_id)
                 if edge is not None:
                     return edge['route_id'], node_id, neighbour_id, edge['duration'], edge['period']
         return None
 
-    def get_edges_data_from(self, graph: nx.MultiDiGraph, node_from_id: int, route_id: int) -> list:
+    @staticmethod
+    def get_edges_data_from(graph: nx.MultiDiGraph, node_from_id: int, route_id: int) -> list:
         edges = set()
         for node_to_id in graph.neighbors(node_from_id):
             for edge in graph.get_edge_data(node_from_id, node_to_id).values():
@@ -211,27 +212,24 @@ class FloydDataExtractor(Extractor):
                         (int(edge['route_id']), node_from_id, node_to_id, int(edge['duration']), int(edge['period'])))
         return list(edges)
 
-    def generate_nodes(self, graph, stops_df) -> None:
+    @staticmethod
+    def generate_nodes(graph: nx.MultiDiGraph, stops_df: pd.DataFrame) -> None:
         def node_generator():
-            for stop_id, row in stops_df.iterrows():
-                yield stop_id, {'stop_name': row['stop_name'], 'stop_lat': row['stop_lat'],
-                                'stop_lon': row['stop_lon']}
+            for stop_id, stop_name, stop_lat, stop_lon, _, _ in stops_df.itertuples():
+                yield stop_id, {'stop_name': stop_name, 'stop_lat': stop_lat, 'stop_lon': stop_lon}
 
         graph.add_nodes_from(node_generator())
 
-    def generate_edges(self, graph, transfers_df, period_df) -> None:
+    @staticmethod
+    def generate_edges(graph: nx.MultiDiGraph, transfers_df: pd.DataFrame, period_df: pd.DataFrame) -> None:
         transfers_df = transfers_df[[
             'route_id', 'start_stop_id', 'end_stop_id', 'duration']]
         avg_transfers_df = transfers_df.groupby(['route_id', 'start_stop_id', 'end_stop_id']).mean().reset_index()
 
         def edge_generator():
-            for _, row in avg_transfers_df.iterrows():
-                start_node = int(row['start_stop_id'])
-                end_node = int(row['end_stop_id'])
-                route_id = int(row['route_id'])
-                duration = row['duration']
-                period = int(period_df.at[(route_id, 'period')])
-                yield start_node, end_node, route_id, \
-                      {'route_id': route_id, 'duration': duration, 'period': period, 'path': []}
+            for _, route_id, start_node, end_node, duration in avg_transfers_df.itertuples():
+                period = period_df.at[(route_id, 'period')]
+                yield start_node, int(end_node), int(route_id), \
+                    {'route_id': int(route_id), 'duration': int(duration), 'period': int(period), 'path': []}
 
         graph.add_edges_from(edge_generator())
