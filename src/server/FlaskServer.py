@@ -1,13 +1,11 @@
-import json
 from threading import Thread
-
 from flask import Flask, request, Response, jsonify
 from multiprocessing import Value
 
+from src.data_managers.FlaskDataManager import FlaskDataManager
 from src.exchanges import EXCHANGES
-from src.rabbitmq.RmqConsumer import RmqOneMsgConsumer, RmqConsumer
+from src.rabbitmq.RmqConsumer import RmqConsumer
 from src.rabbitmq.RmqProducer import RmqProducer
-from src.data_provider.FloydDataProvider import FloydDataProvider
 from src.config import SolverStatusCodes
 from src.server.CacheDict import CacheDict
 
@@ -41,6 +39,18 @@ class FlaskServer:
         self.sequence_consumer_thread = Thread(target=self.sequence_consumer.start, args=[])
         self.sequence_consumer_thread.start()
 
+        self.data_manager = FlaskDataManager()
+        self.stops = None
+
+        self.data_manager.start()
+        self.data_manager.update_data()
+        self.update_data()
+
+    def update_data(self):
+        if not self.data_manager.up_to_date:
+            data = self.data_manager.get_updated_data()
+            self.stops = data['stops']
+
     def run(self):
         self.app.run(threaded=True, port=5000)
 
@@ -48,10 +58,12 @@ class FlaskServer:
         self.app.add_url_rule(endpoint, endpoint_name, handler, methods=methods)
 
     def start(self):
-        self.add_endpoint('/connection', 'connection', self.handle_connection, ['POST'])
-        self.add_endpoint('/meeting', 'meeting', self.handle_meeting, ['POST'])
-        self.add_endpoint('/sequence', 'sequence', self.handle_sequence, ['POST'])
-        self.add_endpoint('/result/<query_id>', 'results', self.handle_get, ['GET'])
+        self.add_endpoint('/connection', 'connection', self.handle_post_connection, ['POST'])
+        self.add_endpoint('/meeting', 'meeting', self.handle_post_meeting, ['POST'])
+        self.add_endpoint('/sequence', 'sequence', self.handle_post_sequence, ['POST'])
+        self.add_endpoint('/result/<query_id>', 'results', self.handle_get_query, ['GET'])
+        self.add_endpoint(f'/stops', 'stops', self.handle_get_stops, ['GET'])
+
         print('FlaskServer: started')
         self.run()
 
@@ -59,7 +71,7 @@ class FlaskServer:
         result["result"]["is_done"] = True
         self.cache[result["query_id"]] = result["result"]
 
-    def handle_get(self, query_id):
+    def handle_get_query(self, query_id):
         query_id = int(query_id)
         result = self.cache[query_id]
         if result in [SolverStatusCodes.BAD_END_STOP_NAME.value, SolverStatusCodes.BAD_START_STOP_NAME.value]:
@@ -67,17 +79,20 @@ class FlaskServer:
             return jsonify(result), 400
         return jsonify(result), 202
 
-    def handle_connection(self):
+    def handle_get_stops(self):
+        return jsonify(self.stops), 202
+
+    def handle_post_connection(self):
         request_json = request.get_json()
         result = self.handle_query_post(self.connection_producer, request_json)
         return jsonify(result), 202
 
-    def handle_meeting(self):
+    def handle_post_meeting(self):
         request_json = request.get_json()
         result = self.handle_query_post(self.meeting_producer, request_json)
         return jsonify(result), 202
 
-    def handle_sequence(self):
+    def handle_post_sequence(self):
         request_json = request.get_json()
         result = self.handle_query_post(self.sequence_producer, request_json)
         return jsonify(result), 202
