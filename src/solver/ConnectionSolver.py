@@ -8,7 +8,7 @@ from datetime import datetime
 from src.data_classes.Connection import Connection
 from src.data_classes.Walk import Walk
 from src.solver import solver_utils
-from src.solver.data_managers.ConnectionDataManager import ConnectionDataManager
+from src.data_managers.ConnectionDataManager import ConnectionDataManager
 from src.utils import *
 from src.solver.IConnectionSolver import IConnectionSolver
 from src.data_classes.Transfer import Transfer
