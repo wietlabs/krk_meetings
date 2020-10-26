@@ -1,10 +1,10 @@
 import pandas as pd
-from src.solver.data_managers.DataManager import DataManager
+from src.data_managers.DataManager import DataManager
 from src.utils import load_pickle
 from src.config import FloydDataPaths
 
 
-class MeetingDataManager(DataManager):
+class SequenceDataManager(DataManager):
     def get_data(self):
         data = dict()
         data["distances"] = load_pickle(FloydDataPaths.distances.value)

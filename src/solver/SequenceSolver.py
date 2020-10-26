@@ -4,7 +4,7 @@ from copy import copy
 from src.data_classes.SequenceQuery import SequenceQuery
 from src.data_classes.SequenceResults import SequenceResults
 from src.solver.ISequenceSolver import ISequenceSolver
-from src.solver.data_managers.SequenceDataManager import SequenceDataManager
+from src.data_managers.SequenceDataManager import SequenceDataManager
 
 
 class SequenceSolver(ISequenceSolver):

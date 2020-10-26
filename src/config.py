@@ -29,11 +29,16 @@ class FloydDataPaths(Enum):
     stops_df_by_name = FLOYD_DATA_DIR_PATH / "stops_df_by_name.pickle"
 
 
+LOCALHOST_ADDRESS = "http://127.0.0.1:5000/"
+
+
 class URL(Enum):
     CONNECTION = "http://127.0.0.1:5000/connection"
     MEETING = "http://127.0.0.1:5000/meeting"
     SEQUENCE = "http://127.0.0.1:5000/sequence"
-    GET = "http://127.0.0.1:5000/result/{}"
+    RESULTS = "http://127.0.0.1:5000/result/{}"
+    STOPS = "http://127.0.0.1:5000/stops"
+
 
 
 class SolverStatusCodes(Enum):

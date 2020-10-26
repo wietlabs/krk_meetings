@@ -1,7 +1,7 @@
 from src.data_classes.MeetingQuery import MeetingQuery
 from src.data_classes.MeetingResults import MeetingResults
 from src.solver.IMeetingSolver import IMeetingSolver
-from src.solver.data_managers.MeetingDataManager import MeetingDataManager
+from src.data_managers.MeetingDataManager import MeetingDataManager
 
 
 class MeetingSolver(IMeetingSolver):
