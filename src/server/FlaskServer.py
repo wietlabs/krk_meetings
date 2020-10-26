@@ -8,7 +8,6 @@ from src.rabbitmq.RmqConsumer import RmqConsumer
 from src.rabbitmq.RmqProducer import RmqProducer
 from src.config import SolverStatusCodes
 from src.server.CacheDict import CacheDict
-from src.config import ENDPOINT
 
 
 def start_flask_server():
@@ -59,11 +58,11 @@ class FlaskServer:
         self.app.add_url_rule(endpoint, endpoint_name, handler, methods=methods)
 
     def start(self):
-        self.add_endpoint(f'/{ENDPOINT.CONNECTION.value}', ENDPOINT.CONNECTION.value, self.handle_connection, ['POST'])
-        self.add_endpoint(f'/{ENDPOINT.MEETING.value}', ENDPOINT.MEETING.value, self.handle_meeting, ['POST'])
-        self.add_endpoint(f'/{ENDPOINT.SEQUENCE.value}', ENDPOINT.SEQUENCE.value, self.handle_sequence, ['POST'])
-        self.add_endpoint(f'/{ENDPOINT.RESULTS.value}/<query_id>', ENDPOINT.RESULTS.value, self.handle_get_query, ['GET'])
-        self.add_endpoint(f'/{ENDPOINT.STOPS.value}', ENDPOINT.STOPS.value, self.handle_get_stops, ['GET'])
+        self.add_endpoint('/connection', 'connection', self.handle_post_connection, ['POST'])
+        self.add_endpoint('/meeting', 'meeting', self.handle_post_meeting, ['POST'])
+        self.add_endpoint('/sequence', 'sequence', self.handle_post_sequence, ['POST'])
+        self.add_endpoint('/result/<query_id>', 'results', self.handle_get_query, ['GET'])
+        self.add_endpoint(f'/stops', 'stops', self.handle_get_stops, ['GET'])
 
         print('FlaskServer: started')
         self.run()
@@ -81,17 +80,17 @@ class FlaskServer:
     def handle_get_stops(self):
         return jsonify(self.stops), 202
 
-    def handle_connection(self):
+    def handle_post_connection(self):
         request_json = request.get_json()
         result = self.handle_query_post(self.connection_producer, request_json)
         return jsonify(result), 202
 
-    def handle_meeting(self):
+    def handle_post_meeting(self):
         request_json = request.get_json()
         result = self.handle_query_post(self.meeting_producer, request_json)
         return jsonify(result), 202
 
-    def handle_sequence(self):
+    def handle_post_sequence(self):
         request_json = request.get_json()
         result = self.handle_query_post(self.sequence_producer, request_json)
         return jsonify(result), 202

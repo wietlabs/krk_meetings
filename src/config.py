@@ -32,20 +32,13 @@ class FloydDataPaths(Enum):
 LOCALHOST_ADDRESS = "http://127.0.0.1:5000/"
 
 
-class ENDPOINT(Enum):
-    CONNECTION = "connection"
-    MEETING = "meeting"
-    SEQUENCE = "sequence"
-    RESULTS = "result"
-    STOPS = "stops"
-
-
 class URL(Enum):
-    CONNECTION = f"{LOCALHOST_ADDRESS}{ENDPOINT.CONNECTION.value}"
-    MEETING = f"{LOCALHOST_ADDRESS}{ENDPOINT.MEETING.value}"
-    SEQUENCE = f"{LOCALHOST_ADDRESS}{ENDPOINT.SEQUENCE.value}"
-    RESULTS = f"{LOCALHOST_ADDRESS}{ENDPOINT.RESULTS.value}/{'{}'}"
-    STOPS = f"{LOCALHOST_ADDRESS}{ENDPOINT.STOPS.value}"
+    CONNECTION = "http://127.0.0.1:5000/connection"
+    MEETING = "http://127.0.0.1:5000/meeting"
+    SEQUENCE = "http://127.0.0.1:5000/sequence"
+    RESULTS = "http://127.0.0.1:5000/result/{}"
+    STOPS = "http://127.0.0.1:5000/stops"
+
 
 
 class SolverStatusCodes(Enum):
