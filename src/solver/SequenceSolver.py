@@ -1,6 +1,4 @@
 from copy import copy
-
-
 from src.data_classes.SequenceQuery import SequenceQuery
 from src.data_classes.SequenceResults import SequenceResults
 from src.solver.ISequenceSolver import ISequenceSolver

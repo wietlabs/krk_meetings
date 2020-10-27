@@ -19,7 +19,7 @@ if __name__ == "__main__":
 
     for _ in range(30):
         try:
-            response = requests.get(URL.GET.value.format(query_id), json=query_json, timeout=1.0)
+            response = requests.get(URL.RESULTS.value.format(query_id), json=query_json, timeout=1.0)
         except requests.exceptions.ChunkedEncodingError:
             time.sleep(1)
             continue

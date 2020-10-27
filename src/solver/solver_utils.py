@@ -38,6 +38,7 @@ def parse_transfers(transfer, stops_df, routes_df, routes_to_stops_dict):
         duration = datetime.strptime(transfer['end_datetime'], DATETIME_FORMAT) - \
                    datetime.strptime(transfer['start_datetime'], DATETIME_FORMAT)
         result['duration_in_minutes'] = int(duration.seconds / 60)
+        result['stops'] = [stop_data(stop, stops_df) for stop in [transfer['start_stop_id'], transfer['end_stop_id']]]
     return result
 
 
@@ -51,10 +52,13 @@ def get_stop_list(route_id, start_stop_id, end_stop_id, stops_df, routes_to_stop
             stops.append(stop_id)
             if stop_id == end_stop_id:
                 break
-    stops = list(map(lambda s:
-                     {
-                         'name': stops_df.at[s, 'stop_name'],
-                         'latitude': stops_df.at[s, 'stop_lat'],
-                         'longitude': stops_df.at[s, 'stop_lon'],
-                     }, stops))
+    stops = [stop_data(stop, stops_df) for stop in stops]
     return stops
+
+
+def stop_data(stop_id, stops_df):
+    return {
+        'name': stops_df.at[stop_id, 'stop_name'],
+        'latitude': stops_df.at[stop_id, 'stop_lat'],
+        'longitude': stops_df.at[stop_id, 'stop_lon'],
+    }

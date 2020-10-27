@@ -165,6 +165,7 @@ class ConnectionSolver(IConnectionSolver):
                 if (current_stop, next_stop) in self.adjacent_stops:
                     walking_time = self.adjacent_stops[(current_stop, next_stop)]
                     walking_df = copy(results_df)
+                    walking_df = walking_df[walking_df[f'route_id_{str(i-1)}'] != WALKING_ROUTE_ID]
                     walking_df[f'route_id_{str(i)}'] = WALKING_ROUTE_ID
                     walking_df[f'index_{str(i)}'] = [(
                         WALKING_ROUTE_ID, WALKING_ROUTE_ID, WALKING_ROUTE_ID)] * len(walking_df)

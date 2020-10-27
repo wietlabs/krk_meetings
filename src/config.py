@@ -1,11 +1,12 @@
 from enum import Enum
 from pathlib import Path
-
 from src.solver.ConnectionSolverConfiguration import ConnectionSolverConfiguration
+
 
 FLOYD_EXTRACTOR_PERIOD_MULTIPLIER: float = 0.5
 FLOYD_EXTRACTOR_CHANGE_PENALTY = 120  # sek
 MAX_WALKING_TIME_IN_MINUTES: float = 10
+MAX_WALKING_DISTANCE = 1000  # m
 WALKING_SPEED: float = 1.0
 WALKING_ROUTE_ID: int = -1
 DATETIME_FORMAT: str = "%Y-%m-%d %H:%M:%S"
@@ -23,6 +24,7 @@ DEFAULT_CONNECTION_SOLVER_CONFIGURATION = ConnectionSolverConfiguration(
 FLOYD_DATA_DIR_PATH = Path(__file__).parent / 'data'
 CONFIG_JSON_PATH = Path(__file__).parent / 'data' / 'config.json'
 
+
 class FloydDataPaths(Enum):
     floyd_graph = FLOYD_DATA_DIR_PATH / "floyd_graph.pickle"
     kernelized_floyd_graph = FLOYD_DATA_DIR_PATH / "kernelized_floyd_graph.pickle"
@@ -35,9 +37,7 @@ class FloydDataPaths(Enum):
     stops_df = FLOYD_DATA_DIR_PATH / "stops_df.pickle"
     routes_df = FLOYD_DATA_DIR_PATH / "routes_df.pickle"
     stops_df_by_name = FLOYD_DATA_DIR_PATH / "stops_df_by_name.pickle"
-
-
-LOCALHOST_ADDRESS = "http://127.0.0.1:5000/"
+    api_walking_distances = FLOYD_DATA_DIR_PATH / "api_walking_distances.pickle"
 
 
 class URL(Enum):
@@ -46,7 +46,6 @@ class URL(Enum):
     SEQUENCE = "http://127.0.0.1:5000/sequence"
     RESULTS = "http://127.0.0.1:5000/result/{}"
     STOPS = "http://127.0.0.1:5000/stops"
-
 
 
 class SolverStatusCodes(Enum):

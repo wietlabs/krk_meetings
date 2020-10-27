@@ -1,4 +1,3 @@
-import json
 import requests
 import time
 from src.config import URL
