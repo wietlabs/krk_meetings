@@ -1,5 +1,6 @@
 from src.data_provider.utils import get_walking_time
-from src.config import MAX_WALKING_TIME_IN_MINUTES, WALKING_SPEED
+from src.config import MAX_WALKING_TIME_IN_MINUTES, FloydDataPaths
+from src.utils import load_pickle
 import pandas as pd
 
 
@@ -10,11 +11,25 @@ class Extractor:
 
     @staticmethod
     def get_adjacent_stops_dict(stops_df: pd.DataFrame) -> dict:
+        try:
+            walking_distances_pickle = load_pickle("path.pickle")
+        except FileNotFoundError:
+            walking_distances_pickle = {'distances': {}, 'stop_list': []}
+        api_walking_distances = walking_distances_pickle['distances']
+        api_stop_list = walking_distances_pickle['stop_list']
+        stops_df = stops_df[['stop_name', 'stop_lon', 'stop_lat']]
         adjacent_stops = {}
-        for id_1, _, lat_1, lon_1, _, _ in stops_df.itertuples():
-            for id_2, _, lat_2, lon_2, _, _ in stops_df.itertuples():
-                duration = get_walking_time(lon_1, lat_1, lon_2, lat_2)
-                if id_1 != id_2 and duration <= MAX_WALKING_TIME_IN_MINUTES * 60:
+        for id_1, name_1, lat_1, lon_1 in stops_df.itertuples():
+            for id_2, name_2, lat_2, lon_2 in stops_df.itertuples():
+                if id_1 == id_2:
+                    continue
+                if name_1 in api_stop_list and name_2 in api_stop_list:
+                    if (name_1, name_2) not in api_walking_distances:
+                        continue
+                    duration = api_walking_distances[(name_1, name_2)]
+                else:
+                    duration = get_walking_time(lon_1, lat_1, lon_2, lat_2)
+                if duration <= MAX_WALKING_TIME_IN_MINUTES * 60:
                     adjacent_stops[id_1, id_2] = duration
         return adjacent_stops
 

@@ -1,41 +1,11 @@
 from functools import reduce
 from src.data_provider.Extractor import Extractor
-
 import pandas as pd
-import numpy as np
 import networkx as nx
 from src.config import FLOYD_EXTRACTOR_PERIOD_MULTIPLIER, WALKING_ROUTE_ID, FLOYD_EXTRACTOR_CHANGE_PENALTY
 
 
 class FloydDataExtractor(Extractor):
-    # @staticmethod
-    # def add_walking_edges_to_floyd_graph(graph: nx.DiGraph, adjacent_stops: dict,
-    #                                      kernelized: bool = False) -> nx.DiGraph:
-    #     def edge_generator():
-    #         for first, second in adjacent_stops:
-    #             if first != second and (not kernelized or (graph.nodes[first]['hub'] and graph.nodes[second]['hub'])):
-    #                 yield int(first), int(second), \
-    #                       {'weight': int(adjacent_stops[first, second]), 'route_ids': WALKING_ROUTE_ID,
-    #                        'path': [first, second]}
-    #
-    #     graph.add_edges_from(edge_generator())
-    #     return graph
-
-    # @staticmethod
-    # def apply_adjacent_stops_to_hub_in_stops_df(graph_with_walking_edges: nx.DiGraph,
-    #                                             stops_df: pd.DataFrame) -> pd.DataFrame:
-    #     def is_hub(row):
-    #         neighbour_count = len(list(graph_with_walking_edges.neighbors(row['stop_id'])))
-    #         if row['is_first'] and row['is_last']:
-    #             return neighbour_count > 1
-    #         else:
-    #             return neighbour_count > 2
-    #
-    #     stops_df = stops_df.reset_index()
-    #     stops_df['hub'] = stops_df.apply(is_hub, axis=1)
-    #     stops_df = stops_df.set_index('stop_id')
-    #     return stops_df
-
     @staticmethod
     def create_kernelized_floyd_graph(graph: nx.DiGraph, stops_df: pd.DataFrame) -> nx.DiGraph:
         kernelized_graph = nx.DiGraph()
