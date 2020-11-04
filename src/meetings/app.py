@@ -1,4 +1,5 @@
 import uuid
+from datetime import datetime
 
 from flask import Flask, request, make_response
 from flask_sqlalchemy import SQLAlchemy
@@ -12,7 +13,9 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
 
 db = SQLAlchemy(app)
 
+MEETING_NAME_MAX_LENGTH = 50
 NICKNAME_MAX_LENGTH = 50
+STOP_NAME_MAX_LENGTH = 100
 
 
 class User(db.Model):
@@ -26,6 +29,8 @@ class User(db.Model):
 class Meeting(db.Model):
     __tablename__ = 'meetings'
     uuid = db.Column(CHAR(36), default=lambda: str(uuid.uuid4()), primary_key=True)
+    name = db.Column(db.String(MEETING_NAME_MAX_LENGTH), nullable=True)
+    datetime = db.Column(db.DateTime(), nullable=True)
     owner_uuid = owner_uuid = db.Column(CHAR(36), db.ForeignKey('users.uuid'), nullable=False)
     created_at = db.Column(db.DateTime(), default=func.now(), nullable=False)
 
@@ -38,6 +43,9 @@ class Membership(db.Model):
     meeting_uuid = db.Column(CHAR(36), db.ForeignKey('meetings.uuid'), primary_key=True)
     user_uuid = db.Column(CHAR(36), db.ForeignKey('users.uuid'), primary_key=True)
     nickname = db.Column(db.String(NICKNAME_MAX_LENGTH))
+    # position_stop_name = db.Column(db.String(STOP_NAME_MAX_LENGTH), nullable=True)
+    # position_latitude = db.Column(db.Float(), nullable=True)
+    # position_longitude = db.Column(db.Float(), nullable=True)
     joined_at = db.Column(db.DateTime(), default=func.now(), nullable=False)
 
     user = db.relationship('User', back_populates='meetings')
@@ -55,6 +63,45 @@ def create_user():
     }, 201, {
         'Location': f'/api/v1/users/{user.uuid}'
     })
+
+
+@app.route('/api/v1/users/<user_uuid>', methods=['GET'])
+def get_user(user_uuid: str):
+    try:
+        uuid.UUID(user_uuid, version=4)
+    except ValueError:
+        return {'error': 'Invalid user_uuid'}, 400
+
+    user = User.query.get(user_uuid)
+    if not user:
+        return {'error': 'User not found'}, 404
+
+    return {}, 200
+
+
+@app.route('/api/v1/users/<user_uuid>/meetings', methods=['GET'])
+def get_meetings(user_uuid: str):
+    try:
+        uuid.UUID(user_uuid, version=4)
+    except ValueError:
+        return {'error': 'Invalid user_uuid'}, 400
+
+    user = User.query.get(user_uuid)
+    if not user:
+        return {'error': 'User not found'}, 404
+
+    return {
+        'meetings': [
+            {
+                'uuid': membership.meeting.uuid,
+                'name': membership.meeting.name,
+                'nickname': membership.nickname,
+                # 'datetime': membership.meeting.datetime.isoformat(),
+                'members_count': len(membership.meeting.users),  # TODO: use COUNT()
+            }
+            for membership in user.meetings
+        ]
+    }, 200
 
 
 @app.route('/api/v1/meetings', methods=['POST'])
@@ -78,11 +125,27 @@ def create_meeting():
     else:
         nickname = None
 
+    if 'name' in request.json:
+        name = request.json['name']
+        if len(name) > MEETING_NAME_MAX_LENGTH:
+            return {'error': 'Meeting name too long'}, 400
+    else:
+        name = None
+
+    if 'datetime' in request.json:
+        dt = request.json['datetime']
+        try:
+            dt = datetime.fromisoformat(dt)
+        except ValueError:
+            return {'error': 'Invalid meeting datetime'}, 400
+    else:
+        dt = None
+
     user = User.query.get(user_uuid)
     if not user:
         return {'error': 'User not found'}, 404
 
-    meeting = Meeting(owner=user)
+    meeting = Meeting(name=name, datetime=dt, owner=user)
     membership = Membership(meeting=meeting, user=user, nickname=nickname)
 
     db.session.add(membership)
@@ -108,7 +171,7 @@ def get_meeting(meeting_uuid: str):
 
     return {
         'uuid': meeting.uuid,
-        'created_at': meeting.created_at.isoformat(),
+        'name': meeting.name,
         'members': [
             {
                 'nickname': member.nickname,
@@ -126,18 +189,18 @@ def join_meeting(meeting_uuid: str):
     except ValueError:
         return {'error': 'Invalid meeting_uuid'}, 400
 
-    if 'user_uuid' not in request.args:
+    if 'user_uuid' not in request.json:
         return {'error': 'Missing user_uuid'}, 400
-    user_uuid = request.args['user_uuid']
+    user_uuid = request.json['user_uuid']
 
     try:
         uuid.UUID(user_uuid, version=4)
     except ValueError:
         return {'error': 'Invalid user_uuid'}, 400
 
-    if 'nickname' not in request.args:
+    if 'nickname' not in request.json:
         return {'error': 'Missing nickname'}, 400
-    nickname = request.args['nickname']
+    nickname = request.json['nickname']
 
     if len(nickname) > NICKNAME_MAX_LENGTH:
         return {'error': 'Nickname too long'}, 400
@@ -162,19 +225,9 @@ def join_meeting(meeting_uuid: str):
     except IntegrityError:
         return {'error': 'Already a member'}, 400
 
-    return {
-        'uuid': meeting.uuid,
-        'created_at': meeting.created_at.isoformat(),
-        'members': [
-            {
-                'nickname': member.nickname,
-                'is_owner': member.user == meeting.owner,
-            }
-            for member in meeting.users
-        ],
-    }, 201
+    return {}, 201
 
 
 if __name__ == '__main__':
     db.create_all()
-    app.run(debug=True)
+    app.run(debug=True, host='0.0.0.0')
