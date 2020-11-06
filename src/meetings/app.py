@@ -35,7 +35,7 @@ class Meeting(db.Model):
     created_at = db.Column(db.DateTime(), default=func.now(), nullable=False)
 
     owner = db.relationship('User')
-    users = db.relationship('Membership', back_populates='meeting')
+    users = db.relationship('Membership', back_populates='meeting', order_by='Membership.joined_at')
 
 
 class Membership(db.Model):
@@ -169,15 +169,17 @@ def get_meeting(meeting_uuid: str):
     if meeting is None:
         return {'error': 'Meeting not found'}, 404
 
+    memberships = meeting.users
+
     return {
         'uuid': meeting.uuid,
         'name': meeting.name,
         'members': [
             {
-                'nickname': member.nickname,
-                'is_owner': member.user == meeting.owner,
+                'nickname': membership.nickname,
+                'is_owner': membership.user == meeting.owner,
             }
-            for member in meeting.users
+            for membership in memberships
         ],
     }, 200
 
