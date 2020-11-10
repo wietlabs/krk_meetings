@@ -4,6 +4,8 @@ numpy
 matplotlib
 requests
 flask
+flask_sqlalchemy
+sqlalchemy
 pytest
 pika
 openrouteservice
