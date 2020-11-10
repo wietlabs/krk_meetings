@@ -6,7 +6,7 @@ from src.rabbitmq.RmqSequenceSolver import start_sequence_solver
 import multiprocessing
 
 
-def setup():
+def run():
     data_provider_process = multiprocessing.Process(target=start_data_provider)
     connection_solver_process = multiprocessing.Process(target=start_connection_solver)
     meeting_solver_process = multiprocessing.Process(target=start_meeting_solver)
@@ -20,4 +20,4 @@ def setup():
 
 
 if __name__ == "__main__":
-    setup()
+    run()
