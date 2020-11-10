@@ -1,18 +1,32 @@
 import * as React from "react";
-import { View } from "react-native";
+import { Alert, View } from "react-native";
 import { Button, Searchbar } from "react-native-paper";
+import { findConnections } from "../../api/ConnectionsApi";
 
 export default function HomeScreen({ navigation }) {
-  const [startStopName, setStartStopName] = React.useState("");
-  const [endStopName, setEndStopName] = React.useState("");
+  const [startStopName, setStartStopName] = React.useState("Czerwone Maki P+R");
+  const [endStopName, setEndStopName] = React.useState("Łagiewniki");
+  const [loading, setLoading] = React.useState(false);
 
   const handleSwap = () => {
     setStartStopName(endStopName);
     setEndStopName(startStopName);
   };
 
-  const handleSubmit = () => {
-    navigation.navigate("ConnectionResults");
+  const handleSubmit = async () => {
+    setLoading(true);
+    const startDateTime = new Date(2020, 11, 10, 16, 0, 0); // TODO: handle input
+    const query = { startDateTime, startStopName, endStopName };
+    try {
+      const connections = await findConnections(query);
+      navigation.navigate("ConnectionResults", { connections });
+    } catch (e) {
+      Alert.alert(
+        "Wystąpił błąd",
+        "Wystąpił błąd podczas wyszukiwania połączenia."
+      );
+    }
+    setLoading(false);
   };
 
   return (
@@ -39,7 +53,13 @@ export default function HomeScreen({ navigation }) {
         style={{ marginBottom: 80 }}
         onChangeText={(text) => setEndStopName(text)}
       />
-      <Button mode="contained" onPress={handleSubmit}>
+      <Button
+        mode="contained"
+        loading={loading}
+        icon={loading ? null : "magnify"}
+        style={{ width: 250 }}
+        onPress={handleSubmit}
+      >
         Wyszukaj połączenie
       </Button>
     </View>
