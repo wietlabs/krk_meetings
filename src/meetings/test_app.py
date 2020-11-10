@@ -110,11 +110,7 @@ def test_create_meeting(client: FlaskClient) -> None:
         })
 
     assert response.status_code == 201
-    assert response.json == {
-        'uuid': expected_uuid,
-        'name': 'My meeting',
-        'datetime': '2020-01-02T03:04:05',
-    }
+    assert response.json == {'uuid': expected_uuid}
     assert response.headers['Location'].endswith(f'/api/v1/meetings/{expected_uuid}')
 
     response = client.get(f'/api/v1/meetings/{expected_uuid}')
