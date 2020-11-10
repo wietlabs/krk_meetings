@@ -15,7 +15,7 @@ class ConnectionDataManager(DataManager):
         data["routes_df"] = pd.read_pickle(FloydDataPaths.routes_df.value)
         data["stops_df_by_name"] = pd.read_pickle(FloydDataPaths.stops_df_by_name.value)
         data["stop_times_0"] = load_pickle(FloydDataPaths.stop_times_0_dict.value)
-        data["stop_times_24"] = load_pickle(FloydDataPaths.stop_times_0_dict.value)
+        data["stop_times_24"] = load_pickle(FloydDataPaths.stop_times_24_dict.value)
         data["day_to_services_dict"] = load_pickle(FloydDataPaths.day_to_services_dict.value)
         data["adjacent_stops"] = load_pickle(FloydDataPaths.adjacent_stops.value)
         data["routes_to_stops_dict"] = load_pickle(FloydDataPaths.routes_to_stops_dict.value)
