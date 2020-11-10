@@ -7,7 +7,7 @@ import {
   ToastAndroid,
 } from "react-native";
 import { ActivityIndicator, Chip, List } from "react-native-paper";
-import { getMeeting } from "../../Api";
+import { getMeeting } from "../../api/MeetingsApi";
 
 export default function MeetingDetailsScreen({ navigation, route }) {
   const userUuid = route.params.userUuid;

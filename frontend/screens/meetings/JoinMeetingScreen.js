@@ -3,7 +3,7 @@ import { Alert, Clipboard, ToastAndroid, View } from "react-native";
 import { Button, TextInput } from "react-native-paper";
 import { validateLink, validateUuid, censorUuid } from "../../utils";
 import { getNickname } from "../../UserManager";
-import { checkIfMeetingExists, joinMeeting } from "../../Api";
+import { checkIfMeetingExists, joinMeeting } from "../../api/MeetingsApi";
 
 export default function JoinMeetingScreen({ navigation, route }) {
   const userUuid = route.params.userUuid;

@@ -2,7 +2,7 @@ import * as React from "react";
 import { View, ScrollView, RefreshControl } from "react-native";
 import { ActivityIndicator, FAB, Chip, Card } from "react-native-paper";
 import Placeholder from "../../components/Placeholder";
-import { getMeetings } from "../../Api";
+import { getMeetings } from "../../api/MeetingsApi";
 
 export default function MeetingsScreen({ navigation, route }) {
   const userUuid = route.params.userUuid;

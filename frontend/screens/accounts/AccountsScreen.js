@@ -5,7 +5,7 @@ import Placeholder from "../../components/Placeholder";
 import { loadUsers, addUser, deleteUser } from "../../UserManager";
 import { censorUuid } from "../../utils";
 import { createUserLink } from "../../LinkManager";
-import { createUser } from "../../Api";
+import { createUser } from "../../api/MeetingsApi";
 
 export default function AccountsScreen({ navigation }) {
   const [users, setUsers] = React.useState([]);
