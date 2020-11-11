@@ -1,3 +1,5 @@
+import { sleep } from "../utils";
+
 const axios = require("axios");
 
 const baseUrl = "http://10.0.0.5:5000";
@@ -11,8 +13,9 @@ export const getStops = async () => {
 
 export const findConnections = async (
   { startDateTime, startStopName, endStopName },
-  interval = 500,
-  retries = 10
+  first_interval = 500,
+  next_interval = 500,
+  retries = 20
 ) => {
   const url = `${baseUrl}/connection`;
   const params = {
@@ -23,10 +26,12 @@ export const findConnections = async (
   const response = await axios.post(url, params);
   const queryId = response.data;
 
+  await sleep(first_interval);
+
   for (let i = 0; i < retries; ++i) {
     const connections = await getResults(queryId);
     if (connections !== null) return connections;
-    await new Promise((r) => setTimeout(r, interval));
+    await sleep(next_interval);
   }
   throw new Error("Reached max retries");
 };
