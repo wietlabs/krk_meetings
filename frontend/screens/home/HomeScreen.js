@@ -1,11 +1,11 @@
 import * as React from "react";
 import { Alert, View } from "react-native";
-import { Button, Searchbar } from "react-native-paper";
+import { Button, TextInput } from "react-native-paper";
 import { findConnections } from "../../api/ConnectionsApi";
 
 export default function HomeScreen({ navigation }) {
   const [startStopName, setStartStopName] = React.useState("Czerwone Maki P+R");
-  const [endStopName, setEndStopName] = React.useState("Łagiewniki");
+  const [endStopName, setEndStopName] = React.useState("Jerzmanowskiego");
   const [loading, setLoading] = React.useState(false);
 
   const handleSwap = () => {
@@ -30,34 +30,44 @@ export default function HomeScreen({ navigation }) {
   };
 
   return (
-    <View style={{ alignItems: "center", padding: 20, paddingTop: 80 }}>
-      <Searchbar
-        placeholder="Przystanek początkowy"
+    <View style={{ padding: 16 }}>
+      <TextInput
         value={startStopName}
-        icon="adjust"
-        style={{ marginBottom: 16 }}
-        onChangeText={(text) => setStartStopName(text)}
+        label="Przystanek początkowy"
+        left={<TextInput.Icon name="map-marker" />}
+        right={
+          <TextInput.Icon name="close" onPress={() => setStartStopName("")} />
+        }
+        onChangeText={setStartStopName}
+        style={{ backgroundColor: "white", marginBottom: 16 }}
       />
       <Button
         mode="outlined"
         compact={true}
         icon="autorenew"
-        style={{ marginBottom: 16 }}
         color="gray"
         onPress={handleSwap}
+        style={{
+          width: 50,
+          marginBottom: 16,
+          marginLeft: "auto",
+          marginRight: "auto",
+        }}
       ></Button>
-      <Searchbar
-        placeholder="Przystanek końcowy"
+      <TextInput
         value={endStopName}
-        icon="map-marker"
-        style={{ marginBottom: 80 }}
-        onChangeText={(text) => setEndStopName(text)}
+        label="Przystanek końcowy"
+        left={<TextInput.Icon name="map-marker" />}
+        right={
+          <TextInput.Icon name="close" onPress={() => setEndStopName("")} />
+        }
+        onChangeText={setEndStopName}
+        style={{ backgroundColor: "white", marginBottom: 16 }}
       />
       <Button
         mode="contained"
         loading={loading}
         icon={loading ? null : "magnify"}
-        style={{ width: 250 }}
         onPress={handleSubmit}
       >
         Wyszukaj połączenie
