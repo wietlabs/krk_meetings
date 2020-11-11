@@ -1,4 +1,3 @@
-import json
 import time
 
 import requests
@@ -11,15 +10,17 @@ if __name__ == "__main__":
 
     execution_start = time.time()
     response = requests.post(URL.CONNECTION.value, json=query_json, timeout=1.0)
-    query_id = response.json()
+    query_id = response.json()["query_id"]
     result = None
 
     for _ in range(30):
         response = requests.get(URL.RESULTS.value.format(query_id), timeout=1.0)
         result = response.json()
-        if result["is_done"]:
+        if response.status_code != 202:
             break
-        time.sleep(0.1)
+        elif result["is_done"]:
+            break
+        time.sleep(0.2)
 
     print(result)
     print(time.time() - execution_start)

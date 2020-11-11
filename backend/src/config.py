@@ -51,7 +51,14 @@ class URL(Enum):
     STOPS = "http://127.0.0.1:5000/stops"
 
 
-class SolverStatusCodes(Enum):
-    OK = ""
-    BAD_START_STOP_NAME = "Error: Bad start stop name."
-    BAD_END_STOP_NAME = "Error: Bad end stop name."
+class ErrorCodes(Enum):
+    OK = {"code": 0, "text": "ok"}
+    BAD_START_STOP_NAME = {"code": 1, "text": "Bad start stop name."}
+    BAD_END_STOP_NAME = {"code": 2, "text": "Bad start stop name."}
+    BAD_STOP_NAMES_IN_SEQUENCE = {"code": 3, "text": "Bad stop names in sequence: {}"}
+    BAD_START_STOP_NAMES_IN_MEETING = {"code": 4, "text": "Bad start stop names in meeting: {}"}
+    BAD_CONNECTION_JSON_FORMAT = {"code": 5, "text": "Bad json format for connection post"}
+    BAD_MEETING_JSON_FORMAT = {"code": 6, "text": "Bad json format for meeting post"}
+    BAD_SEQUENCE_JSON_FORMAT = {"code": 7, "text": "Bad json format for sequence post"}
+    BAD_QUERY_ID_TYPE = {"code": 8, "text": "query_id must be int"}
+    BAD_QUERY_ID_VALUE = {"code": 8, "text": "Bad value for quey_id."}

@@ -1,6 +1,9 @@
 from copy import copy
+
+from src.config import ErrorCodes
 from src.data_classes.SequenceQuery import SequenceQuery
 from src.data_classes.SequenceResults import SequenceResults
+from src.solver import solver_utils
 from src.solver.ISequenceSolver import ISequenceSolver
 from src.data_managers.SequenceDataManager import SequenceDataManager
 
@@ -40,10 +43,21 @@ class SequenceSolver(ISequenceSolver):
                 weight = weight + self.distances[current_stop_id][last_stop_id]
                 yield sequence, weight
 
-        stops_to_visit_ids = list(map(lambda x: int(self.stops_df_by_name.at[x, 'stop_id']), query.stops_to_visit))
-        start_stop_id = int(self.stops_df_by_name.at[query.start_stop_name, 'stop_id'])
-        end_stop_id = int(self.stops_df_by_name.at[query.end_stop_name, 'stop_id'])
+
+        start_stop_id = solver_utils.get_stop_id_by_name(query.start_stop_name, self.stops_df_by_name)
+        if start_stop_id is None:
+            return SequenceResults(query.query_id, ErrorCodes.BAD_START_STOP_NAME.value, [])
+        end_stop_id = solver_utils.get_stop_id_by_name(query.end_stop_name, self.stops_df_by_name)
+        if start_stop_id is None:
+            return SequenceResults(query.query_id, ErrorCodes.BAD_END_STOP_NAME.value, [])
+        stops_to_visit_ids = [solver_utils.get_stop_id_by_name(stop_name, self.stops_df_by_name) for stop_name in query.stops_to_visit]
+        if None in stops_to_visit_ids:
+            bad_stop_names = [stop[0] for stop in zip(query.stops_to_visit, stops_to_visit_ids) if stop[1] is None]
+            error = ErrorCodes.BAD_STOP_NAMES_IN_SEQUENCE.value
+            error["text"] = ErrorCodes.BAD_STOP_NAMES_IN_SEQUENCE.value["text"].format(bad_stop_names)
+            return SequenceResults(query.query_id, error, [])
+
         sequences = list(gen(stops_to_visit_ids, start_stop_id, end_stop_id, [start_stop_id], 0))
         best_sequence = min(sequences, key=lambda x: x[1])
         best_sequence = list(map(lambda x: self.stops_df.at[x, 'stop_name'], best_sequence[0]))
-        return SequenceResults(query.query_id, best_sequence)
+        return SequenceResults(query.query_id, ErrorCodes.OK.value, best_sequence)

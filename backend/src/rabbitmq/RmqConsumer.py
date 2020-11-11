@@ -53,6 +53,7 @@ class RmqOneMsgConsumer:
         return self.result
 
     def callback(self, ch, method, properties, body):
+        print(self.exchange_name)
         self.result = self.from_json(body)
         ch.basic_ack(delivery_tag=method.delivery_tag)
         ch.stop_consuming()
