@@ -4,6 +4,7 @@ from typing import List
 from itertools import chain
 import pandas as pd
 from datetime import datetime
+from time import time as get_time
 
 from src.data_classes.Connection import Connection
 from src.data_classes.Walk import Walk
@@ -57,6 +58,7 @@ class ConnectionSolver(IConnectionSolver):
                 self.paths[node] = dict()
 
     def find_connections(self, query: ConnectionQuery) -> (int, List[Connection]):
+        print("Finding connections")
         self.update_data()
         current_datetime = query.start_datetime
         current_time = time_to_int(current_datetime.time())
@@ -80,7 +82,7 @@ class ConnectionSolver(IConnectionSolver):
     def find_partition_connections(self, paths, earliest_start_time, current_datetime):
         connections = []
         for path in paths:
-            lastest_start_time = earliest_start_time + self.configuration.partition_search_range
+            lastest_start_time = earliest_start_time + self.configuration.max_travel_time
             results = self.find_routes(path, earliest_start_time, lastest_start_time, current_datetime)
             if results is not None:
                 for result in results:
@@ -192,16 +194,21 @@ class ConnectionSolver(IConnectionSolver):
         return results_df
 
     def get_paths(self, start_node, end_node):
+        print("Getting paths")
         if start_node == end_node:
             return []
         if end_node not in self.paths[start_node]:
             self.paths[start_node][end_node] = self.calculate_paths(start_node, end_node)
+        print(f"Got paths: {self.paths[start_node][end_node]}")
         return self.paths[start_node][end_node]
 
     def calculate_paths(self, start_node_id: int, end_node_id: int):
+        print("Calculating paths")
+        calculation_start_time = get_time()
+
         def resolve_neighbor(node_id, neighbor_id, weight, path, routes, graph):
             n_weight = weight + graph.edges[node_id, neighbor_id]['weight'] + self.configuration.change_penalty
-            n_priority = n_weight + self.distances[neighbor_id][end_node_id]
+            n_priority = n_weight + self.distances[neighbor_id][end_node_id] * self.configuration.path_calculation_boost
             n_path = copy(path)
             n_path.append(neighbor_id)
             n_routes = copy(routes)
@@ -216,10 +223,12 @@ class ConnectionSolver(IConnectionSolver):
         queue = PriorityQueue()
         count = 0
         paths = []
-        costs = []
         routes_dict = []
         routes_to_node = {}
-        max_priority = self.distances[start_node_id][end_node_id] * self.configuration.max_priority_multiplier
+        max_priority = int(self.distances[start_node_id][end_node_id] * self.configuration.max_priority_multiplier +
+                           self.configuration.max_priority_cap)
+        queue_priority = int(self.distances[start_node_id][end_node_id] * self.configuration.path_calculation_boost +
+                           self.configuration.max_priority_cap)
         priority = 0
 
         last_hubs = []
@@ -235,7 +244,9 @@ class ConnectionSolver(IConnectionSolver):
                 if neighbor_id in self.kernelized_graph.nodes:
                     resolve_neighbor(start_node_id, neighbor_id, 0, [start_node_id], [], self.graph)
 
-        while not queue.empty() and priority <= max_priority and len(paths) <= self.configuration.max_number_of_paths:
+        while not queue.empty() and priority <= queue_priority and len(paths) <= self.configuration.max_number_of_paths:
+            if get_time() > calculation_start_time + self.configuration.max_path_calculation_time:
+                break
             priority, weight, node_id, path, routes = queue.get()
             subset_route = False
             current_route_set = set()
@@ -252,15 +263,14 @@ class ConnectionSolver(IConnectionSolver):
                 routes_to_node[node_id] = []
             routes_to_node[node_id].append(current_route_set)
             if node_id == end_node_id:
-                count = count + 1
-                paths.append(path)
-                costs.append(priority)
-                continue
+                if priority < max_priority:
+                    count = count + 1
+                    paths.append(path)
+                    continue
             if node_id in last_hubs:
                 resolve_neighbor(node_id, end_node_id, weight, path, routes, self.graph)
             for neighbor_id in self.kernelized_graph.neighbors(node_id):
                 resolve_neighbor(node_id, neighbor_id, weight, path, routes, self.kernelized_graph)
-
         return paths
 
     def is_redundant(self, n_routes: List[tuple], route: tuple):

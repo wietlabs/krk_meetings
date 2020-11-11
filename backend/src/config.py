@@ -4,21 +4,24 @@ from src.solver.ConnectionSolverConfiguration import ConnectionSolverConfigurati
 
 
 FLOYD_EXTRACTOR_PERIOD_MULTIPLIER: float = 0.5
-FLOYD_EXTRACTOR_CHANGE_PENALTY = 120  # sek
+FLOYD_EXTRACTOR_CHANGE_PENALTY = 120  # sec
 MAX_WALKING_TIME_IN_MINUTES: float = 10
-MAX_WALKING_DISTANCE = 1000  # m
+MAX_WALKING_DISTANCE = 1000  # min
 WALKING_SPEED: float = 1.0
 WALKING_ROUTE_ID: int = -1
 DATETIME_FORMAT: str = "%Y-%m-%d %H:%M:%S"
 
 DEFAULT_CONNECTION_SOLVER_CONFIGURATION = ConnectionSolverConfiguration(
-    max_searching_time=8*3600,  # sek
-    partition_time=1800,  # sek
-    partition_search_range=3*3600,  # sek
+    max_searching_time=8*3600,  # sec
+    partition_time=1800,  # sec
+    max_travel_time=4*3600,  # sec
     number_of_connections_returned=25,
-    max_priority_multiplier=1.2,
+    max_priority_multiplier=1.1,
+    max_priority_cap=2000,  # sec - cant be 0 due to ban of walking from stop to stop twice in a row
+    path_calculation_boost=1.5,
     max_number_of_paths=10,
-    change_penalty=FLOYD_EXTRACTOR_CHANGE_PENALTY
+    change_penalty=FLOYD_EXTRACTOR_CHANGE_PENALTY,
+    max_path_calculation_time=5  # sec
 )
 
 FLOYD_DATA_DIR_PATH = Path(__file__).parent / 'data'

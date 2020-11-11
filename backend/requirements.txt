@@ -1,6 +1,6 @@
 pandas
 networkx
-numpy
+numpy==1.19.3
 matplotlib
 requests
 flask
