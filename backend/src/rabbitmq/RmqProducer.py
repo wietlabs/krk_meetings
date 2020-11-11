@@ -1,11 +1,15 @@
+from threading import Thread
 import pika
 
+from src.rabbitmq.RmqHelper import RmqHelper
 
-class RmqProducer:
+
+class RmqProducer(RmqHelper):
     def __init__(self, exchange):
-        self.exchange_name, self.exchange_type, self.routing_key, self.to_json, _ = exchange
-        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost'))
-        self.channel = self.connection.channel()
+        super().__init__(exchange)
+        self.heartbeat_thread = self.data_consumer_thread = Thread(target=self.set_heartbeat_scheduler, args=[])
+        self.heartbeat_thread.start()
+
         if self.exchange_type:
             self.channel.exchange_declare(exchange=self.exchange_name,  exchange_type=self.exchange_type)
         else:
@@ -14,24 +18,19 @@ class RmqProducer:
     def stop(self):
         self.connection.close()
 
-    def send_msg(self, message, task_id=None, lost_stream_msg="Rabbitmq error: Stream connection lost"):
+    def send_msg(self, message, lost_stream_msg="Rabbitmq error: Stream connection lost"):
         try:
-            if task_id is None:
-                routing_key = self.routing_key
-            else:
-                routing_key = self.routing_key + str(task_id)
-            self.channel.basic_publish(exchange=self.exchange_name, routing_key=routing_key, body=self.to_json(message))
+            self.channel.basic_publish(exchange=self.exchange_name, routing_key=self.routing_key, body=self.to_json(message))
         except pika.exceptions.StreamLostError:
             print(lost_stream_msg)
 
-    def send_error(self, message, task_id=None, lost_stream_msg="Rabbitmq error: Stream connection lost"):
+    def send_error(self, message, lost_stream_msg="Rabbitmq error: Stream connection lost"):
         try:
-            if task_id is None:
-                routing_key = self.routing_key
-            else:
-                routing_key = self.routing_key + str(task_id)
-            self.channel.basic_publish(exchange=self.exchange_name, routing_key=routing_key, body=message)
+            self.channel.basic_publish(exchange=self.exchange_name, routing_key=self.routing_key, body=message)
         except pika.exceptions.StreamLostError:
             print(lost_stream_msg)
+
+    def callback(self, ch, method, properties, body):
+        pass
 
 
