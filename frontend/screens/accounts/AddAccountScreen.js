@@ -3,7 +3,7 @@ import { Alert, Clipboard, ToastAndroid, View } from "react-native";
 import { Button, TextInput } from "react-native-paper";
 import { validateUuid } from "../../utils";
 import { addUser, hasUser } from "../../UserManager";
-import { checkIfUserExists } from "../../Api";
+import { checkIfUserExists } from "../../api/MeetingsApi";
 
 export default function AddAccountScreen({ navigation }) {
   const [uuid, setUuid] = React.useState("");

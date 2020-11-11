@@ -30,7 +30,7 @@ export default function App() {
     <PaperProvider theme={theme}>
       <NavigationContainer>
         <Stack.Navigator>
-          {/* <Stack.Screen
+          <Stack.Screen
             name="Home"
             component={HomeScreen}
             options={{ title: "Krk Meetings" }}
@@ -49,8 +49,8 @@ export default function App() {
             name="ConnectionDetails"
             component={ConnectionDetailsScreen}
             options={{ title: "Szczegóły połączenia" }}
-          /> */}
-          <Stack.Screen
+          />
+          {/* <Stack.Screen
             name="Accounts"
             component={AccountsScreen}
             options={{ title: "Tożsamości" }}
@@ -89,7 +89,7 @@ export default function App() {
             name="ScanAccountQRCode"
             component={ScanAccountQRCodeScreen}
             options={{ title: "Skanuj kod QR" }}
-          />
+          /> */}
         </Stack.Navigator>
       </NavigationContainer>
     </PaperProvider>

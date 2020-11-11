@@ -4,7 +4,7 @@ import { BarCodeScanner } from "expo-barcode-scanner";
 import Placeholder from "../../components/Placeholder";
 import { parseUserLink, validateUserLink } from "../../LinkManager";
 import { addUser, hasUser } from "../../UserManager";
-import { checkIfUserExists } from "../../Api";
+import { checkIfUserExists } from "../../api/MeetingsApi";
 
 export default function ScanAccountQRCodeScreen({ navigation }) {
   const [hasPermission, setHasPermission] = React.useState(null);

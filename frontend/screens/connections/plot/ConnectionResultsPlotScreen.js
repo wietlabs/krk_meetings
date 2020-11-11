@@ -10,7 +10,7 @@ const getColor = (n) => colors[Math.min(n, colors.length - 1)];
 export default function ConnectionResultsPlotScreen({ navigation, route }) {
   const connections = route.params.connections;
 
-  const start_datetime = parseDateTime("2020-05-24 20:00:00");
+  const start_datetime = parseDateTime("2020-11-10 16:00:00");
 
   const handleShow = (connection) => {
     navigation.navigate("ConnectionDetails", { connection: connection });

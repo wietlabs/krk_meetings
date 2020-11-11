@@ -1,6 +1,6 @@
 const axios = require("axios");
 
-const baseUrl = "http://10.0.0.5:5000";
+const baseUrl = "http://10.0.0.5:8000";
 
 export const checkIfUserExists = async (uuid) => {
   const url = `${baseUrl}/api/v1/users/${uuid}`;

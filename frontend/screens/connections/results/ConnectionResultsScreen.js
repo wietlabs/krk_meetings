@@ -1,9 +1,25 @@
 import * as React from "react";
+import { IconButton } from "react-native-paper";
 import ConnectionResults from "./ConnectionResults";
-import connections_json from "./connections.json"; // TODO: use axios
 
-export default function ConnectionResultsScreen({ navigation }) {
-  const connections = connections_json.connections.slice(0, 25); // TODO: get connections from route.params
+export default function ConnectionResultsScreen({ navigation, route }) {
+  const connections = route.params.connections;
+
+  const handleShowPlot = () => {
+    navigation.navigate("ConnectionResultsPlot", { connections });
+  };
+
+  React.useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <IconButton
+          icon="chart-bar"
+          onPress={handleShowPlot}
+          style={{ marginRight: 16 }}
+        />
+      ),
+    });
+  }, [navigation]);
 
   return (
     <ConnectionResults connections={connections} navigation={navigation} />

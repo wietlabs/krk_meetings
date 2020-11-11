@@ -3,7 +3,7 @@ import { Alert, Clipboard, ToastAndroid, View } from "react-native";
 import { Button, TextInput } from "react-native-paper";
 import { validateLink, validateUuid, censorUuid } from "../../utils";
 import { getNickname } from "../../UserManager";
-import { checkIfMeetingExists, joinMeeting } from "../../Api";
+import { checkIfMeetingExists, joinMeeting } from "../../api/MeetingsApi";
 
 export default function JoinMeetingScreen({ navigation, route }) {
   const userUuid = route.params.userUuid;
@@ -66,8 +66,6 @@ export default function JoinMeetingScreen({ navigation, route }) {
     try {
       await joinMeeting({ meetingUuid, userUuid, nickname });
     } catch (e) {
-      // TODO: Alert.alert("", "Jesteś już członkiem tego spotkania");
-      console.log(e);
       const error = e.response.data["error"];
       if (error == "Already a member") {
         Alert.alert("", "Jesteś już członkiem tego spotkania");

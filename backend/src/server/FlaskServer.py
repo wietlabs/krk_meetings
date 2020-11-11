@@ -52,7 +52,7 @@ class FlaskServer:
             self.stops = data['stops']
 
     def run(self):
-        self.app.run(threaded=True, port=5000)
+        self.app.run(threaded=True, host='0.0.0.0', port=5000)
 
     def add_endpoint(self, endpoint=None, endpoint_name=None, handler=None, methods=None):
         self.app.add_url_rule(endpoint, endpoint_name, handler, methods=methods)
