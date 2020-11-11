@@ -66,8 +66,6 @@ export default function JoinMeetingScreen({ navigation, route }) {
     try {
       await joinMeeting({ meetingUuid, userUuid, nickname });
     } catch (e) {
-      // TODO: Alert.alert("", "Jesteś już członkiem tego spotkania");
-      console.log(e);
       const error = e.response.data["error"];
       if (error == "Already a member") {
         Alert.alert("", "Jesteś już członkiem tego spotkania");

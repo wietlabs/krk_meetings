@@ -37,7 +37,6 @@ export default function AccountsScreen({ navigation }) {
       const users = await addUser({ uuid, nickname: null });
       setUsers(users);
     } catch (e) {
-      console.log(e);
       Alert.alert(
         "Wystąpił błąd",
         "Nie można utworzyć tożsamości. Proszę spróbować ponownie"
