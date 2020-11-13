@@ -1,9 +1,18 @@
 import * as React from "react";
-import { Text, View } from "react-native";
+import { Text, View, ScrollView } from "react-native";
 import { IconButton } from "react-native-paper";
 import { filterTransfers, parseDateTime } from "../../../utils";
 
-const colors = ["skyblue", "lime", "gold", "darkorange", "tomato"];
+const bubbleSize = 26;
+
+const colors = [
+  "dodgerblue",
+  "lime",
+  "gold",
+  "darkorange",
+  "tomato",
+  "crimson",
+];
 
 const getColor = (n) => colors[Math.min(n, colors.length - 1)];
 
@@ -16,12 +25,13 @@ export default function ConnectionResultsPlotScreen({ navigation, route }) {
     navigation.navigate("ConnectionDetails", { connection: connection });
   };
 
-  const calculateX = (minutes) => 80 + 10 * minutes;
-  const calculateY = (minutes) => 60 + 6 * minutes;
+  const calculateX = (minutes) => 100 + 18 * minutes;
+  const calculateY = (minutes) => 60 + 8 * minutes;
 
   const horizontalLine = (y, label) => {
     return (
       <View
+        key={"horizontal-" + y}
         style={{
           position: "absolute",
           top: y,
@@ -32,13 +42,17 @@ export default function ConnectionResultsPlotScreen({ navigation, route }) {
           paddingLeft: 8,
         }}
       >
-        <IconButton
-          icon="timer"
-          size={20}
-          color="lightgray"
-          style={{ margin: 0 }}
-        />
-        <Text style={{ color: "lightgray" }}>{label}</Text>
+        {label && (
+          <>
+            <IconButton
+              icon="timer"
+              size={20}
+              color="lightgray"
+              style={{ margin: 0 }}
+            />
+            <Text style={{ color: "lightgray" }}>{label}</Text>
+          </>
+        )}
       </View>
     );
   };
@@ -46,6 +60,7 @@ export default function ConnectionResultsPlotScreen({ navigation, route }) {
   const verticalLine = (x, label) => {
     return (
       <View
+        key={"vertical-" + x}
         style={{
           position: "absolute",
           left: x,
@@ -68,66 +83,73 @@ export default function ConnectionResultsPlotScreen({ navigation, route }) {
     );
   };
 
+  let horizontalLines = [];
+  for (let i = 0; i <= 120; i += 15) {
+    horizontalLines.push(horizontalLine(calculateY(i), i + " min"));
+  }
+
+  let verticalLines = [];
+  for (let i = 0; i <= 30; i += 5) {
+    verticalLines.push(verticalLine(calculateX(i), i + " min"));
+  }
+
   return (
     <>
-      {verticalLine(calculateX(0), "0 m")}
-      {verticalLine(calculateX(10), "300 m")}
-      {verticalLine(calculateX(20), "600 m")}
-      {horizontalLine(calculateY(0), "0 min")}
-      {horizontalLine(calculateY(15), "15 min")}
-      {horizontalLine(calculateY(30), "30 min")}
-      {horizontalLine(calculateY(45), "45 min")}
-      {horizontalLine(calculateY(60), "60 min")}
-      {horizontalLine(calculateY(75), "75 min")}
-      <View>
-        {connections.map((connection, i) => {
-          const actions = connection.actions;
-          const transfers = filterTransfers(actions);
+      {verticalLines}
+      <ScrollView>
+        {horizontalLines}
+        <View style={{ height: 1100 }}>
+          {connections.map((connection, i) => {
+            const actions = connection.actions;
+            const transfers = filterTransfers(actions);
 
-          const first_transfer = transfers[0];
-          const last_transfer = transfers[transfers.length - 1];
+            const last_transfer = transfers[transfers.length - 1];
 
-          // const start_datetime = parseDateTime(first_transfer.start_datetime);
-          const end_datetime = parseDateTime(last_transfer.end_datetime);
+            // const start_datetime = parseDateTime(first_transfer.start_datetime);
+            const end_datetime = parseDateTime(last_transfer.end_datetime);
 
-          const duration_ms = end_datetime - start_datetime;
-          const duration_minutes = duration_ms / 1000 / 60;
+            const duration_ms = end_datetime - start_datetime;
+            const duration_minutes = duration_ms / 1000 / 60;
 
-          const walking_minutes = actions
-            .filter((action) => action.type === "walking")
-            .map((walking) => walking.duration_in_minutes)
-            .reduce((a, b) => a + b, 0);
+            const walking_minutes = actions
+              .filter((action) => action.type === "walking")
+              .map((walking) => walking.duration_in_minutes)
+              .reduce((a, b) => a + b, 0);
 
-          const number_of_transfers = connection.transfers_count;
-          const color = getColor(number_of_transfers);
+            const number_of_transfers = connection.transfers_count;
+            const color = getColor(number_of_transfers);
 
-          const x = calculateX(walking_minutes);
-          const y = calculateY(duration_minutes);
+            const x = calculateX(walking_minutes);
+            const y = calculateY(duration_minutes);
 
-          return (
-            <Text
-              key={i}
-              onPress={() => handleShow(connection)}
-              style={{
-                left: x - 12,
-                top: y - 12,
-                zIndex: 9999 - x,
-                width: 24,
-                height: 24,
-                position: "absolute",
-                backgroundColor: color,
-                borderRadius: 12,
-                textAlign: "center",
-                textAlignVertical: "center",
-                fontWeight: "bold",
-                color: "white",
-              }}
-            >
-              {number_of_transfers}
-            </Text>
-          );
-        })}
-      </View>
+            const zIndex = 9999 - number_of_transfers * 100 - duration_minutes;
+
+            return (
+              <Text
+                key={i}
+                onPress={() => handleShow(connection)}
+                style={{
+                  left: x - bubbleSize / 2,
+                  top: y - bubbleSize / 2,
+                  zIndex: zIndex,
+                  width: bubbleSize,
+                  height: bubbleSize,
+                  position: "absolute",
+                  backgroundColor: color,
+                  borderRadius: bubbleSize / 2,
+                  textAlign: "center",
+                  textAlignVertical: "center",
+                  fontWeight: "bold",
+                  fontSize: bubbleSize * 0.6,
+                  color: "white",
+                }}
+              >
+                {number_of_transfers}
+              </Text>
+            );
+          })}
+        </View>
+      </ScrollView>
     </>
   );
 }
