@@ -20,14 +20,14 @@ class Walk(IAction):
             "duration_in_minutes": int(self.duration_in_minutes)
         }
 
-    @staticmethod
-    def from_serializable(walking_transfer):
-        return Walk(
-            walking_transfer["start_stop_name"],
-            walking_transfer["end_stop_name"],
-            walking_transfer["duration_in_minutes"],
-            walking_transfer["start_datetime"],
-            walking_transfer["end_datetime"]
+    @classmethod
+    def from_serializable(cls, walk):
+        return cls(
+            walk["start_stop_name"],
+            walk["end_stop_name"],
+            walk["duration_in_minutes"],
+            walk["start_datetime"],
+            walk["end_datetime"]
         )
 
     def __str__(self):

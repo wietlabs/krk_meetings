@@ -27,9 +27,9 @@ class Transfer(IAction):
             "stops": self.stops
         }
 
-    @staticmethod
-    def from_serializable(transfer):
-        return Transfer(
+    @classmethod
+    def from_serializable(cls, transfer):
+        return cls(
             transfer["route_name"],
             transfer["headsign"],
             transfer["start_stop_name"],
