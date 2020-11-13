@@ -24,7 +24,7 @@ export const findConnections = async (
     end_stop_name: endStopName,
   };
   const response = await axios.post(url, params);
-  const queryId = response.data;
+  const queryId = response.data.query_id;
 
   await sleep(first_interval);
 

@@ -3,7 +3,7 @@ import { ScrollView } from "react-native";
 import Action from "./Action";
 
 export default function ActionsList({ connection }) {
-  const actions = connection.transfers; // TODO: rename to connection.actions
+  const actions = connection.actions;
 
   return (
     <ScrollView style={{ height: "60%", padding: 16 }}>

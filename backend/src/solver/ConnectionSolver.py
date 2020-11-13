@@ -74,7 +74,7 @@ class ConnectionSolver(IConnectionSolver):
         connection_dfs = {}
         for earliest_start_time in range(current_time, current_time + self.configuration.max_searching_time, self.configuration.partition_time):
             partition_connections = self.find_partition_connections(paths, earliest_start_time, current_datetime, connection_dfs)
-            partition_connections.sort(key=lambda c: c.transfers[0].start_datetime)
+            partition_connections.sort(key=lambda c: 0 if c.walk_only else c.first_transfer.start_datetime)
             connections.extend(partition_connections)
             if len(connections) >= self.configuration.number_of_connections_returned:
                 break
@@ -110,7 +110,7 @@ class ConnectionSolver(IConnectionSolver):
 
                     connection = Connection(transfers)
                     connections.append(connection)
-            connections.sort(key=lambda c: c.transfers[0].start_datetime)
+            connections.sort(key=lambda c: 0 if c.walk_only else c.first_transfer.start_datetime)
         return connections
 
     def find_routes(self, path: List[int], earliest_start_time: int, latest_start_time: int, start_datetime: datetime,

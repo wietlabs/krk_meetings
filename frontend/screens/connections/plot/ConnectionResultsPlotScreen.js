@@ -81,7 +81,7 @@ export default function ConnectionResultsPlotScreen({ navigation, route }) {
       {horizontalLine(calculateY(75), "75 min")}
       <View>
         {connections.map((connection, i) => {
-          const actions = connection.transfers;
+          const actions = connection.actions;
           const transfers = filterTransfers(actions);
 
           const first_transfer = transfers[0];
@@ -98,7 +98,7 @@ export default function ConnectionResultsPlotScreen({ navigation, route }) {
             .map((walking) => walking.duration_in_minutes)
             .reduce((a, b) => a + b, 0);
 
-          const number_of_transfers = transfers.length;
+          const number_of_transfers = connection.transfers_count;
           const color = getColor(number_of_transfers);
 
           const x = calculateX(walking_minutes);

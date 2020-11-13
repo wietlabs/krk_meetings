@@ -5,7 +5,7 @@ import WalkButton from "./WalkChip";
 import { datetimeToHour, filterTransfers } from "../../../utils";
 
 export default function ConnectionResult({ connection, navigation }) {
-  const actions = connection.transfers; // TODO: rename to connection.actions
+  const actions = connection.actions;
 
   const transfers = filterTransfers(actions);
 
