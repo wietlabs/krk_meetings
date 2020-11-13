@@ -84,7 +84,7 @@ class FlaskServer:
         except KeyError:
             return jsonify(ErrorCodes.BAD_QUERY_ID_VALUE.value), 400
 
-        if result["result"]["is_done"] and result["error"]["code"] != 0:
+        if result["result"]["is_done"] and result["error"] != ErrorCodes.OK.value:
             return jsonify(result["error"]), 400
         return jsonify(result["result"]), 202
 
