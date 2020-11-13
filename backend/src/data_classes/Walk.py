@@ -12,13 +12,12 @@ class Walk(IAction):
     start_datetime: datetime
     end_datetime: datetime
 
-    @staticmethod
-    def to_serializable(walking_transfer):
+    def to_serializable(self):
         return {
             "type": "walking",
-            "start_stop_name": walking_transfer.start_stop_name,
-            "end_stop_name": walking_transfer.end_stop_name,
-            "duration_in_minutes": int(walking_transfer.duration_in_minutes)
+            "start_stop_name": self.start_stop_name,
+            "end_stop_name": self.end_stop_name,
+            "duration_in_minutes": int(self.duration_in_minutes)
         }
 
     @staticmethod

@@ -26,7 +26,7 @@ connection3 = Connection([
     (connection3, 3),
 ])
 def test_departure_time(connection: Connection, expected_transfers_count: int) -> None:
-    assert connection.transfers_count() == expected_transfers_count
+    assert connection.transfers_count == expected_transfers_count
 
 
 @pytest.mark.parametrize('connection, expected_departure_time', [

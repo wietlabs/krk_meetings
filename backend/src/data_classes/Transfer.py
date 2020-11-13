@@ -15,17 +15,16 @@ class Transfer(IAction):
     end_datetime: datetime
     stops: list
 
-    @staticmethod
-    def to_serializable(transfer):
+    def to_serializable(self):
         return {
             "type": "transfer",
-            "route_name": transfer.route_name,
-            "headsign": transfer.headsign,
-            "start_stop_name": transfer.start_stop_name,
-            "end_stop_name": transfer.end_stop_name,
-            "start_datetime": transfer.start_datetime.strftime(DATETIME_FORMAT),
-            "end_datetime": transfer.end_datetime.strftime(DATETIME_FORMAT),
-            "stops": transfer.stops
+            "route_name": self.route_name,
+            "headsign": self.headsign,
+            "start_stop_name": self.start_stop_name,
+            "end_stop_name": self.end_stop_name,
+            "start_datetime": self.start_datetime.strftime(DATETIME_FORMAT),
+            "end_datetime": self.end_datetime.strftime(DATETIME_FORMAT),
+            "stops": self.stops
         }
 
     @staticmethod

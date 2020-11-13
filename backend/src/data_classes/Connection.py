@@ -1,7 +1,6 @@
-import json
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import List
+from typing import List, Optional
 
 from src.config import DATETIME_FORMAT
 from src.data_classes.Transfer import Transfer
@@ -11,55 +10,60 @@ from src.data_classes.IAction import IAction
 
 @dataclass
 class Connection:
-    transfers: List[IAction]
+    actions: List[IAction]
+
+    @property
+    def transfers(self) -> List[IAction]:
+        return list(filter(lambda action: isinstance(action, Transfer), self.actions))
+
+    @property
+    def first_transfer(self) -> IAction:
+        return self.transfers[0]
+
+    @property
+    def last_transfer(self) -> IAction:
+        return self.transfers[-1]
 
     @property
     def starts_with_walk(self) -> bool:
-        return isinstance(self.transfers[0], Walk)
+        return isinstance(self.actions[0], Walk)
 
     @property
     def ends_with_walk(self) -> bool:
-        return isinstance(self.transfers[-1], Walk)
+        return isinstance(self.actions[-1], Walk)
 
     @property
     def walk_only(self):
-        return len(self.transfers) == 1 and self.starts_with_walk
+        return len(self.actions) == 1 and self.starts_with_walk
 
     @property
-    def start_stop_name(self):
+    def start_stop_name(self) -> Optional[str]:
         if self.walk_only:
             return None
-        if self.starts_with_walk:
-            return self.transfers[1].start_stop_name
-        return self.transfers[0].start_stop_name
+        return self.first_transfer.start_stop_name
 
     @property
-    def end_stop_name(self):
+    def end_stop_name(self) -> Optional[str]:
         if self.walk_only:
             return None
-        if self.starts_with_walk:
-            return self.transfers[-2].end_stop_name
-        return self.transfers[-1].end_stop_name
+        return self.last_transfer.end_stop_name
 
     @property
-    def start_datetime(self):
+    def start_datetime(self) -> Optional[datetime]:
         if self.walk_only:
             return None
-        if self.starts_with_walk:
-            return self.transfers[1].start_datetime
-        return self.transfers[0].start_datetime
+        return self.first_transfer.start_datetime
 
     @property
-    def end_datetime(self):
+    def end_datetime(self) -> Optional[datetime]:
         if self.walk_only:
             return None
-        if self.ends_with_walk:
-            return self.transfers[-2].end_datetime
-        return self.transfers[-1].end_datetime
+        return self.last_transfer.end_datetime
 
     def __str__(self) -> str:
         return '\n'.join(map(str, self.transfers))
 
+    @property
     def transfers_count(self) -> int:
         return len(self.transfers)
 
@@ -76,17 +80,13 @@ class Connection:
 
     @staticmethod
     def to_serializable(connection):
+        walk_only = connection.walk_only
         return {
-            "walking_only": connection.walk_only,
-            "start_stop_name": connection.start_stop_name,
-            "end_stop_name": connection.end_stop_name,
-            "start_datetime": connection.start_datetime.strftime(DATETIME_FORMAT),
-            "end_datetime": connection.end_datetime.strftime(DATETIME_FORMAT),
-            'transfers': [Connection.serialize_transfer(t) for t in connection.transfers]
+            "walking_only": walk_only,
+            "start_stop_name": None if walk_only else connection.start_stop_name,
+            "end_stop_name": None if walk_only else connection.end_stop_name,
+            "start_datetime": None if walk_only else connection.start_datetime.strftime(DATETIME_FORMAT),
+            "end_datetime": None if walk_only else connection.end_datetime.strftime(DATETIME_FORMAT),
+            "transfers_count": connection.transfers_count,
+            "actions": [action.to_serializable() for action in connection.actions],
         }
-
-    @staticmethod
-    def serialize_transfer(t):
-        if type(t) is Transfer:
-            return Transfer.to_serializable(t)
-        return Walk.to_serializable(t)

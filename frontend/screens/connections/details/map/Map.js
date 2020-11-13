@@ -3,7 +3,7 @@ import MapView, { Marker, Polyline } from "react-native-maps";
 import { filterTransfers } from "../../../../utils";
 
 export default function ConnectionDetailsMap({ connection }) {
-  const actions = connection.transfers; // TODO: rename to connection.actions
+  const actions = connection.actions;
   const transfers = filterTransfers(actions);
 
   const first_transfer = transfers[0];
