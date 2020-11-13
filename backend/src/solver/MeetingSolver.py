@@ -1,5 +1,7 @@
+from src.config import ErrorCodes
 from src.data_classes.MeetingQuery import MeetingQuery
 from src.data_classes.MeetingResults import MeetingResults
+from src.solver import solver_utils
 from src.solver.IMeetingSolver import IMeetingSolver
 from src.data_managers.MeetingDataManager import MeetingDataManager
 
@@ -24,7 +26,10 @@ class MeetingSolver(IMeetingSolver):
 
     def find_meeting_points(self, query: MeetingQuery) -> MeetingResults:
         self.update_data()
-        start_stop_ids = list(map(lambda x: int(self.stops_df_by_name.at[x, 'stop_id']), query.start_stop_names))
+        start_stop_ids = [solver_utils.get_stop_id_by_name(stop_name, self.stops_df_by_name) for stop_name in query.start_stop_names]
+        if None in start_stop_ids:
+            return MeetingResults(query.query_id, ErrorCodes.BAD_STOP_NAMES_IN_SEQUENCE.value, [])
+
         if query.metric == 'square':
             metric = lambda l: sum(map(lambda i: i * i, l))
         elif query.metric == 'sum':
@@ -39,4 +44,4 @@ class MeetingSolver(IMeetingSolver):
             meeting_metrics.append((end_stop_id, metric(distances_to_destination)))
         meeting_metrics.sort(key=lambda x: x[1])
         meeting_points = list(map(lambda x: self.stops_df.at[x[0], 'stop_name'], meeting_metrics[0:10]))
-        return MeetingResults(query.query_id, meeting_points)
+        return MeetingResults(query.query_id, ErrorCodes.OK.value, meeting_points)

@@ -6,6 +6,7 @@ import pandas as pd
 from datetime import datetime, timedelta
 import time
 from src.data_classes.Connection import Connection
+from src.data_classes.ConnectionResults import ConnectionResults
 from src.data_classes.Walk import Walk
 from src.solver import solver_utils
 from src.solver.ConnectionSolverConfiguration import ConnectionSolverConfiguration
@@ -14,7 +15,7 @@ from src.utils import time_to_int
 from src.solver.IConnectionSolver import IConnectionSolver
 from src.data_classes.Transfer import Transfer
 from src.data_classes.ConnectionQuery import ConnectionQuery
-from src.config import WALKING_ROUTE_ID, SolverStatusCodes, DEFAULT_CONNECTION_SOLVER_CONFIGURATION
+from src.config import WALKING_ROUTE_ID, ErrorCodes, DEFAULT_CONNECTION_SOLVER_CONFIGURATION
 
 
 class ConnectionSolver(IConnectionSolver):
@@ -56,17 +57,17 @@ class ConnectionSolver(IConnectionSolver):
             for node in self.graph.nodes():
                 self.paths[node] = dict()
 
-    def find_connections(self, query: ConnectionQuery) -> (int, List[Connection]):
+    def find_connections(self, query: ConnectionQuery) -> ConnectionResults:
         print("Finding connections")
         self.update_data()
         current_datetime = query.start_datetime
         current_time = time_to_int(current_datetime.time())
         start_stop_id = solver_utils.get_stop_id_by_name(query.start_stop_name, self.stops_df_by_name)
         if start_stop_id is None:
-            return SolverStatusCodes.BAD_START_STOP_NAME.value, []
+            return ConnectionResults(query.query_id, ErrorCodes.BAD_START_STOP_NAME.value, [])
         end_stop_id = solver_utils.get_stop_id_by_name(query.end_stop_name, self.stops_df_by_name)
         if start_stop_id is None:
-            return SolverStatusCodes.BAD_END_STOP_NAME.value, []
+            return ConnectionResults(query.query_id, ErrorCodes.BAD_END_STOP_NAME.value, [])
 
         paths = self.get_paths(start_stop_id, end_stop_id)
         connections = []
@@ -77,7 +78,7 @@ class ConnectionSolver(IConnectionSolver):
             connections.extend(partition_connections)
             if len(connections) >= self.configuration.number_of_connections_returned:
                 break
-        return SolverStatusCodes.OK.value, connections[0: self.configuration.number_of_connections_returned]
+        return ConnectionResults(query.query_id, ErrorCodes.OK.value, connections[0: self.configuration.number_of_connections_returned])
 
     def find_partition_connections(self, paths, earliest_start_time, current_datetime, connection_dfs):
         connections = []

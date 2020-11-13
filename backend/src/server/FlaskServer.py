@@ -6,8 +6,11 @@ from src.data_managers.FlaskDataManager import FlaskDataManager
 from src.exchanges import EXCHANGES
 from src.rabbitmq.RmqConsumer import RmqConsumer
 from src.rabbitmq.RmqProducer import RmqProducer
-from src.config import SolverStatusCodes
 from src.server.CacheDict import CacheDict
+from src.data_classes.ConnectionQuery import ConnectionQuery
+from src.config import ErrorCodes
+from src.data_classes.MeetingQuery import MeetingQuery
+from src.data_classes.SequenceQuery import SequenceQuery
 
 
 def start_flask_server():
@@ -69,42 +72,55 @@ class FlaskServer:
 
     def consume_rabbit_results(self, result):
         result["result"]["is_done"] = True
-        self.cache[result["query_id"]] = result["result"]
+        self.cache[result["query_id"]] = {"result": result["result"], "error": result["error"]}
 
     def handle_get_query(self, query_id):
-        query_id = int(query_id)
-        result = self.cache[query_id]
-        if result in [SolverStatusCodes.BAD_END_STOP_NAME.value, SolverStatusCodes.BAD_START_STOP_NAME.value]:
-            print(result)
-            return jsonify(result), 400
-        return jsonify(result), 202
+        try:
+            query_id = int(query_id)
+        except ValueError:
+            return jsonify(ErrorCodes.BAD_QUERY_ID_TYPE.value), 400
+        try:
+            result = self.cache[query_id]
+        except KeyError:
+            return jsonify(ErrorCodes.BAD_QUERY_ID_VALUE.value), 400
+
+        if result["result"]["is_done"] and result["error"] != ErrorCodes.OK.value:
+            return jsonify(result["error"]), 400
+        return jsonify(result["result"]), 202
 
     def handle_get_stops(self):
         return jsonify(self.stops), 202
 
     def handle_post_connection(self):
         request_json = request.get_json()
-        result = self.handle_query_post(self.connection_producer, request_json)
-        return jsonify(result), 202
+        result = self.handle_query_post(self.connection_producer, request_json, ConnectionQuery,
+                                        ErrorCodes.BAD_CONNECTION_JSON_FORMAT.value)
+        return result
 
     def handle_post_meeting(self):
         request_json = request.get_json()
-        result = self.handle_query_post(self.meeting_producer, request_json)
-        return jsonify(result), 202
+        result = self.handle_query_post(self.meeting_producer, request_json, MeetingQuery,
+                                        ErrorCodes.BAD_MEETING_JSON_FORMAT.value)
+        return result
 
     def handle_post_sequence(self):
         request_json = request.get_json()
-        result = self.handle_query_post(self.sequence_producer, request_json)
-        return jsonify(result), 202
+        result = self.handle_query_post(self.sequence_producer, request_json, SequenceQuery,
+                                        ErrorCodes.BAD_SEQUENCE_JSON_FORMAT.value)
+        return result
 
-    def handle_query_post(self, producer, request_json):
+    def handle_query_post(self, producer, request_json, query_class, parsong_error_message):
+        # try:
+        query_class.from_dict(request_json)
+        # except TypeError:
+        #     return jsonify(parsong_error_message), 400
         with self.query_id.get_lock():
             self.query_id.value += 1
             query_id = self.query_id.value
-        request_json['query_id'] = query_id
+        request_json["query_id"] = query_id
         producer.send_msg(request_json)
-        self.cache[query_id] = {"is_done": False}
-        return query_id
+        self.cache[query_id] = {"result": {"is_done": False}}
+        return jsonify({"query_id": query_id}), 202
 
 
 if __name__ == '__main__':
