@@ -1,7 +1,3 @@
-from datetime import datetime
-from src.config import WALKING_ROUTE_ID, DATETIME_FORMAT
-
-
 def get_stop_id_by_name(stop_name, stops_df_by_name):
     try:
         return int(stops_df_by_name.at[stop_name, 'stop_id'])
@@ -19,27 +15,6 @@ def get_route_name_by_id(route_id, routes_df):
 
 def get_headsign_by_id(route_id, routes_df):
     return routes_df.at[route_id, 'headsign']
-
-
-def parse_transfers(transfer, stops_df, routes_df, routes_to_stops_dict):
-    result = dict()
-    result['start_stop'] = stops_df.at[transfer['start_stop_id'], 'stop_name']
-    result['end_stop'] = stops_df.at[transfer['end_stop_id'], 'stop_name']
-    if transfer['route_id'] != WALKING_ROUTE_ID:
-        result['type'] = 'transfer'
-        result['start_datetime'] = transfer['start_datetime']
-        result['end_datetime'] = transfer['end_datetime']
-        result['route_name'] = routes_df.at[transfer['route_id'], 'route_name']
-        result['headsign'] = routes_df.at[transfer['route_id'], 'headsign']
-        result['stops'] = get_stop_list(transfer['route_id'], transfer['start_stop_id'],
-                                                    transfer['end_stop_id'], stops_df, routes_to_stops_dict)
-    else:
-        result['type'] = 'walking'
-        duration = datetime.strptime(transfer['end_datetime'], DATETIME_FORMAT) - \
-                   datetime.strptime(transfer['start_datetime'], DATETIME_FORMAT)
-        result['duration_in_minutes'] = int(duration.seconds / 60)
-        result['stops'] = [stop_data(stop, stops_df) for stop in [transfer['start_stop_id'], transfer['end_stop_id']]]
-    return result
 
 
 def get_stop_list(route_id, start_stop_id, end_stop_id, stops_df, routes_to_stops_dict):
