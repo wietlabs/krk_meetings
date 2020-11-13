@@ -1,11 +1,25 @@
 import networkx as nx
 import pandas as pd
+import time
 from src.data_managers.DataManager import DataManager
 from src.utils import load_pickle
 from src.config import FloydDataPaths
+from src.exchanges import EXCHANGES, MESSAGES
 
 
 class ConnectionDataManager(DataManager):
+    def __init__(self):
+        super().__init__()
+        self.last_delay_update = time.time()
+
+    @property
+    def exchange(self):
+        return EXCHANGES.CONNECTION_DATA_MANAGER.value
+
+    def handle_message(self, msg):
+        if msg == MESSAGES.DATA_UPDATED.value:
+            self.update_data()
+
     def get_data(self):
         data = dict()
         data["graph"] = nx.read_gpickle(FloydDataPaths.floyd_graph.value)

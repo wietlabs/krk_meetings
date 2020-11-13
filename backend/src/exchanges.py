@@ -8,8 +8,19 @@ from src.data_classes.SequenceQuery import SequenceQuery
 from src.data_classes.SequenceResults import SequenceResults
 
 
+class MESSAGES(Enum):
+    DATA_UPDATED = "DATA UPDATED"
+    DELAYS_UPDATED = "DELAYS UPDATED"
+
+
 class EXCHANGES(Enum):
-    FLOYD_DATA = ("DIRECT", "direct", "floyd_data", json.dumps, json.loads)
+    CONNECTION_DATA_MANAGER = ("TOPIC", "topic", "*", json.dumps, json.loads)
+    MEETING_DATA_MANAGER = ("TOPIC", "topic", "data_provider", json.dumps, json.loads)
+    SEQUENCE_DATA_MANAGER = ("TOPIC", "topic", "data_provider", json.dumps, json.loads)
+    FLASK_DATA_MANAGER = ("TOPIC", "topic", "data_provider", json.dumps, json.loads)
+    DATA_PROVIDER = ("TOPIC", "topic", "data_provider", json.dumps, json.loads)
+    DELAYS_PROVIDER = ("TOPIC", "topic", "delay_provider", json.dumps, json.loads)
+
     FLASK_SERVER_CONNECTION = ("BASIC", "", "flask_server_connection", ConnectionResults.to_json, json.loads)
     FLASK_SERVER_MEETING = ("BASIC", "", "flask_server_meeting", MeetingResults.to_json, json.loads)
     FLASK_SERVER_SEQUENCE = ("BASIC", "", "flask_server_sequence", SequenceResults.to_json, json.loads)

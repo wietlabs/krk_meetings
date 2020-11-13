@@ -12,20 +12,21 @@ class MeetingSolver(IMeetingSolver):
         self.distances = None
         self.stops_df = None
         self.stops_df_by_name = None
+        self.last_data_update = None
 
         self.data_manager.start()
-        self.data_manager.update_data()
         self.update_data()
 
     def update_data(self):
-        if not self.data_manager.up_to_date:
-            data = self.data_manager.get_updated_data()
-            self.distances = data["distances"]
-            self.stops_df = data["stops_df"]
-            self.stops_df_by_name = data["stops_df_by_name"]
+        data = self.data_manager.get_updated_data()
+        self.distances = data["distances"]
+        self.stops_df = data["stops_df"]
+        self.stops_df_by_name = data["stops_df_by_name"]
+        self.last_data_update = self.data_manager.last_data_update
 
     def find_meeting_points(self, query: MeetingQuery) -> MeetingResults:
-        self.update_data()
+        if self.last_data_update < self.data_manager.last_data_update:
+            self.update_data()
         start_stop_ids = [solver_utils.get_stop_id_by_name(stop_name, self.stops_df_by_name) for stop_name in query.start_stop_names]
         if None in start_stop_ids:
             return MeetingResults(query.query_id, ErrorCodes.BAD_STOP_NAMES_IN_SEQUENCE.value, [])
