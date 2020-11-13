@@ -161,3 +161,15 @@ class Extractor:
                 route_to_stops_dict[route_id] = []
             route_to_stops_dict[route_id].append(stop_id)
         return route_to_stops_dict
+
+    @staticmethod
+    def create_exception_days_dict(calendar_dates_df: pd.DataFrame):
+        exception_days = {}
+        for index, service_id, date, exception_type in calendar_dates_df.itertuples():
+            if date not in exception_days:
+                exception_days[date] = {"services_to_add": [], "services_to_remove": []}
+            if exception_type == 1:
+                exception_days[date]["services_to_add"].append(service_id)
+            elif exception_type == 2:
+                exception_days[date]["services_to_remove"].append(service_id)
+        return exception_days

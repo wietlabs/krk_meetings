@@ -1,3 +1,6 @@
+from datetime import datetime
+
+
 def get_stop_id_by_name(stop_name, stops_df_by_name):
     try:
         return int(stops_df_by_name.at[stop_name, 'stop_id'])
@@ -37,3 +40,13 @@ def stop_data(stop_id, stops_df):
         'latitude': stops_df.at[stop_id, 'stop_lat'],
         'longitude': stops_df.at[stop_id, 'stop_lon'],
     }
+
+
+def get_services(s_datetime: datetime, day_to_services_dict: dict, exception_days_dict: dict):
+    s_day = s_datetime.weekday()
+    s_date = s_datetime.date()
+    services = day_to_services_dict[s_day]
+    if s_date in exception_days_dict:
+        services += exception_days_dict[s_date]["services_to_add"]
+        services = [s for s in services if s not in exception_days_dict[s_date]["services_to_remove"]]
+    return services
