@@ -19,4 +19,5 @@ class ConnectionDataManager(DataManager):
         data["day_to_services_dict"] = load_pickle(FloydDataPaths.day_to_services_dict.value)
         data["adjacent_stops"] = load_pickle(FloydDataPaths.adjacent_stops.value)
         data["routes_to_stops_dict"] = load_pickle(FloydDataPaths.routes_to_stops_dict.value)
+        data["exception_days_dict"] = load_pickle(FloydDataPaths.exception_days.value)
         return data

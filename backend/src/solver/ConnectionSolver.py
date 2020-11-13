@@ -11,6 +11,7 @@ from src.data_classes.Walk import Walk
 from src.solver import solver_utils
 from src.solver.ConnectionSolverConfiguration import ConnectionSolverConfiguration
 from src.data_managers.ConnectionDataManager import ConnectionDataManager
+from src.solver.solver_utils import get_services
 from src.utils import time_to_int
 from src.solver.IConnectionSolver import IConnectionSolver
 from src.data_classes.Transfer import Transfer
@@ -34,6 +35,7 @@ class ConnectionSolver(IConnectionSolver):
         self.day_to_services_dict = None
         self.adjacent_stops = None
         self.routes_to_stops_dict = None
+        self.exception_days_dict = None
 
         self.data_manager.start()
         self.data_manager.update_data()
@@ -53,6 +55,7 @@ class ConnectionSolver(IConnectionSolver):
             self.day_to_services_dict = data["day_to_services_dict"]
             self.adjacent_stops = data["adjacent_stops"]
             self.routes_to_stops_dict = data["routes_to_stops_dict"]
+            self.exception_days_dict = data["exception_days_dict"]
             self.paths = dict()
             for node in self.graph.nodes():
                 self.paths[node] = dict()
@@ -115,9 +118,9 @@ class ConnectionSolver(IConnectionSolver):
 
     def find_routes(self, path: List[int], earliest_start_time: int, latest_start_time: int, start_datetime: datetime,
                     connection_dfs: dict) -> list:
-        day = start_datetime.weekday()
-        current_services = self.day_to_services_dict[day]
-        next_services = self.day_to_services_dict[(day + 1) % 7]
+        current_services = get_services(start_datetime, self.day_to_services_dict, self.exception_days_dict)
+        next_services = get_services(start_datetime + timedelta(days=1), self.day_to_services_dict,
+                                     self.exception_days_dict)
         results_df = self.find_result_routes_df(earliest_start_time, latest_start_time, path, current_services,
                                                 next_services, connection_dfs)
         results = []
@@ -240,8 +243,8 @@ class ConnectionSolver(IConnectionSolver):
         routes_to_node = {}
         max_priority = int(self.distances[start_node_id][end_node_id] * self.configuration.max_priority_multiplier +
                            self.configuration.max_priority_cap)
-        max_queue_priority = int(self.distances[start_node_id][end_node_id] * self.configuration.path_calculation_boost +
-                           self.configuration.max_priority_cap)
+        max_queue_priority = int(self.distances[start_node_id][end_node_id] * self.configuration.path_calculation_boost
+                                 * self.configuration.max_priority_multiplier + self.configuration.max_priority_cap)
 
         last_hubs = []
         if end_node_id not in self.kernelized_graph.nodes:
