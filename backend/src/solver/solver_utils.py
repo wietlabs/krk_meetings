@@ -1,3 +1,6 @@
+from src.data_classes.Walk import Walk
+
+
 def get_stop_id_by_name(stop_name, stops_df_by_name):
     try:
         return int(stops_df_by_name.at[stop_name, 'stop_id'])
@@ -37,3 +40,19 @@ def stop_data(stop_id, stops_df):
         'latitude': stops_df.at[stop_id, 'stop_lat'],
         'longitude': stops_df.at[stop_id, 'stop_lon'],
     }
+
+
+def get_connection_data(a_list):
+    if len(a_list) == 1 and type(a_list[0]) == Walk:
+        walking_only = True
+        start_stop_name = None
+        end_stop_name = None
+        start_datetime = None
+        end_datetime = None
+    else:
+        walking_only = False
+        start_stop_name = a_list[0].start_stop_name if type(a_list[0]) != Walk else a_list[1].start_stop_name
+        end_stop_name = a_list[-1].end_stop_name if type(a_list[-1]) != Walk else a_list[-2].end_stop_name
+        start_datetime = a_list[0].start_datetime if type(a_list[0]) != Walk else a_list[1].start_datetime
+        end_datetime = a_list[-1].end_datetime if type(a_list[-1]) != Walk else a_list[-2].end_datetime
+    return walking_only, start_stop_name, end_stop_name, start_datetime, end_datetime

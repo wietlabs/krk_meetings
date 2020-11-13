@@ -11,6 +11,7 @@ from src.data_classes.Walk import Walk
 from src.solver import solver_utils
 from src.solver.ConnectionSolverConfiguration import ConnectionSolverConfiguration
 from src.data_managers.ConnectionDataManager import ConnectionDataManager
+from src.solver.solver_utils import get_connection_data
 from src.utils import time_to_int
 from src.solver.IConnectionSolver import IConnectionSolver
 from src.data_classes.Transfer import Transfer
@@ -107,8 +108,8 @@ class ConnectionSolver(IConnectionSolver):
                             duration_in_minutes = int((arrival_time - departure_time) / 60)
                             transfers.append(Walk(current_stop_name, next_stop_name, duration_in_minutes,
                                                   start_datetime, end_datetime))
-
-                    connection = Connection(transfers)
+                    walking_only, start_name, end_name, start_datetime, end_datetime = get_connection_data(transfers)
+                    connection = Connection(walking_only, start_name, end_name, start_datetime, end_datetime, transfers)
                     connections.append(connection)
             connections.sort(key=lambda c: c.transfers[0].start_datetime)
         return connections
