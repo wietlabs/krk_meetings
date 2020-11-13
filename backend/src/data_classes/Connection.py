@@ -29,25 +29,33 @@ class Connection:
     def start_stop_name(self):
         if self.walk_only:
             return None
-        return self.transfers[0].start_stop_name if self.starts_with_walk else self.transfers[1].start_stop_name
+        if self.starts_with_walk:
+            return self.transfers[1].start_stop_name
+        return self.transfers[0].start_stop_name
 
     @property
     def end_stop_name(self):
         if self.walk_only:
             return None
-        return self.transfers[-1].end_stop_name if self.ends_with_walk else self.transfers[-2].end_stop_name
+        if self.starts_with_walk:
+            return self.transfers[-2].end_stop_name
+        return self.transfers[-1].end_stop_name
 
     @property
     def start_datetime(self):
         if self.walk_only:
             return None
-        return self.transfers[0].start_datetime if self.starts_with_walk else self.transfers[1].start_datetime
+        if self.starts_with_walk:
+            return self.transfers[1].start_datetime
+        return self.transfers[0].start_datetime
 
     @property
     def end_datetime(self):
         if self.walk_only:
             return None
-        return self.transfers[-1].end_datetime if self.ends_with_walk else self.transfers[-2].end_datetime
+        if self.ends_with_walk:
+            return self.transfers[-2].end_datetime
+        return self.transfers[-1].end_datetime
 
     def __str__(self) -> str:
         return '\n'.join(map(str, self.transfers))
