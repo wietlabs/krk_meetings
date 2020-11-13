@@ -11,31 +11,46 @@ from src.data_classes.IAction import IAction
 
 @dataclass
 class Connection:
-    walking_only: bool
-    start_stop_name: str
-    end_stop_name: str
-    start_datetime: datetime
-    end_datetime: datetime
     transfers: List[IAction]
+
+    @property
+    def starts_with_walk(self) -> bool:
+        return isinstance(self.transfers[0], Walk)
+
+    @property
+    def ends_with_walk(self) -> bool:
+        return isinstance(self.transfers[-1], Walk)
+
+    @property
+    def walk_only(self):
+        return len(self.transfers) == 1 and self.starts_with_walk
+
+    @property
+    def start_stop_name(self):
+        if self.walk_only:
+            return None
+        return self.transfers[0].start_stop_name if self.starts_with_walk else self.transfers[1].start_stop_name
+
+    @property
+    def end_stop_name(self):
+        if self.walk_only:
+            return None
+        return self.transfers[-1].end_stop_name if self.ends_with_walk else self.transfers[-2].end_stop_name
+
+    @property
+    def start_datetime(self):
+        if self.walk_only:
+            return None
+        return self.transfers[0].start_datetime if self.starts_with_walk else self.transfers[1].start_datetime
+
+    @property
+    def end_datetime(self):
+        if self.walk_only:
+            return None
+        return self.transfers[-1].end_datetime if self.ends_with_walk else self.transfers[-2].end_datetime
 
     def __str__(self) -> str:
         return '\n'.join(map(str, self.transfers))
-
-    def __init__(self, a_list: List[IAction]):
-        if len(a_list) == 1 and type(a_list[0]) == Walk:
-            self.walking_only = True
-            self.transfers = a_list
-            self.start_stop_name = None
-            self.end_stop_name = None
-            self.start_datetime = None
-            self.end_datetime = None
-        else:
-            self.walking_only = False
-            self.start_stop_name = a_list[0].start_stop_name if type(a_list[0]) != Walk else a_list[1].start_stop_name
-            self.end_stop_name = a_list[-1].end_stop_name if type(a_list[-1]) != Walk else a_list[-2].end_stop_name
-            self.start_datetime = a_list[0].start_datetime if type(a_list[0]) != Walk else a_list[1].start_datetime
-            self.end_datetime = a_list[-1].end_datetime if type(a_list[-1]) != Walk else a_list[-2].end_datetime
-            self.transfers = a_list
 
     def transfers_count(self) -> int:
         return len(self.transfers)
@@ -54,11 +69,11 @@ class Connection:
     @staticmethod
     def to_serializable(connection):
         return {
-            "walking_only": connection.walking_only,
-            "start_stop_name": connection.start_stop_name if connection.start_stop_name else "",
-            "end_stop_name": connection.end_stop_name if connection.start_stop_name else "",
-            "start_datetime": connection.start_datetime.strftime(DATETIME_FORMAT) if connection.start_stop_name else "",
-            "end_datetime": connection.end_datetime.strftime(DATETIME_FORMAT) if connection.start_stop_name else "",
+            "walking_only": connection.walk_only,
+            "start_stop_name": connection.start_stop_name,
+            "end_stop_name": connection.end_stop_name,
+            "start_datetime": connection.start_datetime.strftime(DATETIME_FORMAT),
+            "end_datetime": connection.end_datetime.strftime(DATETIME_FORMAT),
             'transfers': [Connection.serialize_transfer(t) for t in connection.transfers]
         }
 

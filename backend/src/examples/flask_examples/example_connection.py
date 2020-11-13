@@ -1,3 +1,4 @@
+import json
 import time
 
 import requests
@@ -22,5 +23,5 @@ if __name__ == "__main__":
             break
         time.sleep(0.2)
 
-    print(result)
+    print(json.dumps(result))
     print(time.time() - execution_start)

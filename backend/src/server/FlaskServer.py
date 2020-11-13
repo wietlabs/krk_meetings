@@ -109,11 +109,11 @@ class FlaskServer:
                                         ErrorCodes.BAD_SEQUENCE_JSON_FORMAT.value)
         return result
 
-    def handle_query_post(self, producer, request_json, query_class, parsong_error_message):
-        # try:
-        query_class.from_dict(request_json)
-        # except TypeError:
-        #     return jsonify(parsong_error_message), 400
+    def handle_query_post(self, producer, request_json, query_class, parsing_error_message):
+        try:
+            query_class.from_dict(request_json)
+        except TypeError:
+            return jsonify(parsing_error_message), 400
         with self.query_id.get_lock():
             self.query_id.value += 1
             query_id = self.query_id.value
