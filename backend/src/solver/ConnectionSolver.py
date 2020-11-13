@@ -75,12 +75,16 @@ class ConnectionSolver(IConnectionSolver):
         paths = self.get_paths(start_stop_id, end_stop_id)
         connections = []
         connection_dfs = {}
+        first_partition = True
         for earliest_start_time in range(current_time, current_time + self.configuration.max_searching_time, self.configuration.partition_time):
             partition_connections = self.find_partition_connections(paths, earliest_start_time, current_datetime, connection_dfs)
+            if not first_partition:
+                partition_connections = [c for c in partition_connections if not c.walk_only]
             partition_connections.sort(key=lambda c: 0 if c.walk_only else c.first_transfer.start_datetime)
             connections.extend(partition_connections)
             if len(connections) >= self.configuration.number_of_connections_returned:
                 break
+            first_partition = False
         return ConnectionResults(query.query_id, ErrorCodes.OK.value, connections[0: self.configuration.number_of_connections_returned])
 
     def find_partition_connections(self, paths, earliest_start_time, current_datetime, connection_dfs):
@@ -164,9 +168,12 @@ class ConnectionSolver(IConnectionSolver):
                 results_df.drop(columns=['route_id_c_0'], axis=1, inplace=True)
                 if (current_stop, next_stop) in self.adjacent_stops:
                     end_time = start_time + self.adjacent_stops[(current_stop, next_stop)]
-                    walking_row = pd.DataFrame({'departure_time_c_0': start_time, 'departure_time_n_0': end_time,
-                                                'route_id_0': WALKING_ROUTE_ID,
-                                                'index_0': (WALKING_ROUTE_ID, WALKING_ROUTE_ID, WALKING_ROUTE_ID)})
+                    walking_row = pd.DataFrame({
+                        'departure_time_c_0': start_time,
+                        'departure_time_n_0': end_time,
+                        'route_id_0': WALKING_ROUTE_ID,
+                        'index_0': [(WALKING_ROUTE_ID, WALKING_ROUTE_ID, WALKING_ROUTE_ID), ]},
+                        index=([(WALKING_ROUTE_ID, WALKING_ROUTE_ID, WALKING_ROUTE_ID)]))
                     results_df = results_df.append(walking_row)
             else:
                 if (current_stop, next_stop) in self.adjacent_stops:
