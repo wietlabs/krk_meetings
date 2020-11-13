@@ -36,33 +36,34 @@ class ConnectionSolver(IConnectionSolver):
         self.adjacent_stops = None
         self.routes_to_stops_dict = None
         self.exception_days_dict = None
+        self.last_data_update = None
 
         self.data_manager.start()
-        self.data_manager.update_data()
         self.update_data()
 
     def update_data(self):
-        if not self.data_manager.up_to_date:
-            data = self.data_manager.get_updated_data()
-            self.graph = data["graph"]
-            self.kernelized_graph = data["kernelized_graph"]
-            self.distances = data["distances"]
-            self.stops_df = data["stops_df"]
-            self.routes_df = data["routes_df"]
-            self.stops_df_by_name = data["stops_df_by_name"]
-            self.stop_times_0 = data["stop_times_0"]
-            self.stop_times_24 = data["stop_times_24"]
-            self.day_to_services_dict = data["day_to_services_dict"]
-            self.adjacent_stops = data["adjacent_stops"]
-            self.routes_to_stops_dict = data["routes_to_stops_dict"]
-            self.exception_days_dict = data["exception_days_dict"]
-            self.paths = dict()
-            for node in self.graph.nodes():
-                self.paths[node] = dict()
+        data = self.data_manager.get_updated_data()
+        self.graph = data["graph"]
+        self.kernelized_graph = data["kernelized_graph"]
+        self.distances = data["distances"]
+        self.stops_df = data["stops_df"]
+        self.routes_df = data["routes_df"]
+        self.stops_df_by_name = data["stops_df_by_name"]
+        self.stop_times_0 = data["stop_times_0"]
+        self.stop_times_24 = data["stop_times_24"]
+        self.day_to_services_dict = data["day_to_services_dict"]
+        self.adjacent_stops = data["adjacent_stops"]
+        self.routes_to_stops_dict = data["routes_to_stops_dict"]
+        self.exception_days_dict = data["exception_days_dict"]
+        self.paths = dict()
+        for node in self.graph.nodes():
+            self.paths[node] = dict()
+        self.last_data_update = self.data_manager.last_data_update
 
     def find_connections(self, query: ConnectionQuery) -> ConnectionResults:
         print("Finding connections")
-        self.update_data()
+        if self.last_data_update < self.data_manager.last_data_update:
+            self.update_data()
         current_datetime = query.start_datetime
         current_time = time_to_int(current_datetime.time())
         start_stop_id = solver_utils.get_stop_id_by_name(query.start_stop_name, self.stops_df_by_name)
