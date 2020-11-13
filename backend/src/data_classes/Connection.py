@@ -14,7 +14,7 @@ class Connection:
 
     @property
     def transfers(self) -> List[IAction]:
-        return list(filter(lambda action: isinstance(action, Transfer), self.actions))
+        return [action for action in self.actions if isinstance(action, Transfer)]
 
     @property
     def first_transfer(self) -> IAction:
