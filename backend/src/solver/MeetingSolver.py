@@ -28,10 +28,7 @@ class MeetingSolver(IMeetingSolver):
         self.update_data()
         start_stop_ids = [solver_utils.get_stop_id_by_name(stop_name, self.stops_df_by_name) for stop_name in query.start_stop_names]
         if None in start_stop_ids:
-            bad_stop_names = [stop[0] for stop in zip(query.start_stop_names, start_stop_ids) if stop[1] is None]
-            error = ErrorCodes.BAD_STOP_NAMES_IN_SEQUENCE.value
-            error["text"] = ErrorCodes.BAD_START_STOP_NAMES_IN_MEETING.value["text"].format(bad_stop_names)
-            return MeetingResults(query.query_id, error, [])
+            return MeetingResults(query.query_id, ErrorCodes.BAD_STOP_NAMES_IN_SEQUENCE.value, [])
 
         if query.metric == 'square':
             metric = lambda l: sum(map(lambda i: i * i, l))

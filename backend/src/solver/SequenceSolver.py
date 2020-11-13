@@ -52,10 +52,7 @@ class SequenceSolver(ISequenceSolver):
             return SequenceResults(query.query_id, ErrorCodes.BAD_END_STOP_NAME.value, [])
         stops_to_visit_ids = [solver_utils.get_stop_id_by_name(stop_name, self.stops_df_by_name) for stop_name in query.stops_to_visit]
         if None in stops_to_visit_ids:
-            bad_stop_names = [stop[0] for stop in zip(query.stops_to_visit, stops_to_visit_ids) if stop[1] is None]
-            error = ErrorCodes.BAD_STOP_NAMES_IN_SEQUENCE.value
-            error["text"] = ErrorCodes.BAD_STOP_NAMES_IN_SEQUENCE.value["text"].format(bad_stop_names)
-            return SequenceResults(query.query_id, error, [])
+            return SequenceResults(query.query_id, ErrorCodes.BAD_STOP_NAMES_IN_SEQUENCE.value, [])
 
         sequences = list(gen(stops_to_visit_ids, start_stop_id, end_stop_id, [start_stop_id], 0))
         best_sequence = min(sequences, key=lambda x: x[1])
