@@ -17,7 +17,7 @@ export default function ConnectionResultsList({ connections, navigation }) {
     <FlatList
       data={connections}
       renderItem={renderItem}
-      keyExtractor={(item, index) => index}
+      keyExtractor={(item, index) => index.toString()}
       contentContainerStyle={{ padding: 16, paddingBottom: 8 }}
     />
   );
