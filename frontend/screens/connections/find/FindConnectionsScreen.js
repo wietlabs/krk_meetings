@@ -30,15 +30,30 @@ export default function HomeScreen({ navigation }) {
     setShow(true);
   };
 
+  const handleClearDate = () => {
+    setDate(null);
+    setTime(null);
+  };
+
+  const handleClearTime = () => {
+    setTime(null);
+  };
+
   const handlePick = (event, value) => {
     if (event.type === "dismissed") {
       setShow(false);
       return;
     }
-
-    setShow(false);
-    if (mode === "date") setDate(value);
-    if (mode === "time") setTime(value);
+    if (mode === "date") {
+      setMode("time");
+      setDate(value);
+      return;
+    }
+    if (mode === "time") {
+      setShow(false);
+      setTime(value);
+      return;
+    }
   };
 
   const handleSubmit = async () => {
@@ -106,9 +121,12 @@ export default function HomeScreen({ navigation }) {
         <Button
           mode="outlined"
           onPress={handleSelectDate}
-          onLongPress={() => setDate(null)}
-          color={date === null ? "gray" : "black"}
-          style={{ flex: 0.5 }}
+          onLongPress={handleClearDate}
+          color={date === null ? "lightgray" : "black"}
+          style={{
+            flex: 0.5,
+            borderColor: date === null ? "lightgray" : "black",
+          }}
         >
           {date === null
             ? "Dzisiaj"
@@ -120,21 +138,16 @@ export default function HomeScreen({ navigation }) {
         <Button
           mode="outlined"
           onPress={handleSelectTime}
-          onLongPress={() => setTime(null)}
-          color={time === null ? "gray" : "black"}
-          style={{ flex: 0.5 }}
+          onLongPress={handleClearTime}
+          color={time === null ? "lightgray" : "black"}
+          style={{
+            flex: 0.5,
+            borderColor: time === null ? "lightgray" : "black",
+          }}
         >
           {time === null ? "Teraz" : time.toLocaleTimeString().slice(0, 5)}
         </Button>
       </View>
-      {/* <Button
-        mode="contained"
-        loading={loading}
-        icon={loading ? null : "magnify"}
-        onPress={handleSubmit}
-      >
-        Wyszukaj połączenie
-      </Button> */}
       <FAB
         icon={"magnify"}
         loading={loading}
@@ -145,7 +158,7 @@ export default function HomeScreen({ navigation }) {
           margin: 16,
           right: 0,
           bottom: 0,
-          backgroundColor: "tomato",
+          backgroundColor: "springgreen",
         }}
       />
       {show && (
