@@ -19,7 +19,10 @@ export const findConnections = async (
 ) => {
   const url = `${baseUrl}/connection`;
   const params = {
-    start_datetime: "2020-11-10 16:00:00", // TODO: handle
+    start_datetime: startDateTime
+      .toISOString()
+      .substring(0, 19)
+      .replace("T", " "),
     start_stop_name: startStopName,
     end_stop_name: endStopName,
   };

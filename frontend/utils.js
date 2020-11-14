@@ -1,5 +1,5 @@
 export function parseDateTime(datetime) {
-  return new Date(Date.parse(datetime.replace(" ", "T")) - 2 * 60 * 60 * 1000);
+  return new Date(Date.parse(datetime.replace(" ", "T")));
 }
 
 export function datetimeToHour(datetime) {

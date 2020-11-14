@@ -17,9 +17,8 @@ const colors = [
 const getColor = (n) => colors[Math.min(n, colors.length - 1)];
 
 export default function ConnectionResultsPlotScreen({ navigation, route }) {
+  const start_datetime = new Date(route.params.startDateTime);
   const connections = route.params.connections;
-
-  const start_datetime = parseDateTime("2020-11-10 16:00:00");
 
   const handleShow = (connection) => {
     navigation.navigate("ConnectionDetails", { connection: connection });
@@ -105,7 +104,6 @@ export default function ConnectionResultsPlotScreen({ navigation, route }) {
 
             const last_transfer = transfers[transfers.length - 1];
 
-            // const start_datetime = parseDateTime(first_transfer.start_datetime);
             const end_datetime = parseDateTime(last_transfer.end_datetime);
 
             const duration_ms = end_datetime - start_datetime;

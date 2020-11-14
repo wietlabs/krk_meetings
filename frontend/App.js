@@ -24,6 +24,7 @@ export default function App() {
           initialRouteName="ConnectionsStack"
           inactiveColor="lightgray"
           barStyle={{ backgroundColor: "whitesmoke" }}
+          lazy={false}
         >
           <Tab.Screen
             name="MeetingsStack"
