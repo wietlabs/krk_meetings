@@ -21,9 +21,9 @@ export default function App() {
     <PaperProvider theme={theme}>
       <NavigationContainer>
         <Tab.Navigator
+          initialRouteName="ConnectionsStack"
           inactiveColor="lightgray"
           barStyle={{ backgroundColor: "whitesmoke" }}
-          // shifting={false}
         >
           <Tab.Screen
             name="MeetingsStack"
