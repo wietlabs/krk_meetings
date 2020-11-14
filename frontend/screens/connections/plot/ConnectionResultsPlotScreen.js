@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Text, View, ScrollView } from "react-native";
-import { IconButton } from "react-native-paper";
 import { filterTransfers, parseDateTime } from "../../../utils";
+import GridLine from "./GridLine";
 
 const bubbleSize = 26;
 
@@ -14,82 +14,72 @@ const colors = [
   "crimson",
 ];
 
+const calculateWalkingMinutes = (connection) =>
+  connection.actions
+    .filter((action) => action.type === "walking")
+    .map((walking) => walking.duration_in_minutes)
+    .reduce((a, b) => a + b, 0);
+
 const getColor = (n) => colors[Math.min(n, colors.length - 1)];
 
+const calculateX = (minutes) => 100 + 18 * minutes;
+const calculateY = (minutes) => 60 + 8 * minutes;
+const calculateZ = (numberOfTransfers, durationMinutes) => {
+  return 9999 - numberOfTransfers * 100 - durationMinutes;
+};
+
 export default function ConnectionResultsPlotScreen({ navigation, route }) {
-  const start_datetime = new Date(route.params.startDateTime);
+  const startDateTime = new Date(route.params.startDateTime);
   const connections = route.params.connections;
 
   const handleShow = (connection) => {
     navigation.navigate("ConnectionDetails", { connection: connection });
   };
 
-  const calculateX = (minutes) => 100 + 18 * minutes;
-  const calculateY = (minutes) => 60 + 8 * minutes;
+  const calculateDurationMinutes = React.useCallback(
+    (connection) => {
+      const actions = connection.actions;
+      const transfers = filterTransfers(actions);
+      const lastTransfer = transfers[transfers.length - 1];
+      const endDateTime = parseDateTime(lastTransfer.end_datetime);
+      const durationMillis = endDateTime - startDateTime;
+      const durationMinutes = durationMillis / 1000 / 60;
+      return durationMinutes;
+    },
+    [startDateTime]
+  );
 
-  const horizontalLine = (y, label) => {
-    return (
-      <View
-        key={"horizontal-" + y}
-        style={{
-          position: "absolute",
-          top: y,
-          left: 0,
-          right: 0,
-          borderTopColor: "lightgray",
-          borderTopWidth: 1,
-          paddingLeft: 8,
-        }}
-      >
-        {label && (
-          <>
-            <IconButton
-              icon="timer"
-              size={20}
-              color="lightgray"
-              style={{ margin: 0 }}
-            />
-            <Text style={{ color: "lightgray" }}>{label}</Text>
-          </>
-        )}
-      </View>
+  const lastMinutes = React.useMemo(() => {
+    const maxDurationMinutes = Math.max(
+      ...connections.map(calculateDurationMinutes)
     );
-  };
+    return Math.ceil(maxDurationMinutes / 15) * 15 + 12;
+  }, [startDateTime, connections]);
 
-  const verticalLine = (x, label) => {
-    return (
-      <View
-        key={"vertical-" + x}
-        style={{
-          position: "absolute",
-          left: x,
-          top: 0,
-          bottom: 0,
-          borderLeftColor: "lightgray",
-          borderLeftWidth: 1,
-          paddingTop: 4,
-          paddingLeft: 4,
-        }}
-      >
-        <IconButton
-          icon="walk"
-          size={20}
-          color="lightgray"
-          style={{ margin: 0 }}
-        />
-        <Text style={{ color: "lightgray" }}>{label}</Text>
-      </View>
-    );
-  };
+  const height = React.useMemo(() => calculateY(lastMinutes), [lastMinutes]);
 
   let horizontalLines = [];
-  for (let i = 0; i <= 120; i += 15) {
-    horizontalLines.push(horizontalLine(calculateY(i), i + " min"));
+  for (let minutes = 0; minutes <= lastMinutes; minutes += 15) {
+    horizontalLines.push(
+      <GridLine
+        orientation="horizontal"
+        position={calculateY(minutes)}
+        icon="clock-outline"
+        label={minutes + " min"}
+      />
+    );
   }
 
   let verticalLines = [];
-  for (let i = 0; i <= 30; i += 5) {
-    verticalLines.push(verticalLine(calculateX(i), i + " min"));
+  for (let minutes = 0; minutes <= 30; minutes += 5) {
+    verticalLines.push(
+      <GridLine
+        orientation="vertical"
+        position={calculateX(minutes)}
+        icon="walk"
+        label={minutes + " min"}
+      />
+    );
   }
 
   return (
@@ -97,52 +87,37 @@ export default function ConnectionResultsPlotScreen({ navigation, route }) {
       {verticalLines}
       <ScrollView>
         {horizontalLines}
-        <View style={{ height: 1100 }}>
+        <View style={{ height: height }}>
           {connections.map((connection, i) => {
-            const actions = connection.actions;
-            const transfers = filterTransfers(actions);
-
-            const last_transfer = transfers[transfers.length - 1];
-
-            const end_datetime = parseDateTime(last_transfer.end_datetime);
-
-            const duration_ms = end_datetime - start_datetime;
-            const duration_minutes = duration_ms / 1000 / 60;
-
-            const walking_minutes = actions
-              .filter((action) => action.type === "walking")
-              .map((walking) => walking.duration_in_minutes)
-              .reduce((a, b) => a + b, 0);
-
-            const number_of_transfers = connection.transfers_count;
-            const color = getColor(number_of_transfers);
-
-            const x = calculateX(walking_minutes);
-            const y = calculateY(duration_minutes);
-
-            const zIndex = 9999 - number_of_transfers * 100 - duration_minutes;
+            const durationMinutes = calculateDurationMinutes(connection);
+            const walkingMinutes = calculateWalkingMinutes(connection);
+            const numberOfTransfers = connection.transfers_count;
+            const color = getColor(numberOfTransfers);
+            const x = calculateX(walkingMinutes);
+            const y = calculateY(durationMinutes);
+            const zIndex = calculateZ(numberOfTransfers, durationMinutes);
 
             return (
               <Text
                 key={i}
                 onPress={() => handleShow(connection)}
                 style={{
+                  position: "absolute",
                   left: x - bubbleSize / 2,
                   top: y - bubbleSize / 2,
                   zIndex: zIndex,
                   width: bubbleSize,
                   height: bubbleSize,
-                  position: "absolute",
                   backgroundColor: color,
                   borderRadius: bubbleSize / 2,
-                  textAlign: "center",
-                  textAlignVertical: "center",
                   fontWeight: "bold",
                   fontSize: bubbleSize * 0.6,
+                  textAlign: "center",
+                  textAlignVertical: "center",
                   color: "white",
                 }}
               >
-                {number_of_transfers}
+                {numberOfTransfers}
               </Text>
             );
           })}
