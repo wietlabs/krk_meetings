@@ -9,7 +9,11 @@ export default function RouteButton({ routeName, nth }) {
   const icon = isBus ? "bus" : "tram";
 
   return (
-    <Chip icon={icon} style={{ marginRight: 6, backgroundColor: color }}>
+    <Chip
+      icon={icon}
+      style={{ marginRight: 6, backgroundColor: color }}
+      textStyle={{ marginLeft: 2 }}
+    >
       {routeName}
     </Chip>
   );
