@@ -111,7 +111,6 @@ export default function HomeScreen({ navigation }) {
       />
       <View
         style={{
-          marginBottom: 16,
           flexDirection: "row",
           alignContent: "center",
           display: "flex",
