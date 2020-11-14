@@ -29,7 +29,7 @@ class FloydDataProvider:
         while True:
             new_update_date = self.downloader.get_last_update_time()
             last_update_date = self.load_update_date()
-            if new_update_date > last_update_date:
+            if last_update_date is None or new_update_date > last_update_date:
                 print("FloydDataProvider: updating data")
                 merged_data = self.downloader.download_merged_data()
                 self.extract_floyd_data(merged_data)
@@ -97,10 +97,13 @@ class FloydDataProvider:
 
     @staticmethod
     def load_update_date():
-        with open(CONFIG_JSON_PATH) as json_file:
-            update_date = json.load(json_file)["update_date"]
-            update_date = datetime.strptime(update_date, "%Y-%m-%d %H:%M:%S")
-        return update_date
+        try:
+            with open(CONFIG_JSON_PATH) as json_file:
+                update_date = json.load(json_file)["update_date"]
+                update_date = datetime.strptime(update_date, "%Y-%m-%d %H:%M:%S")
+            return update_date
+        except FileNotFoundError:
+            return None
 
     @staticmethod
     def save_update_date(update_date):
