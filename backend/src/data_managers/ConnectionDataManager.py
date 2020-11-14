@@ -19,6 +19,8 @@ class ConnectionDataManager(DataManager):
     def handle_message(self, msg):
         if msg == MESSAGES.DATA_UPDATED.value:
             self.update_data()
+        elif msg == MESSAGES.DELAYS_UPDATED.value:
+            self.update_delays()
 
     def get_data(self):
         data = dict()
@@ -35,3 +37,6 @@ class ConnectionDataManager(DataManager):
         data["routes_to_stops_dict"] = load_pickle(FloydDataPaths.routes_to_stops_dict.value)
         data["exception_days_dict"] = load_pickle(FloydDataPaths.exception_days.value)
         return data
+
+    def update_delays(self):
+        pass
