@@ -72,6 +72,7 @@ export default function ConnectionResultsPlotScreen({ navigation, route }) {
         position={calculateY(minutes)}
         icon="clock-outline"
         label={minutes + " min"}
+        key={"h" + minutes}
       />
     );
   }
@@ -84,6 +85,7 @@ export default function ConnectionResultsPlotScreen({ navigation, route }) {
         position={calculateX(minutes)}
         icon="walk"
         label={minutes + " min"}
+        key={"v" + minutes}
       />
     );
   }
