@@ -119,8 +119,7 @@ export default function HomeScreen({ navigation }) {
       >
         <Button
           mode="outlined"
-          onPress={handleSelectDate}
-          onLongPress={handleClearDate}
+          onPress={date === null ? handleSelectDate : handleClearDate}
           color={date === null ? "lightgray" : "black"}
           style={{
             flex: 0.5,
@@ -136,8 +135,8 @@ export default function HomeScreen({ navigation }) {
         <View style={{ width: 16 }}></View>
         <Button
           mode="outlined"
-          onPress={handleSelectTime}
           onLongPress={handleClearTime}
+          onPress={time === null ? handleSelectTime : handleClearTime}
           color={time === null ? "lightgray" : "black"}
           style={{
             flex: 0.5,
