@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Alert, View } from "react-native";
 import { Button, TextInput } from "react-native-paper";
-import { findConnections } from "../../api/ConnectionsApi";
+import { findConnections } from "../../../api/ConnectionsApi";
 
 export default function HomeScreen({ navigation }) {
   const [startStopName, setStartStopName] = React.useState("Czerwone Maki P+R");

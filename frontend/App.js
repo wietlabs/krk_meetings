@@ -2,7 +2,7 @@ import * as React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { DefaultTheme, Provider as PaperProvider } from "react-native-paper";
-import HomeScreen from "./screens/home/HomeScreen";
+import FindConnectionsScreen from "./screens/connections/find/FindConnectionsScreen";
 import ConnectionResultsScreen from "./screens/connections/results/ConnectionResultsScreen";
 import ConnectionResultsPlotScreen from "./screens/connections/plot/ConnectionResultsPlotScreen";
 import ConnectionDetailsScreen from "./screens/connections/details/ConnectionDetailsScreen";
@@ -31,9 +31,9 @@ export default function App() {
       <NavigationContainer>
         <Stack.Navigator>
           <Stack.Screen
-            name="Home"
-            component={HomeScreen}
-            options={{ title: "Krk Meetings" }}
+            name="FindConnections"
+            component={FindConnectionsScreen}
+            options={{ title: "Wyszukiwarka połączeń" }}
           />
           <Stack.Screen
             name="ConnectionResults"
