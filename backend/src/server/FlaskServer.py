@@ -41,11 +41,12 @@ class FlaskServer:
 
         self.data_manager = FlaskDataManager()
         self.stops = None
+        self.last_update_date = None
 
     def update_data(self):
-        if not self.data_manager.up_to_date:
-            data = self.data_manager.get_updated_data()
-            self.stops = data['stops']
+        data = self.data_manager.get_updated_data()
+        self.stops = data['stops']
+        self.last_update_date = self.data_manager.last_data_update
 
     def run(self):
         self.app.run(threaded=True, host='0.0.0.0', port=5000)
@@ -93,6 +94,8 @@ class FlaskServer:
         return jsonify(result["result"]), 202
 
     def handle_get_stops(self):
+        if self.last_update_date < self.data_manager.last_data_update:
+            self.update_data()
         return jsonify(self.stops), 202
 
     def handle_post_connection(self):

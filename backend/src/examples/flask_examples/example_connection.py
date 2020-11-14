@@ -7,7 +7,7 @@ from src.config import URL
 from src.examples.flask_examples.sample_queries import ConnectionQuerySamples
 
 if __name__ == "__main__":
-    query_json = ConnectionQuerySamples.krzeszowice_wolica.value
+    query_json = ConnectionQuerySamples.walking_only.value
 
     execution_start = time.time()
     response = requests.post(URL.CONNECTION.value, json=query_json, timeout=1.0)
@@ -23,5 +23,5 @@ if __name__ == "__main__":
             break
         time.sleep(0.2)
 
-    print(json.dumps(result))
+    print(json.dumps(result, ensure_ascii=False))
     print(time.time() - execution_start)

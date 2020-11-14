@@ -28,7 +28,4 @@ class RmqProducer(RmqHelper):
         except pika.exceptions.StreamLostError:
             print(lost_stream_msg)
 
-    def callback(self, ch, method, properties, body):
-        pass
-
 

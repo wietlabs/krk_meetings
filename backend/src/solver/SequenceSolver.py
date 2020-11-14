@@ -14,20 +14,21 @@ class SequenceSolver(ISequenceSolver):
         self.distances = None
         self.stops_df = None
         self.stops_df_by_name = None
+        self.last_data_update = None
 
         self.data_manager.start()
-        self.data_manager.update_data()
         self.update_data()
 
     def update_data(self):
-        if not self.data_manager.up_to_date:
-            data = self.data_manager.get_updated_data()
-            self.distances = data["distances"]
-            self.stops_df = data["stops_df"]
-            self.stops_df_by_name = data["stops_df_by_name"]
+        data = self.data_manager.get_updated_data()
+        self.distances = data["distances"]
+        self.stops_df = data["stops_df"]
+        self.stops_df_by_name = data["stops_df_by_name"]
+        self.last_data_update = self.data_manager.last_data_update
 
     def find_best_sequence(self, query: SequenceQuery) -> SequenceResults:
-        self.update_data()
+        if self.last_data_update < self.data_manager.last_data_update:
+            self.update_data()
 
         def gen(stop_ids: list, current_stop_id, last_stop_id, sequence: list, weight: int):
             if stop_ids:

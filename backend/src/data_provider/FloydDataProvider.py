@@ -9,7 +9,7 @@ from src.data_classes.ParsedData import ParsedData
 from src.data_provider.Downloader import Downloader
 from src.data_provider.FloydDataExtractor import FloydDataExtractor
 from src.rabbitmq.RmqProducer import RmqProducer
-from src.exchanges import EXCHANGES
+from src.exchanges import EXCHANGES, MESSAGES
 from src.config import FloydDataPaths, CONFIG_JSON_PATH
 from src.utils import save_pickle
 
@@ -21,7 +21,7 @@ def start_data_provider():
 
 class FloydDataProvider:
     def __init__(self):
-        self.floyd_data_producer = RmqProducer(EXCHANGES.FLOYD_DATA.value)
+        self.floyd_data_producer = RmqProducer(EXCHANGES.DATA_PROVIDER.value)
         self.downloader = Downloader()
         self.alive = False
 
@@ -37,7 +37,7 @@ class FloydDataProvider:
                 merged_data = self.downloader.download_merged_data()
                 self.extract_floyd_data(merged_data)
                 self.save_update_date(new_update_date)
-                self.floyd_data_producer.send_msg("update data", lost_stream_msg="Solvers are down.")
+                self.floyd_data_producer.send_msg(MESSAGES.DATA_UPDATED.value, lost_stream_msg="Solvers are down.")
                 print("FloydDataProvider: data updated")
             time.sleep(3600)
 
