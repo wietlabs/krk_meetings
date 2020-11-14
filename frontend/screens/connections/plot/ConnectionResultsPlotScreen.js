@@ -4,6 +4,7 @@ import { filterTransfers, parseDateTime } from "../../../utils";
 import GridLine from "./GridLine";
 
 const bubbleSize = 26;
+const durationInterval = 15;
 
 const colors = [
   "dodgerblue",
@@ -32,10 +33,6 @@ export default function ConnectionResultsPlotScreen({ navigation, route }) {
   const startDateTime = new Date(route.params.startDateTime);
   const connections = route.params.connections;
 
-  const handleShow = (connection) => {
-    navigation.navigate("ConnectionDetails", { connection: connection });
-  };
-
   const calculateDurationMinutes = React.useCallback(
     (connection) => {
       const actions = connection.actions;
@@ -49,17 +46,26 @@ export default function ConnectionResultsPlotScreen({ navigation, route }) {
     [startDateTime]
   );
 
-  const lastMinutes = React.useMemo(() => {
-    const maxDurationMinutes = Math.max(
-      ...connections.map(calculateDurationMinutes)
-    );
-    return Math.ceil(maxDurationMinutes / 15) * 15 + 12;
-  }, [startDateTime, connections]);
+  const maxDurationMinutes = React.useMemo(
+    () => Math.max(...connections.map(calculateDurationMinutes)),
+    [connections]
+  );
 
-  const height = React.useMemo(() => calculateY(lastMinutes), [lastMinutes]);
+  const lastMinutes = React.useMemo(
+    () => Math.ceil(maxDurationMinutes / durationInterval) * durationInterval,
+    [maxDurationMinutes, durationInterval]
+  );
+
+  const height = React.useMemo(() => calculateY(lastMinutes) + 70, [
+    lastMinutes,
+  ]);
+
+  const handleShow = (connection) => {
+    navigation.navigate("ConnectionDetails", { connection: connection });
+  };
 
   let horizontalLines = [];
-  for (let minutes = 0; minutes <= lastMinutes; minutes += 15) {
+  for (let minutes = 0; minutes <= lastMinutes; minutes += durationInterval) {
     horizontalLines.push(
       <GridLine
         orientation="horizontal"
