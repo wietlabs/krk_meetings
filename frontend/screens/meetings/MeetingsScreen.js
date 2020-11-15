@@ -49,10 +49,6 @@ export default function MeetingsScreen({ navigation, route }) {
     navigation.navigate("CreateMeeting", { userUuid: userUuid });
   };
 
-  const handleJoin = () => {
-    navigation.navigate("JoinMeeting", { userUuid: userUuid });
-  };
-
   if (loading) {
     return (
       <View style={{ flex: 1, justifyContent: "center" }}>
@@ -105,11 +101,6 @@ export default function MeetingsScreen({ navigation, route }) {
             label: "Utwórz nowe spotkanie",
             onPress: handleCreate,
           },
-          // {
-          //   icon: "account-plus-outline",
-          //   label: "Dołącz do spotkania",
-          //   onPress: handleJoin,
-          // },
         ]}
         onStateChange={({ open }) => setOpen(open)}
         onPress={() => {}}
