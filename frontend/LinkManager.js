@@ -28,3 +28,13 @@ export function getUuidFromLink(link) {
   const { path, queryParams } = Linking.parse(link);
   return queryParams.uuid;
 }
+
+export function registerLinkingHandler(navigation) {
+  Linking.addEventListener("url", (event) => {
+    const url = event.url;
+    if (validateMeetingLink(url)) {
+      const meetingUuid = getUuidFromLink(url);
+      navigation?.navigate("JoinMeeting", { meetingUuid });
+    }
+  });
+}
