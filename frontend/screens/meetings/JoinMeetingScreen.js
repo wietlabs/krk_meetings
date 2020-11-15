@@ -22,6 +22,7 @@ export default function JoinMeetingScreen({ navigation, route }) {
   const [meeting, setMeeting] = React.useState(null);
   const [users, setUsers] = React.useState([]);
   const [userUuid, setUserUuid] = React.useState(null);
+  const [submitting, setSubmitting] = React.useState(false);
 
   const refreshMeeting = async () => {
     if (meetingUuid) {
@@ -61,11 +62,18 @@ export default function JoinMeetingScreen({ navigation, route }) {
   };
 
   const handleSubmit = async () => {
-    if (!validate()) return;
+    if (submitting) return;
+    setSubmitting(true);
+
+    if (!validate()) {
+      setSubmitting(false);
+      return;
+    }
 
     const meetingExists = await checkIfMeetingExists(meetingUuid);
     if (!meetingExists) {
       showError("Nie znaleziono spotkania o podanym identyfikatorze.");
+      setSubmitting(false);
       return;
     }
 
@@ -79,6 +87,7 @@ export default function JoinMeetingScreen({ navigation, route }) {
         error == "Already a member"
           ? "Jesteś już członkiem tego spotkania"
           : error;
+      setSubmitting(false);
       showError(message);
       return;
     }
@@ -149,6 +158,7 @@ export default function JoinMeetingScreen({ navigation, route }) {
             mode="contained"
             icon="account-plus"
             color="deepskyblue"
+            loading={submitting}
             onPress={handleSubmit}
             style={{ marginTop: 12 }}
           >

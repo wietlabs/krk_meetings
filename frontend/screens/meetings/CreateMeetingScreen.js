@@ -9,6 +9,7 @@ export default function CreateMeetingScreen({ navigation, route }) {
 
   const [name, setName] = React.useState("");
   const [nickname, setNickname] = React.useState("");
+  const [submitting, setSubmitting] = React.useState(false);
 
   const nameRef = React.useRef();
   const nicknameRef = React.useRef();
@@ -44,7 +45,13 @@ export default function CreateMeetingScreen({ navigation, route }) {
   };
 
   const handleSubmit = async () => {
-    if (!validate()) return;
+    if (submitting) return;
+    setSubmitting(true);
+
+    if (!validate()) {
+      setSubmitting(false);
+      return;
+    }
 
     const { uuid: meetingUuid } = await createMeeting({
       userUuid,
@@ -78,7 +85,7 @@ export default function CreateMeetingScreen({ navigation, route }) {
         onChangeText={(nickname) => setNickname(nickname)}
         style={{ backgroundColor: "white", marginBottom: 16 }}
       />
-      <Button mode="contained" onPress={handleSubmit}>
+      <Button mode="contained" loading={submitting} onPress={handleSubmit}>
         Utwórz spotkanie
       </Button>
     </View>
