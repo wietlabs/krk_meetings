@@ -5,6 +5,7 @@ import {
   validateUuid,
   getMeetingOwnerNickname,
   createRandomNickname,
+  censorUuid,
 } from "../../utils";
 import {
   checkIfMeetingExists,
@@ -16,7 +17,6 @@ import { loadUsers, getNickname } from "../../UserManager";
 
 export default function JoinMeetingScreen({ navigation, route }) {
   const meetingUuid = route.params.meetingUuid;
-  // const meetingUuid = "960fb91d-7a25-4dcc-acb5-1fc16f6579ff";
 
   const [refreshing, setRefreshing] = React.useState(false);
   const [meeting, setMeeting] = React.useState(null);
@@ -134,7 +134,7 @@ export default function JoinMeetingScreen({ navigation, route }) {
                 onPress={() => setUserUuid(uuid)}
                 title={nickname === null ? "Tożsamość bez nazwy" : nickname}
                 titleStyle={nickname === null ? { opacity: 0.2 } : null}
-                description={uuid}
+                description={censorUuid(uuid)}
                 left={(props) => (
                   <View style={{ marginTop: 8 }}>
                     <RadioButton {...props} value={uuid} color="deepskyblue" />
