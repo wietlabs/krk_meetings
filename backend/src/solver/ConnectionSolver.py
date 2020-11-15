@@ -293,6 +293,8 @@ class ConnectionSolver(IConnectionSolver):
                 resolve_neighbor(node_id, end_node_id, weight, path, routes, self.graph)
             for neighbor_id in self.kernelized_graph.neighbors(node_id):
                 resolve_neighbor(node_id, neighbor_id, weight, path, routes, self.kernelized_graph)
+            if [start_node_id, end_node_id] not in paths:
+                paths.append([start_node_id, end_node_id])
         return paths
 
     def is_redundant(self, n_routes: List[tuple], route: tuple):
