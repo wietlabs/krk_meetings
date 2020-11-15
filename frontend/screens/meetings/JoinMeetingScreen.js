@@ -12,7 +12,7 @@ import {
   joinMeeting,
 } from "../../api/MeetingsApi";
 import Placeholder from "../../components/Placeholder";
-import { loadUsers } from "../../UserManager";
+import { loadUsers, getNickname } from "../../UserManager";
 
 export default function JoinMeetingScreen({ navigation, route }) {
   const meetingUuid = route.params.meetingUuid;
@@ -69,18 +69,18 @@ export default function JoinMeetingScreen({ navigation, route }) {
       return;
     }
 
-    const nickname = createRandomNickname(); // TODO: user?.nickname
+    const nickname = (await getNickname(userUuid)) || createRandomNickname();
 
     try {
       await joinMeeting({ meetingUuid, userUuid, nickname });
     } catch (e) {
       const error = e.response.data["error"];
-      if (error == "Already a member") {
-        showError("Jesteś już członkiem tego spotkania");
-      } else {
-        showError(error);
-        return;
-      }
+      const message =
+        error == "Already a member"
+          ? "Jesteś już członkiem tego spotkania"
+          : error;
+      showError(message);
+      return;
     }
 
     navigation.pop(2);
