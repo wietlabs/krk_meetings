@@ -94,11 +94,11 @@ export default function MeetingsScreen({ navigation, route }) {
             label: "Utwórz nowe spotkanie",
             onPress: handleCreate,
           },
-          {
-            icon: "account-plus-outline",
-            label: "Dołącz do spotkania",
-            onPress: handleJoin,
-          },
+          // {
+          //   icon: "account-plus-outline",
+          //   label: "Dołącz do spotkania",
+          //   onPress: handleJoin,
+          // },
         ]}
         onStateChange={({ open }) => setOpen(open)}
         onPress={() => {}}
