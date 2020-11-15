@@ -29,12 +29,26 @@ export function getUuidFromLink(link) {
   return queryParams.uuid;
 }
 
-export function registerLinkingHandler(navigation) {
-  Linking.addEventListener("url", (event) => {
-    const url = event.url;
+export function registerLinkingHandler(navigationRef) {
+  const handleUrl = (url) => {
+    const navigation = navigationRef.current;
+    if (!navigation) return;
+
     if (validateMeetingLink(url)) {
       const meetingUuid = getUuidFromLink(url);
-      navigation?.navigate("JoinMeeting", { meetingUuid });
+      navigation.navigate("MeetingsStack");
+      navigation.navigate("MeetingsStack", {
+        screen: "JoinMeeting",
+        params: { meetingUuid },
+      });
     }
+  };
+
+  (async () => {
+    handleUrl(await Linking.getInitialURL());
+  })();
+
+  Linking.addEventListener("url", (event) => {
+    handleUrl(event.url);
   });
 }

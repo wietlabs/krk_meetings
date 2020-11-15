@@ -21,14 +21,14 @@ export const navigationRef = React.createRef();
 
 export default function App() {
   React.useEffect(() => {
-    registerLinkingHandler(navigationRef.current);
-  }, [navigationRef]);
+    registerLinkingHandler(navigationRef);
+  }, []);
 
   return (
     <PaperProvider theme={theme}>
       <NavigationContainer ref={navigationRef}>
         <Tab.Navigator
-          // initialRouteName="ConnectionsStack"
+          initialRouteName="ConnectionsStack"
           inactiveColor="lightgray"
           barStyle={{ backgroundColor: "whitesmoke" }}
           lazy={false}
