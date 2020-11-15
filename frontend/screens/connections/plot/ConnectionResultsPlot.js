@@ -48,13 +48,15 @@ export default function ConnectionResultsPlot({
   );
 
   const maxDurationMinutes = React.useMemo(
-    () =>
-      Math.min(Math.max(...connections.map(calculateDurationMinutes), 0), 900),
+    () => Math.max(...connections.map(calculateDurationMinutes)),
     [connections]
   );
 
   const lastMinutes = React.useMemo(
-    () => Math.ceil(maxDurationMinutes / durationInterval) * durationInterval,
+    () =>
+      Math.ceil(
+        Math.min(Math.max(maxDurationMinutes, 0), 900) / durationInterval
+      ) * durationInterval,
     [maxDurationMinutes, durationInterval]
   );
 
