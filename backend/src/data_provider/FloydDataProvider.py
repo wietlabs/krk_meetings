@@ -99,8 +99,7 @@ class FloydDataProvider:
     def load_update_date():
         try:
             with open(CONFIG_JSON_PATH) as json_file:
-                update_date = json.load(json_file)["update_date"]
-                update_date = datetime.strptime(update_date, "%Y-%m-%d %H:%M:%S")
+                update_date = datetime.strptime(json.load(json_file)["update_date"], "%Y-%m-%d %H:%M:%S")
             return update_date
         except FileNotFoundError:
             return None
