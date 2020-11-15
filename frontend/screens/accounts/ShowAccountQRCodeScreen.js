@@ -9,6 +9,7 @@ export default function ShowAccountQRCodeScreen({ route }) {
     <View
       style={{
         flex: 1,
+        padding: 24,
         alignItems: "center",
         justifyContent: "center",
         backgroundColor: "white",

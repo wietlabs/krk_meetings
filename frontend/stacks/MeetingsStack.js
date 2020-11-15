@@ -17,7 +17,7 @@ export default function MeetingsStack() {
       <Stack.Screen
         name="Accounts"
         component={AccountsScreen}
-        options={{ title: "Tożsamości" }}
+        options={{ title: "Wybierz tożsamość" }}
       />
       <Stack.Screen
         name="AddAccount"

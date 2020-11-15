@@ -1,8 +1,9 @@
 {
   "expo": {
-    "name": "krk_meetings_app",
-    "slug": "krk_meetings_app",
-    "version": "1.0.0",
+    "name": "Krk Meetings",
+    "slug": "krk_meetings",
+    "scheme": "krkmeet",
+    "version": "1.0.0",    
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "splash": {
