@@ -3,21 +3,32 @@ import { View, ScrollView, RefreshControl } from "react-native";
 import { ActivityIndicator, FAB, Chip, Card } from "react-native-paper";
 import Placeholder from "../../components/Placeholder";
 import { getMeetings } from "../../api/MeetingsApi";
+import { getNickname } from "../../UserManager";
 
 export default function MeetingsScreen({ navigation, route }) {
   const userUuid = route.params.userUuid;
 
   const [meetings, setMeetings] = React.useState([]);
+  const [nickname, setNickname] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
   const [refreshing, setRefreshing] = React.useState(false);
   const [open, setOpen] = React.useState(false);
 
   const refresh = async () => {
     setRefreshing(true);
-    const meetings = await getMeetings({ userUuid });
-    setMeetings(meetings);
+    await Promise.all([loadNickname(), loadMeetings()]);
     setLoading(false);
     setRefreshing(false);
+  };
+
+  const loadNickname = async () => {
+    const nickname = await getNickname(userUuid);
+    setNickname(nickname);
+  };
+
+  const loadMeetings = async () => {
+    const meetings = await getMeetings({ userUuid });
+    setMeetings(meetings);
   };
 
   React.useEffect(() => {
@@ -28,11 +39,11 @@ export default function MeetingsScreen({ navigation, route }) {
     navigation.setOptions({
       headerRight: () => (
         <Chip icon="account-circle" style={{ marginRight: 16 }} mode="outlined">
-          {userUuid.slice(0, 8)}
+          {nickname || userUuid.slice(0, 8)}
         </Chip>
       ),
     });
-  }, [navigation]);
+  }, [navigation, nickname]);
 
   const handleCreate = () => {
     navigation.navigate("CreateMeeting", { userUuid: userUuid });
