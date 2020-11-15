@@ -6,13 +6,19 @@ export function datetimeToHour(datetime) {
   return parseDateTime(datetime).toLocaleTimeString().slice(0, 5);
 }
 
+export const makeDateTime = (date, time) => {
+  return new Date(
+    date.getYear() + 1900,
+    date.getMonth(),
+    date.getDate(),
+    time.getHours(),
+    time.getMinutes(),
+    time.getSeconds()
+  );
+};
+
 export function censorUuid(uuid) {
   return uuid.slice(0, 8) + "-****-****-****-************";
-}
-
-export function filterTransfers(actions) {
-  const isTransfer = (transfer) => transfer.type === "transfer";
-  return actions.filter(isTransfer);
 }
 
 export const validateUuid = (string) => {
@@ -22,12 +28,10 @@ export const validateUuid = (string) => {
   return re.test(string);
 };
 
-export const validateLink = (string) => {
-  const re = new RegExp(
-    "^krk-meetings://[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
-  );
-  return re.test(string);
-};
+export function filterTransfers(actions) {
+  const isTransfer = (transfer) => transfer.type === "transfer";
+  return actions.filter(isTransfer);
+}
 
 export const sleep = (ms) => {
   return new Promise((r) => setTimeout(r, ms));

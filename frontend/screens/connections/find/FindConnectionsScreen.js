@@ -3,71 +3,137 @@ import { Alert, View } from "react-native";
 import { Button, IconButton, TextInput, FAB } from "react-native-paper";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { findConnections } from "../../../api/ConnectionsApi";
+import { makeDateTime } from "../../../utils";
+
+const initialState = {
+  startStopName: "Czerwone Maki P+R",
+  endStopName: "Jerzmanowskiego",
+  date: null,
+  time: null,
+  mode: null,
+  show: false,
+};
+
+const ACTIONS = {
+  SET_START_STOP_NAME: "set-start-stop-name",
+  SET_END_STOP_NAME: "set-end-stop-name",
+  CLEAR_START_STOP_NAME: "clear-start-stop-name",
+  CLEAR_END_STOP_NAME: "clear-end-stop-name",
+  SWAP_STOP_NAMES: "swap-stop-names",
+  PICK_DATE: "pick-date",
+  PICK_TIME: "pick-time",
+  SET_DATE: "set-date",
+  SET_TIME: "set-time",
+  CANCEL: "cancel",
+  CLEAR_DATE: "clear-date",
+  CLEAR_TIME: "clear-time",
+};
+
+function reducer(state, action) {
+  switch (action.type) {
+    case ACTIONS.SET_START_STOP_NAME:
+      return { ...state, startStopName: action.payload.startStopName };
+
+    case ACTIONS.SET_END_STOP_NAME:
+      return { ...state, endStopName: action.payload.endStopName };
+
+    case ACTIONS.CLEAR_START_STOP_NAME:
+      return { ...state, startStopName: "" };
+
+    case ACTIONS.CLEAR_END_STOP_NAME:
+      return { ...state, endStopName: "" };
+
+    case ACTIONS.SWAP_STOP_NAMES:
+      return {
+        ...state,
+        startStopName: state.endStopName,
+        endStopName: state.startStopName,
+      };
+
+    case ACTIONS.PICK_DATE:
+      return {
+        ...state,
+        mode: "date",
+        show: true,
+      };
+
+    case ACTIONS.PICK_TIME:
+      return {
+        ...state,
+        mode: "time",
+        show: true,
+      };
+
+    case ACTIONS.CLEAR_DATE:
+      return { ...state, date: null, time: null };
+
+    case ACTIONS.CLEAR_TIME:
+      return { ...state, time: null };
+
+    case ACTIONS.CANCEL:
+      return { ...state, show: false };
+
+    case ACTIONS.SET_DATE:
+      return { ...state, date: action.payload.date, mode: "time" };
+
+    case ACTIONS.SET_TIME:
+      return { ...state, time: action.payload.time, show: false };
+
+    default:
+      return state;
+  }
+}
 
 export default function HomeScreen({ navigation }) {
-  const [startStopName, setStartStopName] = React.useState("Czerwone Maki P+R");
-  const [endStopName, setEndStopName] = React.useState("Jerzmanowskiego");
+  const [state, dispatch] = React.useReducer(reducer, initialState);
   const [loading, setLoading] = React.useState(false);
 
-  const now = new Date();
-  const [date, setDate] = React.useState(null);
-  const [time, setTime] = React.useState(null);
-  const [show, setShow] = React.useState(false);
-  const [mode, setMode] = React.useState(null);
-
-  const handleSwap = () => {
-    setStartStopName(endStopName);
-    setEndStopName(startStopName);
+  const handleChangeStartStopName = (startStopName) => {
+    dispatch({ type: ACTIONS.SET_START_STOP_NAME, payload: { startStopName } });
   };
 
-  const handleSelectDate = () => {
-    setMode("date");
-    setShow(true);
+  const handleChangeEndStopName = (endStopName) => {
+    dispatch({ type: ACTIONS.SET_END_STOP_NAME, payload: { endStopName } });
   };
 
-  const handleSelectTime = () => {
-    setMode("time");
-    setShow(true);
+  const handlePickDate = () => {
+    dispatch({ type: ACTIONS.PICK_DATE });
+  };
+
+  const handlePickTime = () => {
+    dispatch({ type: ACTIONS.PICK_TIME });
   };
 
   const handleClearDate = () => {
-    setDate(null);
-    setTime(null);
+    dispatch({ type: ACTIONS.CLEAR_DATE });
   };
 
   const handleClearTime = () => {
-    setTime(null);
+    dispatch({ type: ACTIONS.CLEAR_TIME });
   };
 
   const handlePick = (event, value) => {
     if (event.type === "dismissed") {
-      setShow(false);
+      dispatch({ type: ACTIONS.CANCEL });
       return;
     }
     if (mode === "date") {
-      setMode("time");
-      setDate(value);
+      dispatch({ type: ACTIONS.SET_DATE, payload: { date: value } });
       return;
     }
     if (mode === "time") {
-      setShow(false);
-      setTime(value);
+      dispatch({ type: ACTIONS.SET_TIME, payload: { time: value } });
       return;
     }
   };
 
+  const { startStopName, endStopName, date, time, show, mode } = state;
+
   const handleSubmit = async () => {
     setLoading(true);
     const now = new Date();
-    const d = date || now;
-    const t = time || now;
-    const startDateTime = new Date(
-      d.getYear() + 1900,
-      d.getMonth(),
-      d.getDate(),
-      t.getHours(),
-      t.getMinutes()
-    );
+    const startDateTime = makeDateTime(date || now, time || now);
+    console.log(startDateTime);
     const query = { startDateTime, startStopName, endStopName };
     try {
       const connections = await findConnections(query);
@@ -91,22 +157,31 @@ export default function HomeScreen({ navigation }) {
         label="Przystanek początkowy"
         left={<TextInput.Icon name="map-marker-radius" />}
         right={
-          <TextInput.Icon name="close" onPress={() => setStartStopName("")} />
+          <TextInput.Icon
+            name="close"
+            onPress={() => dispatch({ type: ACTIONS.CLEAR_START_STOP_NAME })}
+          />
         }
-        onChangeText={setStartStopName}
+        onChangeText={handleChangeStartStopName}
         style={{ backgroundColor: "white" }}
       />
       <View style={{ alignItems: "center" }}>
-        <IconButton icon="cached" onPress={handleSwap} />
+        <IconButton
+          icon="cached"
+          onPress={() => dispatch({ type: ACTIONS.SWAP_STOP_NAMES })}
+        />
       </View>
       <TextInput
         value={endStopName}
         label="Przystanek końcowy"
         left={<TextInput.Icon name="flag-checkered" />}
         right={
-          <TextInput.Icon name="close" onPress={() => setEndStopName("")} />
+          <TextInput.Icon
+            name="close"
+            onPress={() => dispatch({ type: ACTIONS.CLEAR_END_STOP_NAME })}
+          />
         }
-        onChangeText={setEndStopName}
+        onChangeText={handleChangeEndStopName}
         style={{ backgroundColor: "white", marginBottom: 16 }}
       />
       <View
@@ -119,7 +194,7 @@ export default function HomeScreen({ navigation }) {
       >
         <Button
           mode="outlined"
-          onPress={date === null ? handleSelectDate : handleClearDate}
+          onPress={date === null ? handlePickDate : handleClearDate}
           color={date === null ? "lightgray" : "black"}
           style={{
             flex: 0.5,
@@ -136,7 +211,7 @@ export default function HomeScreen({ navigation }) {
         <Button
           mode="outlined"
           onLongPress={handleClearTime}
-          onPress={time === null ? handleSelectTime : handleClearTime}
+          onPress={time === null ? handlePickTime : handleClearTime}
           color={time === null ? "lightgray" : "black"}
           style={{
             flex: 0.5,
@@ -162,7 +237,7 @@ export default function HomeScreen({ navigation }) {
       {show && (
         <DateTimePicker
           mode={mode}
-          value={(mode === "date" ? date : time) || now}
+          value={(mode === "date" ? date : time) || new Date()}
           onChange={handlePick}
         />
       )}
