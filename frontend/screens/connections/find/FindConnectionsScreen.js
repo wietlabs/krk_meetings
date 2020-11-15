@@ -141,12 +141,20 @@ export default function HomeScreen({ navigation }) {
         connections,
       });
     } catch (e) {
-      Alert.alert(
-        "Wystąpił błąd",
-        "Wystąpił błąd podczas wyszukiwania połączenia."
-      );
+      const error = e.response.data.error;
+      if (error === "BAD START STOP NAME") {
+        showError("Nie znaleziono przystanku początkowego");
+      } else if (error === "BAD END STOP NAME") {
+        showError("Nie znaleziono przystanku końcowego");
+      } else {
+        showError(error);
+      }
     }
     setLoading(false);
+  };
+
+  const showError = (message) => {
+    Alert.alert("Wystąpił błąd", message);
   };
 
   return (
