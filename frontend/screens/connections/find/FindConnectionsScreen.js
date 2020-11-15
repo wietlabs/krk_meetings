@@ -159,6 +159,8 @@ export default function HomeScreen({ navigation }) {
     Alert.alert("Wystąpił błąd", message);
   };
 
+  const now = new Date();
+
   return (
     <View style={{ flex: 1, padding: 16 }}>
       <TextInput
@@ -246,7 +248,8 @@ export default function HomeScreen({ navigation }) {
       {show && (
         <DateTimePicker
           mode={mode}
-          value={(mode === "date" ? date : time) || new Date()}
+          minimumDate={now}
+          value={(mode === "date" ? date : time) || now}
           onChange={handlePick}
         />
       )}
