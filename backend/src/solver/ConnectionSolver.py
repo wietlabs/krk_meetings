@@ -16,7 +16,7 @@ from src.utils import time_to_int
 from src.solver.IConnectionSolver import IConnectionSolver
 from src.data_classes.Transfer import Transfer
 from src.data_classes.ConnectionQuery import ConnectionQuery
-from src.config import WALKING_ROUTE_ID, ErrorCodes, DEFAULT_CONNECTION_SOLVER_CONFIGURATION
+from src.config import ErrorCodes, DEFAULT_CONNECTION_SOLVER_CONFIGURATION
 
 
 class ConnectionSolver(IConnectionSolver):
@@ -81,7 +81,7 @@ class ConnectionSolver(IConnectionSolver):
             partition_connections = self.find_partition_connections(paths, earliest_start_time, current_datetime, connection_dfs)
             if not first_partition:
                 partition_connections = [c for c in partition_connections if not c.walk_only]
-            partition_connections.sort(key=lambda c: 0 if c.walk_only else c.first_transfer.start_datetime)
+            partition_connections.sort(key=lambda c: c.actions[0].start_datetime if c.walk_only else c.first_transfer.start_datetime)
             connections.extend(partition_connections)
             if len(connections) >= self.configuration.number_of_connections_returned:
                 break
@@ -103,7 +103,7 @@ class ConnectionSolver(IConnectionSolver):
                         format_datetime = datetime(current_datetime.year, current_datetime.month, current_datetime.day)
                         start_datetime = format_datetime + timedelta(seconds=departure_time)
                         end_datetime = format_datetime + timedelta(seconds=arrival_time)
-                        if route_id != WALKING_ROUTE_ID:
+                        if route_id != self.configuration.walking_route_id:
                             route_name = solver_utils.get_route_name_by_id(route_id, self.routes_df)
                             headsign = solver_utils.get_headsign_by_id(route_id, self.routes_df)
                             stops = solver_utils.get_stop_list(route_id, current_stop_id, next_stop_id, self.stops_df,
@@ -118,7 +118,6 @@ class ConnectionSolver(IConnectionSolver):
 
                     connection = Connection(transfers)
                     connections.append(connection)
-            connections.sort(key=lambda c: 0 if c.walk_only else c.first_transfer.start_datetime)
         return connections
 
     def find_routes(self, path: List[int], earliest_start_time: int, latest_start_time: int, start_datetime: datetime,
@@ -172,18 +171,17 @@ class ConnectionSolver(IConnectionSolver):
                     walking_row = pd.DataFrame({
                         'departure_time_c_0': start_time,
                         'departure_time_n_0': end_time,
-                        'route_id_0': WALKING_ROUTE_ID,
-                        'index_0': [(WALKING_ROUTE_ID, WALKING_ROUTE_ID, WALKING_ROUTE_ID), ]},
-                        index=([(WALKING_ROUTE_ID, WALKING_ROUTE_ID, WALKING_ROUTE_ID)]))
+                        'route_id_0': self.configuration.walking_route_id,
+                        'index_0': [self.configuration.walking_index]},
+                        index=([self.configuration.walking_index]))
                     results_df = results_df.append(walking_row)
             else:
                 if (current_stop, next_stop) in self.adjacent_stops:
                     walking_time = self.adjacent_stops[(current_stop, next_stop)]
                     walking_df = copy(results_df)
-                    walking_df = walking_df[walking_df[f'route_id_{str(i-1)}'] != WALKING_ROUTE_ID]
-                    walking_df[f'route_id_{str(i)}'] = WALKING_ROUTE_ID
-                    walking_df[f'index_{str(i)}'] = [(
-                        WALKING_ROUTE_ID, WALKING_ROUTE_ID, WALKING_ROUTE_ID)] * len(walking_df)
+                    walking_df = walking_df[walking_df[f'route_id_{str(i-1)}'] != self.configuration.walking_route_id]
+                    walking_df[f'route_id_{str(i)}'] = self.configuration.walking_route_id
+                    walking_df[f'index_{str(i)}'] = [self.configuration.walking_index] * len(walking_df)
                     walking_df[f'departure_time_c_{str(i)}'] = walking_df.apply(
                         lambda row: row[f'departure_time_n_{str(i - 1)}'], axis=1)
                     walking_df[f'departure_time_n_{str(i)}'] = walking_df.apply(
@@ -293,8 +291,8 @@ class ConnectionSolver(IConnectionSolver):
                 resolve_neighbor(node_id, end_node_id, weight, path, routes, self.graph)
             for neighbor_id in self.kernelized_graph.neighbors(node_id):
                 resolve_neighbor(node_id, neighbor_id, weight, path, routes, self.kernelized_graph)
-            if [start_node_id, end_node_id] not in paths:
-                paths.append([start_node_id, end_node_id])
+        if [start_node_id, end_node_id] not in paths:
+            paths.append([start_node_id, end_node_id])
         return paths
 
     def is_redundant(self, n_routes: List[tuple], route: tuple):

@@ -59,7 +59,6 @@ class FloydDataProvider:
 
         # Basic extraction
         route_ids_df = extractor.create_route_ids_df(stop_times_df)
-        period_df = extractor.create_period_df(stop_times_df, route_ids_df)
         stops_df = extractor.set_first_and_last_stop(stop_times_df, route_ids_df, stops_df)
         stops_df_by_name = stops_df.reset_index().set_index('stop_name')
         transfers_df = extractor.create_transfers_trips_df(transfers_df, route_ids_df)
@@ -69,6 +68,7 @@ class FloydDataProvider:
         services_list = extractor.get_services_list(calendar_df)
         routes_to_stops_dict = extractor.create_route_to_stops_dict(stop_times_df, route_ids_df)
         exception_days = extractor.create_exception_days_dict(calendar_dates_df)
+        period_df = extractor.create_period_df(stop_times_df, route_ids_df, routes_df)
         print("FloydDataProvider: basic extraction done")
 
         # Floyd extraction

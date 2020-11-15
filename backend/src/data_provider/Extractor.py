@@ -1,5 +1,5 @@
 from src.data_provider.utils import get_walking_time
-from src.config import MAX_WALKING_TIME_IN_MINUTES, FloydDataPaths
+from src.config import MAX_WALKING_TIME_IN_MINUTES
 from src.utils import load_pickle
 import pandas as pd
 
@@ -92,22 +92,6 @@ class Extractor:
     def create_avg_durations_df(transfers_df: pd.DataFrame) -> pd.DataFrame:
         return transfers_df[['start_stop_id', 'end_stop_id', 'duration']]\
             .groupby(['start_stop_id', 'end_stop_id']).mean()
-
-    # TODO HOW TO CALCULATE PERIOD?
-    # TODO for now we return 24 * 3600 / count
-    @staticmethod
-    def create_period_df(stop_times_df: pd.DataFrame, route_ids_df: pd.DataFrame) -> pd.DataFrame:
-        stop_times_df = stop_times_df.reset_index()
-        df = stop_times_df.join(route_ids_df, on=['block_id', 'trip_num', 'service_id'])
-        df = df[df['stop_sequence'] == 2]
-        df = df[['route_id', 'departure_time']]
-        df = df.groupby(['route_id']).agg({'departure_time': ['count', 'min', 'max']})
-        df.columns = ['count', 'min', 'max']
-        df['period'] = (24 * 3600 / df['count']).astype(int) * 10 # TODO ONLY FOR NOW
-        df = df.reset_index()
-        df = df[['route_id', 'period']]
-        df = df.set_index('route_id')
-        return df
 
     @staticmethod
     def set_first_and_last_stop(stop_times_df: pd.DataFrame, route_ids_df: pd.DataFrame, stops_df: pd.DataFrame

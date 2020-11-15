@@ -2,10 +2,15 @@ from functools import reduce
 from src.data_provider.Extractor import Extractor
 import pandas as pd
 import networkx as nx
-from src.config import FLOYD_EXTRACTOR_PERIOD_MULTIPLIER, WALKING_ROUTE_ID, FLOYD_EXTRACTOR_CHANGE_PENALTY
+from src.config import DEFAULT_FLOYD_EXTRACTOR_CONFIGURATION
+from src.data_provider.utils import is_nightly
 
 
 class FloydDataExtractor(Extractor):
+    def __init__(self, configuration=DEFAULT_FLOYD_EXTRACTOR_CONFIGURATION):
+        super().__init__()
+        self.configuration=configuration
+
     @staticmethod
     def create_kernelized_floyd_graph(graph: nx.DiGraph, stops_df: pd.DataFrame) -> nx.DiGraph:
         kernelized_graph = nx.DiGraph()
@@ -32,16 +37,14 @@ class FloydDataExtractor(Extractor):
             distances[key] = dict(distances[key])
         return distances
 
-    @staticmethod
-    def create_floyd_graph(extended_transfers_df: pd.DataFrame, stops_df: pd.DataFrame) -> nx.DiGraph:
+    def create_floyd_graph(self, extended_transfers_df: pd.DataFrame, stops_df: pd.DataFrame) -> nx.DiGraph:
         def node_generator():
             for stop_id, stop_name, stop_lat, stop_lon, is_first, is_last, hub in stops_df.itertuples():
                 yield stop_id, {'stop_name': stop_name, 'stop_lat': stop_lat, 'stop_lon': stop_lon, 'hub': hub}
 
         def edge_generator():
             for _, start_stop_id, end_stop_id, path, duration, period, route_id in extended_transfers_df.itertuples():
-                weight = int(duration + period * FLOYD_EXTRACTOR_PERIOD_MULTIPLIER +
-                             FLOYD_EXTRACTOR_CHANGE_PENALTY)
+                weight = int(duration + period + self.configuration.change_penalty)
                 yield int(start_stop_id), int(end_stop_id), {'weight': weight, 'route_ids': route_id, 'path': path}
 
         floyd_graph = nx.DiGraph()
@@ -50,8 +53,7 @@ class FloydDataExtractor(Extractor):
 
         return floyd_graph
 
-    @staticmethod
-    def create_floyd_transfers_df(extended_graph: nx.MultiDiGraph, adjacent_stops: dict) -> pd.DataFrame:
+    def create_floyd_transfers_df(self, extended_graph: nx.MultiDiGraph, adjacent_stops: dict) -> pd.DataFrame:
         graph = extended_graph
 
         def generator():
@@ -61,7 +63,8 @@ class FloydDataExtractor(Extractor):
                 path = graph.edges[start_stop, end_stop, route_id]['path']
                 yield start_stop, end_stop, int(route_id), int(duration), int(period), tuple(path)
             for start_stop, end_stop in adjacent_stops:
-                yield start_stop, end_stop, WALKING_ROUTE_ID, adjacent_stops[(start_stop, end_stop)], 0, (start_stop, end_stop)
+                yield start_stop, end_stop, self.configuration.walking_route_id,\
+                      adjacent_stops[(start_stop, end_stop)], 0, (start_stop, end_stop)
 
         df = pd.DataFrame(generator(),
                           columns=['start_stop_id', 'end_stop_id', 'route_id', 'duration', 'period', 'path'])
@@ -203,3 +206,28 @@ class FloydDataExtractor(Extractor):
                     {'route_id': int(route_id), 'duration': int(duration), 'period': int(period), 'path': []}
 
         graph.add_edges_from(edge_generator())
+
+    def create_period_df(self, stop_times_df: pd.DataFrame, route_ids_df: pd.DataFrame, routes_df: pd.DataFrame
+                         ) -> pd.DataFrame:
+        stop_times_df = stop_times_df.reset_index()
+        df = stop_times_df.join(route_ids_df, on=['block_id', 'trip_num', 'service_id'])
+        df = df[df['stop_sequence'] == 2]
+        df = df[['route_id', 'departure_time']]
+        df = df.groupby(['route_id']).agg({'departure_time': ['count', 'min', 'max']})
+        df.columns = ['count', 'min', 'max']
+        df = df.reset_index()
+        df['period'] = df.apply(lambda row: self.get_period(row['route_id'], row['count'], routes_df), axis=1)
+        df = df.reset_index()
+        df = df[['route_id', 'period']]
+        df = df.set_index('route_id')
+        return df
+
+    def get_period(self, route_id, count, routes_df: pd.DataFrame):
+        nightly = is_nightly(routes_df.at[route_id, 'route_name'], self.configuration.nightly_route_ranges)
+        if nightly:
+            running_hours = self.configuration.nightly_hours
+            multiplier = self.configuration.nightly_period_multiplier
+        else:
+            running_hours = self.configuration.daily_hours
+            multiplier = self.configuration.daily_period_multiplier
+        return int(running_hours * 3600 / count * self.configuration.number_of_services * multiplier)
