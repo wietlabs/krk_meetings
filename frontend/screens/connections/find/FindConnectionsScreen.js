@@ -146,6 +146,8 @@ export default function HomeScreen({ navigation }) {
         showError("Nie znaleziono przystanku początkowego");
       } else if (error === "BAD END STOP NAME") {
         showError("Nie znaleziono przystanku końcowego");
+      } else if (error === "BAD QUERY ID VALUE") {
+        showError("Prosimy spróbować ponownie");
       } else {
         showError(error);
       }
