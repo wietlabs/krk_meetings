@@ -106,6 +106,7 @@ export default function MeetingDetailsScreen({ navigation, route }) {
           <List.Icon {...props} icon="link" style={{ margin: 0 }} />
         )}
         onPress={handleCopyToClipboard}
+        onLongPress={() => navigation.navigate("JoinMeeting", { meetingUuid })}
         style={{ backgroundColor: "white" }}
       />
       <List.Item

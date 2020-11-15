@@ -1,53 +1,62 @@
 import * as React from "react";
-import { Alert, Clipboard, ToastAndroid, View } from "react-native";
-import { Button, TextInput } from "react-native-paper";
-import { validateLink, validateUuid, censorUuid } from "../../utils";
-import { getNickname } from "../../UserManager";
-import { checkIfMeetingExists, joinMeeting } from "../../api/MeetingsApi";
+import { Alert, ScrollView, RefreshControl, View, Text } from "react-native";
+import { Card, Chip, List, RadioButton, Button } from "react-native-paper";
+import {
+  validateUuid,
+  getMeetingOwnerNickname,
+  createRandomNickname,
+} from "../../utils";
+import {
+  checkIfMeetingExists,
+  getMeeting,
+  joinMeeting,
+} from "../../api/MeetingsApi";
+import Placeholder from "../../components/Placeholder";
+import { loadUsers } from "../../UserManager";
 
 export default function JoinMeetingScreen({ navigation, route }) {
-  const userUuid = route.params.userUuid;
-  const [meetingUuid, setMeetingUuid] = React.useState("");
-  const [nickname, setNickname] = React.useState("");
+  const meetingUuid = route.params.meetingUuid;
+  // const meetingUuid = "960fb91d-7a25-4dcc-acb5-1fc16f6579ff";
 
-  const meetingUuidRef = React.useRef();
-  const nicknameRef = React.useRef();
+  const [refreshing, setRefreshing] = React.useState(false);
+  const [meeting, setMeeting] = React.useState(null);
+  const [users, setUsers] = React.useState([]);
+  const [userUuid, setUserUuid] = React.useState(null);
 
-  navigation.addListener("focus", async () => {
-    let loaded = false;
-    if (!meetingUuid) loaded = await loadFromClipboard();
-    if (!loaded) meetingUuidRef.current.focus();
-    suggestNickname();
-  });
-
-  const suggestNickname = async () => {
-    if (!nickname) {
-      const nickname = await getNickname(userUuid);
-      setNickname(nickname);
+  const refreshMeeting = async () => {
+    if (meetingUuid) {
+      setRefreshing(true);
+      const meeting = await getMeeting(meetingUuid);
+      setMeeting(meeting);
+      setRefreshing(false);
     }
   };
 
-  const loadFromClipboard = async () => {
-    const string = await Clipboard.getString();
-    const trimmed = string.trim();
-    if (!validateLink(trimmed)) return false;
-    const meetingUuid = trimmed.slice("krk-meetings://".length);
-    setMeetingUuid(meetingUuid);
-    ToastAndroid.show("Wczytano ze schowka", ToastAndroid.SHORT);
-    return true;
+  const refreshUsers = async () => {
+    const users = await loadUsers();
+    setUsers(users);
+    if (users.length == 1) setUserUuid(users[0].uuid);
   };
 
-  const showError = (message, fieldRef) => {
-    Alert.alert("Wystąpił błąd", message, [
-      { text: "OK", onPress: () => fieldRef.current.focus() },
-    ]);
+  const handleRefresh = async () => {
+    refreshMeeting();
+    refreshUsers();
+  };
+
+  React.useEffect(() => {
+    handleRefresh();
+  }, []);
+
+  const showError = (message) => {
+    Alert.alert("Wystąpił błąd", message);
   };
 
   const validate = () => {
-    if (!nickname) {
-      showError("Proszę wpisać pseudonim", nicknameRef);
+    if (!userUuid) {
+      showError("Proszę wybrać tożsamość");
       return false;
     }
+
     return true;
   };
 
@@ -56,21 +65,20 @@ export default function JoinMeetingScreen({ navigation, route }) {
 
     const meetingExists = await checkIfMeetingExists(meetingUuid);
     if (!meetingExists) {
-      Alert.alert(
-        "Wystąpił błąd",
-        `Nie znaleziono spotkania o podanym identyfikatorze.`
-      );
+      showError("Nie znaleziono spotkania o podanym identyfikatorze.");
       return;
     }
+
+    const nickname = createRandomNickname(); // TODO: user?.nickname
 
     try {
       await joinMeeting({ meetingUuid, userUuid, nickname });
     } catch (e) {
       const error = e.response.data["error"];
       if (error == "Already a member") {
-        Alert.alert("", "Jesteś już członkiem tego spotkania");
+        showError("Jesteś już członkiem tego spotkania");
       } else {
-        Alert.alert("Wystąpił błąd", error);
+        showError(error);
         return;
       }
     }
@@ -83,38 +91,71 @@ export default function JoinMeetingScreen({ navigation, route }) {
     });
   };
 
-  const meetingUuidValid = validateUuid(meetingUuid);
-  const disabled = !meetingUuidValid;
+  if (!validateUuid(meetingUuid)) {
+    return (
+      <Placeholder icon="calendar-question" text="Nie znaleziono spotkania" />
+    );
+  }
 
   return (
-    <View style={{ padding: 16 }}>
-      <TextInput
-        ref={meetingUuidRef}
-        label="Identyfikator spotkania"
-        value={meetingUuid}
-        left={<TextInput.Icon name="key" />}
-        disabled={true}
-        onChangeText={(meetingUuid) => setMeetingUuid(meetingUuid)}
-        style={{ marginBottom: 16 }}
-      />
-      <TextInput
-        label="Identyfikator tożsamości"
-        value={censorUuid(userUuid)}
-        left={<TextInput.Icon name="account-key" />}
-        disabled={true}
-        style={{ marginBottom: 16 }}
-      />
-      <TextInput
-        ref={nicknameRef}
-        label="Pseudonim"
-        value={nickname}
-        left={<TextInput.Icon name="account-outline" />}
-        onChangeText={(nickname) => setNickname(nickname)}
-        style={{ backgroundColor: "white", marginBottom: 16 }}
-      />
-      <Button mode="contained" disabled={disabled} onPress={handleSubmit}>
-        Dołącz
-      </Button>
-    </View>
+    <ScrollView
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+      }
+    >
+      {meeting && (
+        <View style={{ margin: 16 }}>
+          <Card style={{ marginBottom: 8 }}>
+            <Card.Title
+              title={meeting.name}
+              subtitle={meeting.uuid}
+              subtitleStyle={{ fontSize: 14, letterSpacing: 0 }}
+            />
+            <Card.Content style={{ flexDirection: "row" }}>
+              <Chip icon="account-multiple" style={{ marginRight: 8 }}>
+                {meeting.members.length}
+              </Chip>
+              <Chip icon="crown">{getMeetingOwnerNickname(meeting)}</Chip>
+            </Card.Content>
+          </Card>
+          <RadioButton.Group value={userUuid} onValueChange={setUserUuid}>
+            {users.map(({ uuid, nickname }) => (
+              <List.Item
+                key={uuid}
+                onPress={() => setUserUuid(uuid)}
+                title={nickname === null ? "Tożsamość bez nazwy" : nickname}
+                titleStyle={nickname === null ? { opacity: 0.2 } : null}
+                description={uuid}
+                left={(props) => (
+                  <View style={{ marginTop: 8 }}>
+                    <RadioButton {...props} value={uuid} color="deepskyblue" />
+                  </View>
+                )}
+              />
+            ))}
+          </RadioButton.Group>
+          {/* <TextInput
+            value={nickname}
+            ref={nicknameRef}
+            label="Pseudonim"
+            left={<TextInput.Icon name="account-badge-horizontal-outline" />}
+            right={
+              <TextInput.Icon name="close" onPress={() => setNickname("")} />
+            }
+            onChangeText={setNickname}
+            style={{ backgroundColor: "white", marginBottom: 16 }}
+          /> */}
+          <Button
+            mode="contained"
+            icon="account-plus"
+            color="deepskyblue"
+            onPress={handleSubmit}
+            style={{ marginTop: 12 }}
+          >
+            Dołącz do spotkania
+          </Button>
+        </View>
+      )}
+    </ScrollView>
   );
 }

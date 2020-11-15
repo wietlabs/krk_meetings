@@ -32,3 +32,11 @@ export const validateLink = (string) => {
 export const sleep = (ms) => {
   return new Promise((r) => setTimeout(r, ms));
 };
+
+export const createRandomNickname = () => {
+  return "Guest#" + Math.floor(Math.random() * 10000).toString();
+};
+
+export const getMeetingOwnerNickname = (meeting) => {
+  return meeting.members.filter((member) => member.is_owner)[0].nickname;
+};
