@@ -4,7 +4,7 @@ import RouteButton from "./RouteChip";
 import WalkButton from "./WalkChip";
 import { datetimeToHour, filterTransfers } from "../../../utils";
 
-export default function ConnectionResult({ connection, navigation }) {
+export default function ConnectionResultItem({ connection, onPress }) {
   const actions = connection.actions;
 
   const transfers = filterTransfers(actions);
@@ -18,18 +18,14 @@ export default function ConnectionResult({ connection, navigation }) {
   const start_stop_name = first_transfer.start_stop_name;
   const end_stop_name = last_transfer.end_stop_name;
 
-  const handlePress = () => {
-    navigation.navigate("ConnectionDetails", { connection: connection });
-  };
-
   return (
-    <Card onPress={handlePress} style={{ marginTop: 15, marginBottom: 10 }}>
+    <Card onPress={onPress} style={{ marginTop: 12, marginBottom: 16 }}>
       <Card.Content
         style={{
           flex: 1,
           flexDirection: "row",
-          marginBottom: 8,
           marginTop: -30,
+          marginBottom: 6,
         }}
       >
         {transfers.map((action, i) => {
