@@ -70,7 +70,7 @@ class ConnectionSolver(IConnectionSolver):
         if start_stop_id is None:
             return ConnectionResults(query.query_id, ErrorCodes.BAD_START_STOP_NAME.value, [])
         end_stop_id = solver_utils.get_stop_id_by_name(query.end_stop_name, self.stops_df_by_name)
-        if start_stop_id is None:
+        if end_stop_id is None:
             return ConnectionResults(query.query_id, ErrorCodes.BAD_END_STOP_NAME.value, [])
 
         paths = self.get_paths(start_stop_id, end_stop_id)
