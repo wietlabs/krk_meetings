@@ -133,7 +133,6 @@ export default function HomeScreen({ navigation }) {
     setLoading(true);
     const now = new Date();
     const startDateTime = makeDateTime(date || now, time || now);
-    console.log(startDateTime);
     const query = { startDateTime, startStopName, endStopName };
     try {
       const connections = await findConnections(query);

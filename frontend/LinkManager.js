@@ -16,7 +16,6 @@ const userLinkRe = new RegExp("/user\\?uuid=" + uuidv4Pattern + "$");
 const meetingLinkRe = new RegExp("/meeting\\?uuid=" + uuidv4Pattern + "$");
 
 export function validateUserLink(link) {
-  console.log(link);
   return userLinkRe.test(link);
 }
 
