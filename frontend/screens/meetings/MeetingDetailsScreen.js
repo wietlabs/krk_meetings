@@ -8,6 +8,7 @@ import {
 } from "react-native";
 import { ActivityIndicator, Chip, List } from "react-native-paper";
 import { getMeeting } from "../../api/MeetingsApi";
+import { createMeetingLink } from "../../LinkManager";
 
 export default function MeetingDetailsScreen({ navigation, route }) {
   const userUuid = route.params.userUuid;
@@ -43,7 +44,7 @@ export default function MeetingDetailsScreen({ navigation, route }) {
     if (meeting) navigation.setOptions({ title: meeting.name });
   }, [meeting]);
 
-  const meetingUrl = `krk-meetings://${meetingUuid}`;
+  const meetingUrl = createMeetingLink(meetingUuid);
 
   const handleCopyToClipboard = () => {
     Clipboard.setString(meetingUrl);

@@ -1,20 +1,22 @@
+import * as Linking from "expo-linking";
+
 export function createUserLink(uuid) {
-  return `krk-meetings://user/${uuid}`;
+  return Linking.makeUrl("user", { uuid });
 }
 
 export function createMeetingLink(uuid) {
-  return `krk-meetings://meeting/${uuid}`;
+  return Linking.makeUrl("meeting", { uuid });
 }
 
-const userLinkRe = new RegExp(
-  "^krk-meetings://user/[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
-);
+const uuidv4Pattern =
+  "[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}";
 
-const meetingLinkRe = new RegExp(
-  "^krk-meetings://meeting/[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}$"
-);
+const userLinkRe = new RegExp("/user\\?uuid=" + uuidv4Pattern + "$");
+
+const meetingLinkRe = new RegExp("/meeting\\?uuid=" + uuidv4Pattern + "$");
 
 export function validateUserLink(link) {
+  console.log(link);
   return userLinkRe.test(link);
 }
 
@@ -22,10 +24,7 @@ export function validateMeetingLink(link) {
   return meetingLinkRe.test(link);
 }
 
-export function parseUserLink(link) {
-  return link.slice("krk-meetings://user/".length);
-}
-
-export function parseMeetingLink(link) {
-  return link.slice("krk-meetings://meeting/".length);
+export function getUuidFromLink(link) {
+  const { path, queryParams } = Linking.parse(link);
+  return queryParams.uuid;
 }
