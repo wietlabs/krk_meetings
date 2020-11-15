@@ -19,6 +19,7 @@ class RmqSequenceSolver:
     def start(self):
         print("SequenceSolver: started.")
         self.query_consumer.start()
+        self.results_producer.start()
 
     def stop(self):
         self.query_consumer.stop()

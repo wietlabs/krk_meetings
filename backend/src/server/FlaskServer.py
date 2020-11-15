@@ -25,29 +25,23 @@ class FlaskServer:
         self.app = Flask(name)
         self.app.config['JSON_AS_ASCII'] = False
         self.query_id = Value('i', 0)
+        self.cache = CacheDict(cache_len=1000)
+
         self.connection_producer = RmqProducer(EXCHANGES.CONNECTION_QUERY.value)
         self.meeting_producer = RmqProducer(EXCHANGES.MEETING_QUERY.value)
         self.sequence_producer = RmqProducer(EXCHANGES.SEQUENCE_QUERY.value)
-        self.cache = CacheDict(cache_len=1000)
 
         self.connection_consumer = RmqConsumer(EXCHANGES.FLASK_SERVER_CONNECTION.value, self.consume_rabbit_results)
-        self.connection_consumer_thread = Thread(target=self.connection_consumer.start, args=[])
-        self.connection_consumer_thread.start()
-
         self.meeting_consumer = RmqConsumer(EXCHANGES.FLASK_SERVER_MEETING.value, self.consume_rabbit_results)
-        self.meeting_consumer_thread = Thread(target=self.meeting_consumer.start, args=[])
-        self.meeting_consumer_thread.start()
-
         self.sequence_consumer = RmqConsumer(EXCHANGES.FLASK_SERVER_SEQUENCE.value, self.consume_rabbit_results)
+
+        self.connection_consumer_thread = Thread(target=self.connection_consumer.start, args=[])
+        self.meeting_consumer_thread = Thread(target=self.meeting_consumer.start, args=[])
         self.sequence_consumer_thread = Thread(target=self.sequence_consumer.start, args=[])
-        self.sequence_consumer_thread.start()
 
         self.data_manager = FlaskDataManager()
         self.stops = None
         self.last_update_date = None
-
-        self.data_manager.start()
-        self.update_data()
 
     def update_data(self):
         data = self.data_manager.get_updated_data()
@@ -61,6 +55,17 @@ class FlaskServer:
         self.app.add_url_rule(endpoint, endpoint_name, handler, methods=methods)
 
     def start(self):
+        self.data_manager.start()
+        self.data_manager.update_data()
+        self.update_data()
+
+        self.connection_producer.start()
+        self.meeting_producer.start()
+        self.sequence_producer.start()
+        self.connection_consumer_thread.start()
+        self.meeting_consumer_thread.start()
+        self.sequence_consumer_thread.start()
+
         self.add_endpoint('/connection', 'connection', self.handle_post_connection, ['POST'])
         self.add_endpoint('/meeting', 'meeting', self.handle_post_meeting, ['POST'])
         self.add_endpoint('/sequence', 'sequence', self.handle_post_sequence, ['POST'])

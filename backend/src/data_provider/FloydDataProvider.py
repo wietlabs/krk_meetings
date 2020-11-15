@@ -23,10 +23,13 @@ class FloydDataProvider:
     def __init__(self):
         self.floyd_data_producer = RmqProducer(EXCHANGES.DATA_PROVIDER.value)
         self.downloader = Downloader()
+        self.alive = False
 
     def start(self):
+        self.floyd_data_producer.start()
+        self.alive = True
         print("FloydDataProvider: has started.")
-        while True:
+        while self.alive:
             new_update_date = self.downloader.get_last_update_time()
             last_update_date = self.load_update_date()
             if new_update_date > last_update_date:
@@ -39,7 +42,8 @@ class FloydDataProvider:
             time.sleep(3600)
 
     def stop(self):
-        pass
+        self.floyd_data_producer.stop()
+        self.alive = False
 
     @staticmethod
     def extract_floyd_data(merged_data: ParsedData):
@@ -51,6 +55,7 @@ class FloydDataProvider:
         routes_df = merged_data.routes_df
         calendar_df = merged_data.calendar_df
         calendar_dates_df = merged_data.calendar_dates_df
+        print("FloydDataProvider: merged data loaded")
 
         # Basic extraction
         route_ids_df = extractor.create_route_ids_df(stop_times_df)
@@ -64,6 +69,7 @@ class FloydDataProvider:
         services_list = extractor.get_services_list(calendar_df)
         routes_to_stops_dict = extractor.create_route_to_stops_dict(stop_times_df, route_ids_df)
         exception_days = extractor.create_exception_days_dict(calendar_dates_df)
+        print("FloydDataProvider: basic extraction done")
 
         # Floyd extraction
         stop_times_0_df['service'] = stop_times_0_df.index.get_level_values('service_id')
@@ -80,6 +86,7 @@ class FloydDataProvider:
         stop_times_24_df['departure_time'] = stop_times_24_df['departure_time'].apply(lambda t: t + 24 * 3600)
         stop_times_0_dict = extractor.transform_stop_times_df_to_dict(stops_df, stop_times_0_df, services_list)
         stop_times_24_dict = extractor.transform_stop_times_df_to_dict(stops_df, stop_times_24_df, services_list)
+        print("FloydDataProvider: floyd extraction done")
 
         # Pickle saving
         nx.write_gpickle(floyd_graph, FloydDataPaths.floyd_graph.value)
@@ -94,6 +101,7 @@ class FloydDataProvider:
         stops_df.to_pickle(FloydDataPaths.stops_df.value)
         routes_df.to_pickle(FloydDataPaths.routes_df.value)
         stops_df_by_name.to_pickle(FloydDataPaths.stops_df_by_name.value)
+        print("FloydDataProvider: pickles saved")
 
     @staticmethod
     def load_update_date():
@@ -120,3 +128,4 @@ class FloydDataProvider:
 if __name__ == "__main__":
     data_provider = FloydDataProvider()
     data_provider.reparse_floyd_data()
+    data_provider.stop()

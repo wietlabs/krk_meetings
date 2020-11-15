@@ -13,6 +13,12 @@ class RmqHelper:
         self.exchange_name, self.exchange_type, self.routing_key, self.to_json, self.from_json = exchange
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost', heartbeat=600))
         self.channel = self.connection.channel()
+        self.alive = True
+
+    def stop(self):
+        if self.connection.is_open:
+            self.connection.close()
+        self.alive = False
 
     def send_heartbeat(self, lost_stream_msg="Rabbitmq error: Stream connection lost"):
         try:
@@ -30,7 +36,8 @@ class RmqHelper:
 
         def scheduler_loop(h_s):
             self.send_heartbeat()
-            heartbeat_scheduler.enter(10, 1, scheduler_loop, (h_s,))
+            if self.alive:
+                heartbeat_scheduler.enter(10, 1, scheduler_loop, (h_s,))
 
         heartbeat_scheduler.enter(10, 1, scheduler_loop, (heartbeat_scheduler,))
         heartbeat_scheduler.run()

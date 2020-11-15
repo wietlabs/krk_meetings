@@ -22,9 +22,6 @@ class RmqConsumer(RmqHelper):
         self.channel.basic_consume(queue=self.queue, on_message_callback=self.callback, auto_ack=False)
         self.channel.start_consuming()
 
-    def stop(self):
-        self.connection.close()
-
     def callback(self, ch, method, properties, body):
         if self.is_heartbeat(json.loads(body)):
             return
