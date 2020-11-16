@@ -11,9 +11,5 @@ export default function SelectStartStopScreen({ navigation, route }) {
     navigation.pop();
   };
 
-  const handleClose = () => {
-    navigation.pop();
-  };
-
-  return <NearestStopsMap onSelect={handleSelect} onClose={handleClose} />;
+  return <NearestStopsMap onSelect={handleSelect} />;
 }
