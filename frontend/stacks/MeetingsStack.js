@@ -5,10 +5,10 @@ import AddAccountScreen from "../screens/accounts/AddAccountScreen";
 import ShowAccountQRCodeScreen from "../screens/accounts/ShowAccountQRCodeScreen";
 import ScanAccountQRCodeScreen from "../screens/accounts/ScanAccountQRCodeScreen";
 import MeetingsScreen from "../screens/meetings/MeetingsScreen";
-import MeetingDetailsScreen from "../screens/meetings/MeetingDetailsScreen";
+import MeetingDetailsScreen from "../screens/meetings/details/MeetingDetailsScreen";
 import SelectStartStopScreen from "../screens/meetings/SelectStartStopScreen";
-import CreateMeetingScreen from "../screens/meetings/CreateMeetingScreen";
-import JoinMeetingScreen from "../screens/meetings/JoinMeetingScreen";
+import CreateMeetingScreen from "../screens/meetings/create/CreateMeetingScreen";
+import JoinMeetingScreen from "../screens/meetings/join/JoinMeetingScreen";
 
 const Stack = createStackNavigator();
 
