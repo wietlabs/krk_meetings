@@ -61,7 +61,7 @@ class ConnectionSolver(IConnectionSolver):
         self.last_data_update = self.data_manager.last_data_update
 
     def find_connections(self, query: ConnectionQuery) -> ConnectionResults:
-        print("Finding connections")
+        print("ConnectionSolver: finding connections")
         if self.last_data_update < self.data_manager.last_data_update:
             self.update_data()
         current_datetime = query.start_datetime
@@ -214,16 +214,16 @@ class ConnectionSolver(IConnectionSolver):
         return df
 
     def get_paths(self, start_node, end_node):
-        print("Getting paths")
+        print("ConnectionSolver: getting paths")
         if start_node == end_node:
             return []
         if end_node not in self.paths[start_node]:
             self.paths[start_node][end_node] = self.calculate_paths(start_node, end_node)
-        print(f"Got paths: {self.paths[start_node][end_node]}")
+        print(f"ConnectionSolver: got paths: {self.paths[start_node][end_node]}")
         return self.paths[start_node][end_node]
 
     def calculate_paths(self, start_node_id: int, end_node_id: int):
-        print("Calculating paths")
+        print("ConnectionSolver: calculating paths")
         calculation_start_time = time.time()
 
         def resolve_neighbor(node_id, neighbor_id, weight, path, routes, graph):
