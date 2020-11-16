@@ -86,8 +86,8 @@ export default function MeetingDetailsScreen({ navigation, route }) {
     );
   }
 
-  const startStopName = meeting.membership.stop_name;
-  const endStopName = meeting.stop_name;
+  const startStopName = meeting?.membership.stop_name;
+  const endStopName = meeting?.stop_name;
 
   return (
     <>
