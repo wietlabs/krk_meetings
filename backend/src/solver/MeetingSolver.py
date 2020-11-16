@@ -4,7 +4,7 @@ from src.data_classes.MeetingResults import MeetingResults
 from src.solver import solver_utils
 from src.solver.IMeetingSolver import IMeetingSolver
 from src.data_managers.MeetingDataManager import MeetingDataManager
-from src.solver.solver_utils import stop_data
+from src.solver.solver_utils import meeting_stop_data
 
 
 class MeetingSolver(IMeetingSolver):
@@ -46,5 +46,5 @@ class MeetingSolver(IMeetingSolver):
             distances_to_destination = [self.distances[stop_id][end_stop_id] for stop_id in start_stop_ids]
             meeting_metrics.append((end_stop_id, metric(distances_to_destination)))
         meeting_metrics.sort(key=lambda x: x[1])
-        meeting_points = [stop_data(m[0], self.stops_df) for m in meeting_metrics]
+        meeting_points = [meeting_stop_data(metric, self.stops_df) for metric in meeting_metrics[0:10]]
         return MeetingResults(query.query_id, ErrorCodes.OK.value, meeting_points)
