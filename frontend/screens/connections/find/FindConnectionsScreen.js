@@ -288,6 +288,7 @@ export default function HomeScreen({ navigation }) {
       {show && (
         <DateTimePicker
           mode={mode}
+          is24Hour={true}
           minimumDate={now}
           value={(mode === "date" ? date : time) || now}
           onChange={handlePick}
