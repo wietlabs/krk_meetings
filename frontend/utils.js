@@ -6,6 +6,10 @@ export function datetimeToHour(datetime) {
   return parseDateTime(datetime).toLocaleTimeString().slice(0, 5);
 }
 
+export function formatDateTime(datetime) {
+  return datetime.toISOString().substring(0, 19).replace("T", " ");
+}
+
 export const makeDateTime = (date, time) => {
   return new Date(
     date.getYear() + 1900,

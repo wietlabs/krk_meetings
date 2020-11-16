@@ -1,4 +1,4 @@
-import { sleep } from "../utils";
+import { formatDateTime, sleep } from "../utils";
 
 const axios = require("axios");
 
@@ -19,10 +19,7 @@ export const findConnections = async (
 ) => {
   const url = `${baseUrl}/connection`;
   const params = {
-    start_datetime: startDateTime
-      .toISOString()
-      .substring(0, 19)
-      .replace("T", " "),
+    start_datetime: formatDateTime(startDateTime),
     start_stop_name: startStopName,
     end_stop_name: endStopName,
   };
