@@ -7,10 +7,7 @@ import {
   ToastAndroid,
 } from "react-native";
 import { ActivityIndicator, Chip, List } from "react-native-paper";
-import {
-  getMeetingDetails,
-  updateMeetingMemberStopName,
-} from "../../api/MeetingsApi";
+import { getMeetingDetails } from "../../api/MeetingsApi";
 import { createMeetingLink } from "../../LinkManager";
 import { getNickname } from "../../UserManager";
 
