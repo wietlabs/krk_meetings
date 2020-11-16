@@ -76,18 +76,10 @@ export default function HomeScreen({ navigation }) {
         };
 
       case ACTIONS.PICK_DATE:
-        return {
-          ...state,
-          mode: "date",
-          show: true,
-        };
+        return { ...state, mode: "date", show: true };
 
       case ACTIONS.PICK_TIME:
-        return {
-          ...state,
-          mode: "time",
-          show: true,
-        };
+        return { ...state, mode: "time", show: true };
 
       case ACTIONS.CLEAR_DATE:
         return { ...state, date: null, time: null };
