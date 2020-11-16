@@ -4,7 +4,7 @@ from src.config import URL
 from src.examples.flask_examples.sample_queries import MeetingQuerySamples
 
 if __name__ == "__main__":
-    query_json = MeetingQuerySamples.bad_names.value
+    query_json = MeetingQuerySamples.square_3_stops.value
 
     execution_start = time.time()
     response = requests.post(URL.MEETING.value, json=query_json, timeout=1.0)

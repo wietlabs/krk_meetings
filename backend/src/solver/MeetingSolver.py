@@ -4,6 +4,7 @@ from src.data_classes.MeetingResults import MeetingResults
 from src.solver import solver_utils
 from src.solver.IMeetingSolver import IMeetingSolver
 from src.data_managers.MeetingDataManager import MeetingDataManager
+from src.solver.solver_utils import stop_data
 
 
 class MeetingSolver(IMeetingSolver):
@@ -39,10 +40,11 @@ class MeetingSolver(IMeetingSolver):
             metric = lambda l: max(l)
         else:
             return None
+
         meeting_metrics = []
         for end_stop_id in self.distances:
-            distances_to_destination = list(map(lambda stop_id: self.distances[stop_id][end_stop_id], start_stop_ids))
+            distances_to_destination = [self.distances[stop_id][end_stop_id] for stop_id in start_stop_ids]
             meeting_metrics.append((end_stop_id, metric(distances_to_destination)))
         meeting_metrics.sort(key=lambda x: x[1])
-        meeting_points = list(map(lambda x: self.stops_df.at[x[0], 'stop_name'], meeting_metrics[0:10]))
+        meeting_points = [stop_data(m[0], self.stops_df) for m in meeting_metrics]
         return MeetingResults(query.query_id, ErrorCodes.OK.value, meeting_points)
