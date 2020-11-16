@@ -1,14 +1,14 @@
 import * as React from "react";
 import { Alert, ScrollView, RefreshControl, View, Text } from "react-native";
 import { Card, Chip, List, RadioButton, Button } from "react-native-paper";
-import { validateUuid, createRandomNickname, censorUuid } from "../../utils";
+import { validateUuid, createRandomNickname, censorUuid } from "../../../utils";
 import {
   checkIfMeetingExists,
   getMeetingJoinInfo,
   joinMeeting,
-} from "../../api/MeetingsApi";
-import Placeholder from "../../components/Placeholder";
-import { loadUsers, getNickname } from "../../UserManager";
+} from "../../../api/MeetingsApi";
+import Placeholder from "../../../components/Placeholder";
+import { loadUsers, getNickname } from "../../../UserManager";
 
 export default function JoinMeetingScreen({ navigation, route }) {
   const meetingUuid = route.params.meetingUuid;
