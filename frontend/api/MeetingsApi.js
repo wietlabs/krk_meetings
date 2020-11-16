@@ -27,7 +27,7 @@ export const getMeetings = async ({ userUuid }) => {
   return meetings;
 };
 
-export const getMeeting = async (meetingUuid) => {
+export const getMeetingJoinInfo = async (meetingUuid) => {
   const url = `${baseUrl}/api/v1/meetings/${meetingUuid}`;
   const response = await axios.get(url);
   const meeting = response.data;
@@ -64,4 +64,21 @@ export const joinMeeting = async ({ meetingUuid, userUuid, nickname }) => {
     nickname: nickname,
   };
   await axios.post(url, params);
+};
+
+export const getMeetingDetails = async (meetingUuid, userUuid) => {
+  const url = `${baseUrl}/api/v1/users/${userUuid}/meetings/${meetingUuid}`;
+  const response = await axios.get(url);
+  const meeting = response.data;
+  return meeting;
+};
+
+export const updateMeetingMemberStopName = async (
+  meetingUuid,
+  userUuid,
+  stopName
+) => {
+  const url = `${baseUrl}/api/v1/users/${userUuid}/meetings/${meetingUuid}`;
+  const params = { stop_name: stopName };
+  await axios.patch(url, params);
 };

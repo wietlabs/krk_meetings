@@ -6,6 +6,10 @@ export function datetimeToHour(datetime) {
   return parseDateTime(datetime).toLocaleTimeString().slice(0, 5);
 }
 
+export function formatDateTime(datetime) {
+  return datetime.toISOString().substring(0, 19).replace("T", " ");
+}
+
 export const makeDateTime = (date, time) => {
   return new Date(
     date.getYear() + 1900,
@@ -42,8 +46,4 @@ export const createRandomNickname = () => {
     .toString()
     .substring(1);
   return "Guest#" + digits;
-};
-
-export const getMeetingOwnerNickname = (meeting) => {
-  return meeting.members.filter((member) => member.is_owner)[0].nickname;
 };

@@ -80,7 +80,7 @@ export default function MeetingsScreen({ navigation, route }) {
                 title={meeting.name}
                 subtitle={meeting.nickname}
                 right={(props) => (
-                  <Chip icon="account" style={{ marginRight: 12 }}>
+                  <Chip {...props} icon="account" style={{ marginRight: 12 }}>
                     {meeting.members_count}
                   </Chip>
                 )}

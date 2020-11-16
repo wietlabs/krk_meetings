@@ -1,8 +1,8 @@
 import * as React from "react";
 import { Alert, View } from "react-native";
 import { Button, TextInput } from "react-native-paper";
-import { getNickname } from "../../UserManager";
-import { createMeeting } from "../../api/MeetingsApi";
+import { getNickname } from "../../../UserManager";
+import { createMeeting } from "../../../api/MeetingsApi";
 
 export default function CreateMeetingScreen({ navigation, route }) {
   const userUuid = route.params.userUuid;
@@ -60,11 +60,8 @@ export default function CreateMeetingScreen({ navigation, route }) {
     });
 
     navigation.pop();
-    navigation.replace("Meetings", { userUuid: userUuid });
-    navigation.navigate("MeetingDetails", {
-      userUuid: userUuid,
-      meetingUuid: meetingUuid,
-    });
+    navigation.replace("Meetings", { userUuid });
+    navigation.navigate("MeetingDetails", { userUuid, meetingUuid });
   };
 
   return (

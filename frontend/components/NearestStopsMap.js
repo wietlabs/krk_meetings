@@ -3,7 +3,7 @@ import * as Location from "expo-location";
 import { Alert } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import { IconButton } from "react-native-paper";
-import { getStops } from "../../../api/ConnectionsApi";
+import { getStops } from "../api/ConnectionsApi";
 import { getDistance, orderByDistance } from "geolib";
 
 const initialRegion = {

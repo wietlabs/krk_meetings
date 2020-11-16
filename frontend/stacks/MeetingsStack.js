@@ -5,9 +5,11 @@ import AddAccountScreen from "../screens/accounts/AddAccountScreen";
 import ShowAccountQRCodeScreen from "../screens/accounts/ShowAccountQRCodeScreen";
 import ScanAccountQRCodeScreen from "../screens/accounts/ScanAccountQRCodeScreen";
 import MeetingsScreen from "../screens/meetings/MeetingsScreen";
-import MeetingDetailsScreen from "../screens/meetings/MeetingDetailsScreen";
-import CreateMeetingScreen from "../screens/meetings/CreateMeetingScreen";
-import JoinMeetingScreen from "../screens/meetings/JoinMeetingScreen";
+import MeetingDetailsScreen from "../screens/meetings/details/MeetingDetailsScreen";
+import SelectStartStopScreen from "../screens/meetings/SelectStartStopScreen";
+import SelectEndStopScreen from "../screens/meetings/SelectEndStopScreen";
+import CreateMeetingScreen from "../screens/meetings/create/CreateMeetingScreen";
+import JoinMeetingScreen from "../screens/meetings/join/JoinMeetingScreen";
 
 const Stack = createStackNavigator();
 
@@ -33,6 +35,16 @@ export default function MeetingsStack() {
         name="MeetingDetails"
         component={MeetingDetailsScreen}
         options={{ title: "Spotkanie" }}
+      />
+      <Stack.Screen
+        name="SelectStartStop"
+        component={SelectStartStopScreen}
+        options={{ title: "Wybierz punkt początkowy" }}
+      />
+      <Stack.Screen
+        name="SelectEndStop"
+        component={SelectEndStopScreen}
+        options={{ title: "Wybierz miejsce spotkania" }}
       />
       <Stack.Screen
         name="CreateMeeting"
