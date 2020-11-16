@@ -1,7 +1,7 @@
 import * as React from "react";
 import { View } from "react-native";
 import MapView, { Marker } from "react-native-maps";
-import { Divider, RadioButton, Text } from "react-native-paper";
+import { Divider, Button, RadioButton, Text } from "react-native-paper";
 import { getStops, findMeetingPoints } from "../../api/ConnectionsApi";
 import { getMeetingDetails } from "../../api/MeetingsApi";
 import { getMeetingMembersStopNames, getStopsByNames } from "../../utils";
@@ -22,16 +22,16 @@ const padding = {
 
 const availableMetrics = [
   {
-    name: "square",
-    label: "Sprawiedliwie",
+    name: "max",
+    label: "Szybko",
   },
   {
     name: "sum",
     label: "Wygodnie",
   },
   {
-    name: "max",
-    label: "Szybko",
+    name: "square",
+    label: "Uczciwie",
   },
 ];
 
@@ -92,27 +92,21 @@ export default function SelectEndStopScreen({ navigation, route }) {
 
   return (
     <View style={{ height: "100%" }}>
-      <RadioButton.Group onValueChange={setMetric} value={metric}>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-around",
-            padding: 8,
-          }}
-        >
-          {availableMetrics.map(({ name, label, icon }) => (
-            <View
-              style={{
-                flexDirection: "row",
-                alignItems: "center",
-              }}
+      <View style={{ flexDirection: "row" }}>
+        {availableMetrics.map(({ name, label }) => (
+          <View style={{ flex: 1 }}>
+            <Button
+              onPress={() => setMetric(name)}
+              mode="contained"
+              color={name === metric ? "lightgray" : "white"}
+              style={{ borderRadius: 0 }}
+              textStyle={{ borderRadius: 0 }}
             >
-              <RadioButton value={name} color="black" />
-              <Text>{label}</Text>
-            </View>
-          ))}
-        </View>
-      </RadioButton.Group>
+              {label}
+            </Button>
+          </View>
+        ))}
+      </View>
       <Divider />
       <View style={{ flex: 1 }}>
         <MapView
@@ -122,6 +116,7 @@ export default function SelectEndStopScreen({ navigation, route }) {
           maxZoomLevel={18}
           moveOnMarkerPress={false}
           style={{ height: "100%" }}
+          opacity={loading ? 0.6 : 1}
         >
           {locations.map((location, i) => (
             <Marker
