@@ -7,7 +7,7 @@ from src.config import URL
 from src.examples.flask_examples.sample_queries import ConnectionQuerySamples
 
 if __name__ == "__main__":
-    query_json = ConnectionQuerySamples.maki_kolorowe.value
+    query_json = ConnectionQuerySamples.value_error.value
 
     execution_start = time.time()
     response = requests.post(URL.CONNECTION.value, json=query_json, timeout=1.0)

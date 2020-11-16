@@ -12,6 +12,7 @@ class ConnectionQuerySamples(Enum):
     nightly_maki_biezanow = {"start_datetime": "2020-11-14 23:00:00", "start_stop_name": 'Czerwone Maki P+R', "end_stop_name": 'Nowy Bieżanów P+R'}
     bad_start_stop_name = {"start_datetime": "2020-05-24 12:00:00", "start_stop_name": 'AAAAAA', "end_stop_name": 'Struga'}
     bad_end_stop_name = {"start_datetime": "2020-05-24 12:00:00", "start_stop_name": 'Dunikowskiego' ,"end_stop_name": 'AAAAAA'}
+    value_error = {"start_datetime": "2020-05-24 12:00:00", "start_stop_name": 'AGH / UR' ,"end_stop_name": 'Cechowa (nż)'}
 
 
 class MeetingQuerySamples(Enum):

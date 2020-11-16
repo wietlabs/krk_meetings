@@ -180,12 +180,13 @@ class ConnectionSolver(IConnectionSolver):
                     walking_time = self.adjacent_stops[(current_stop, next_stop)]
                     walking_df = copy(results_df)
                     walking_df = walking_df[walking_df[f'route_id_{str(i-1)}'] != self.configuration.walking_route_id]
-                    walking_df[f'route_id_{str(i)}'] = self.configuration.walking_route_id
-                    walking_df[f'index_{str(i)}'] = [self.configuration.walking_index] * len(walking_df)
-                    walking_df[f'departure_time_c_{str(i)}'] = walking_df.apply(
-                        lambda row: row[f'departure_time_n_{str(i - 1)}'], axis=1)
-                    walking_df[f'departure_time_n_{str(i)}'] = walking_df.apply(
-                        lambda row: row[f'departure_time_n_{str(i - 1)}'] + walking_time, axis=1)
+                    if not walking_df.empty:
+                        walking_df[f'route_id_{str(i)}'] = self.configuration.walking_route_id
+                        walking_df[f'index_{str(i)}'] = [self.configuration.walking_index] * len(walking_df)
+                        walking_df[f'departure_time_c_{str(i)}'] = walking_df.apply(
+                            lambda row: row[f'departure_time_n_{str(i - 1)}'], axis=1)
+                        walking_df[f'departure_time_n_{str(i)}'] = walking_df.apply(
+                            lambda row: row[f'departure_time_n_{str(i - 1)}'] + walking_time, axis=1)
                 results_df = results_df.assign(c=1)
                 results_df = results_df.merge(transfers_df.assign(c=1))
                 results_df.drop(columns=['c', 'route_id_c'], axis=1, inplace=True)
