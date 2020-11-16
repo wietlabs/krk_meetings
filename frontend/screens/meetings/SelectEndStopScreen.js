@@ -1,5 +1,7 @@
 import * as React from "react";
+import { View } from "react-native";
 import MapView, { Marker } from "react-native-maps";
+import { Divider, RadioButton, Text } from "react-native-paper";
 import { getStops, findMeetingPoints } from "../../api/ConnectionsApi";
 import { getMeetingDetails } from "../../api/MeetingsApi";
 import { getMeetingMembersStopNames, getStopsByNames } from "../../utils";
@@ -18,6 +20,21 @@ const padding = {
   right: 100,
 };
 
+const availableMetrics = [
+  {
+    name: "square",
+    label: "Sprawiedliwie",
+  },
+  {
+    name: "sum",
+    label: "Wygodnie",
+  },
+  {
+    name: "max",
+    label: "Szybko",
+  },
+];
+
 export default function SelectEndStopScreen({ navigation, route }) {
   const userUuid = route.params.userUuid;
   const meetingUuid = route.params.meetingUuid;
@@ -26,8 +43,13 @@ export default function SelectEndStopScreen({ navigation, route }) {
 
   const [locations, setLocations] = React.useState([]);
   const [points, setPoints] = React.useState([]);
+  const [metric, setMetric] = React.useState("square");
+  const [loading, setLoading] = React.useState(true);
 
   const refresh = async () => {
+    setLoading(true);
+    // setPoints([]);
+
     // TODO: use Promise.all
 
     const stops = await getStops();
@@ -39,14 +61,16 @@ export default function SelectEndStopScreen({ navigation, route }) {
     const locations = await getStopsByNames(stopNames, stops);
     setLocations(locations);
 
-    const query = { startStopNames: stopNames, metric: "square" };
+    const query = { startStopNames: stopNames, metric };
     const points = await findMeetingPoints(query);
     setPoints(points);
+
+    setLoading(false);
   };
 
   React.useEffect(() => {
     refresh();
-  }, []);
+  }, [metric]);
 
   React.useEffect(() => {
     const coords = [...locations, ...points];
@@ -60,23 +84,63 @@ export default function SelectEndStopScreen({ navigation, route }) {
     });
   };
 
+  const handleSelect = (stop) => {
+    console.log(stop.name);
+
+    navigation.pop();
+  };
+
   return (
-    <MapView
-      ref={mapRef}
-      initialRegion={initialRegion}
-      maxZoomLevel={18}
-      moveOnMarkerPress={false}
-      style={{
-        width: "100%",
-        height: "100%",
-      }}
-    >
-      {locations.map((location, i) => (
-        <Marker key={"location-" + i} coordinate={location} pinColor="red" />
-      ))}
-      {points.map((point, i) => (
-        <Marker key={"point-" + i} coordinate={point} pinColor="green" />
-      ))}
-    </MapView>
+    <View style={{ height: "100%" }}>
+      <RadioButton.Group onValueChange={setMetric} value={metric}>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-around",
+            padding: 8,
+          }}
+        >
+          {availableMetrics.map(({ name, label, icon }) => (
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
+              <RadioButton value={name} color="black" />
+              <Text>{label}</Text>
+            </View>
+          ))}
+        </View>
+      </RadioButton.Group>
+      <Divider />
+      <View style={{ flex: 1 }}>
+        <MapView
+          ref={mapRef}
+          loadingEnabled={true}
+          initialRegion={initialRegion}
+          maxZoomLevel={18}
+          moveOnMarkerPress={false}
+          style={{ height: "100%" }}
+        >
+          {points.map((point, i) => (
+            <Marker
+              key={"point-" + i}
+              coordinate={point}
+              pinColor="green"
+              onPress={() => handleSelect(point)}
+            />
+          ))}
+          {locations.map((location, i) => (
+            <Marker
+              key={"location-" + i}
+              coordinate={location}
+              pinColor="red"
+              onPress={() => handleSelect(location)}
+            />
+          ))}
+        </MapView>
+      </View>
+    </View>
   );
 }
