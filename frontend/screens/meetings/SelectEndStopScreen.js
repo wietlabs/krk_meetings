@@ -123,20 +123,22 @@ export default function SelectEndStopScreen({ navigation, route }) {
           moveOnMarkerPress={false}
           style={{ height: "100%" }}
         >
-          {points.map((point, i) => (
-            <Marker
-              key={"point-" + i}
-              coordinate={point}
-              pinColor="green"
-              onPress={() => handleSelect(point)}
-            />
-          ))}
           {locations.map((location, i) => (
             <Marker
               key={"location-" + i}
               coordinate={location}
               pinColor="red"
               onPress={() => handleSelect(location)}
+              zIndex={2}
+            />
+          ))}
+          {points.map((point, i) => (
+            <Marker
+              key={"point-" + i}
+              coordinate={point}
+              pinColor="green"
+              onPress={() => handleSelect(point)}
+              zIndex={1}
             />
           ))}
         </MapView>
