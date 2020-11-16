@@ -30,15 +30,24 @@ def get_stop_list(route_id, start_stop_id, end_stop_id, stops_df, routes_to_stop
             stops.append(stop_id)
             if stop_id == end_stop_id:
                 break
-    stops = [stop_data(stop, stops_df) for stop in stops]
+    stops = [connection_stop_data(stop, stops_df) for stop in stops]
     return stops
 
 
-def stop_data(stop_id, stops_df):
+def connection_stop_data(stop_id, stops_df):
     return {
         'name': stops_df.at[stop_id, 'stop_name'],
         'latitude': stops_df.at[stop_id, 'stop_lat'],
         'longitude': stops_df.at[stop_id, 'stop_lon'],
+    }
+
+
+def meeting_stop_data(metric, stops_df):
+    return {
+        'name': stops_df.at[metric[0], 'stop_name'],
+        'latitude': stops_df.at[metric[0], 'stop_lat'],
+        'longitude': stops_df.at[metric[0], 'stop_lon'],
+        'metric': metric[1]
     }
 
 
