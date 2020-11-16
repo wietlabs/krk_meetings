@@ -20,12 +20,12 @@ class RmqHelper:
             self.connection.close()
         self.alive = False
 
-    def send_heartbeat(self, lost_stream_msg="Rabbitmq error: Stream connection lost"):
+    def send_heartbeat(self, lost_stream_msg="Rabbitmq error: Stream connection lost on"):
         try:
             self.channel.basic_publish(exchange=self.exchange_name, routing_key=self.routing_key,
                                        body=json.dumps(HEARTBEAT_MSG))
         except pika.exceptions.StreamLostError:
-            print(lost_stream_msg)
+            print(f"{lost_stream_msg} HEARTBEAT on {self.routing_key}")
 
     @staticmethod
     def is_heartbeat(message):
