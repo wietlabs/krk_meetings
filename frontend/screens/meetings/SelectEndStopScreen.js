@@ -116,7 +116,7 @@ export default function SelectEndStopScreen({ navigation, route }) {
           maxZoomLevel={18}
           moveOnMarkerPress={false}
           style={{ height: "100%" }}
-          opacity={loading ? 0.6 : 1}
+          // opacity={loading ? 0.6 : 1}
         >
           {locations.map((location, i) => (
             <Marker
