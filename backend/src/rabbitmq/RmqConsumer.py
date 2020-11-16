@@ -24,6 +24,9 @@ class RmqConsumer(RmqHelper):
 
     def callback(self, ch, method, properties, body):
         if self.is_heartbeat(json.loads(body)):
+            ch.basic_ack(delivery_tag=method.delivery_tag)
             return
         self.function(self.from_json(body))
         ch.basic_ack(delivery_tag=method.delivery_tag)
+
+

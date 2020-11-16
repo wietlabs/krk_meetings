@@ -31,9 +31,10 @@ DEFAULT_CONNECTION_SOLVER_CONFIGURATION = ConnectionSolverConfiguration(
     max_priority_multiplier=1.1,
     max_priority_cap=600,  # sec - cant be 0 due to ban of walking from stop to stop twice in a row
     path_calculation_boost=1.5,
-    max_number_of_paths=10,
+    max_number_of_paths=6,
     change_penalty=CHANGE_PENALTY,
-    max_path_calculation_time=5,  # sec
+    max_path_len=6,
+    max_path_calculation_time=3,  # sec
     walking_route_id=WALKING_ROUTE_ID,
     walking_index=(WALKING_ROUTE_ID, WALKING_ROUTE_ID, WALKING_ROUTE_ID)
 )
