@@ -38,7 +38,10 @@ export const sleep = (ms) => {
 };
 
 export const createRandomNickname = () => {
-  return "Guest#" + Math.floor(Math.random() * 10000).toString();
+  const digits = (Math.floor(Math.random() * 10000) + 10000)
+    .toString()
+    .substring(1);
+  return "Guest#" + digits;
 };
 
 export const getMeetingOwnerNickname = (meeting) => {
