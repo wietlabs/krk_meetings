@@ -6,8 +6,11 @@ import {
   Share,
   ToastAndroid,
 } from "react-native";
-import { ActivityIndicator, Chip, Divider, List } from "react-native-paper";
-import { getMeetingDetails } from "../../api/MeetingsApi";
+import { ActivityIndicator, Chip, List } from "react-native-paper";
+import {
+  getMeetingDetails,
+  updateMeetingMemberStopName,
+} from "../../api/MeetingsApi";
 import { createMeetingLink } from "../../LinkManager";
 import { getNickname } from "../../UserManager";
 
@@ -38,7 +41,9 @@ export default function MeetingDetailsScreen({ navigation, route }) {
   };
 
   React.useEffect(() => {
-    refresh();
+    navigation.addListener("focus", () => {
+      refresh();
+    });
   }, []);
 
   React.useLayoutEffect(() => {
@@ -56,6 +61,10 @@ export default function MeetingDetailsScreen({ navigation, route }) {
   }, [meeting]);
 
   const meetingUrl = createMeetingLink(meetingUuid);
+
+  const handleSelectStartStop = () => {
+    navigation.navigate("SelectStartStop", { meetingUuid, userUuid });
+  };
 
   const handleCopyToClipboard = () => {
     Clipboard.setString(meetingUrl);
@@ -77,59 +86,84 @@ export default function MeetingDetailsScreen({ navigation, route }) {
   }
 
   return (
-    <ScrollView
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={refresh} />
-      }
-    >
-      <List.Subheader>Członkowie ({meeting.members.length})</List.Subheader>
-      {meeting.members.map((member, i) => (
+    <>
+      <ScrollView
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={refresh} />
+        }
+      >
+        <List.Subheader>Członkowie ({meeting.members.length})</List.Subheader>
+        {meeting.members.map((member, i) => (
+          <List.Item
+            key={i}
+            title={member.nickname}
+            titleStyle={{ fontWeight: member.is_you ? "bold" : null }}
+            description={member.stop_name}
+            left={(props) => (
+              <List.Icon {...props} icon="account" style={{ margin: 0 }} />
+            )}
+            right={
+              member.is_owner
+                ? (props) => (
+                    <List.Icon
+                      {...props}
+                      icon="crown"
+                      color="goldenrod"
+                      style={{ margin: 0 }}
+                    />
+                  )
+                : null
+            }
+            onPress={() => {}}
+            style={{ backgroundColor: "white" }}
+          />
+        ))}
+        <List.Subheader>Twój przystanek początkowy</List.Subheader>
+        {meeting.membership.stop_name ? (
+          <List.Item
+            title={meeting.membership.stop_name}
+            left={(props) => (
+              <List.Icon {...props} icon="map-marker" style={{ margin: 0 }} />
+            )}
+            onPress={handleSelectStartStop}
+            style={{ backgroundColor: "white" }}
+          />
+        ) : (
+          <List.Item
+            title="Wybierz przystanek początkowy"
+            left={(props) => (
+              <List.Icon {...props} icon="map-marker" style={{ margin: 0 }} />
+            )}
+            onPress={handleSelectStartStop}
+            style={{ backgroundColor: "white" }}
+            titleStyle={{ color: "red" }}
+          />
+        )}
+        <List.Subheader>Zaproś znajomych</List.Subheader>
         <List.Item
-          key={i}
-          title={member.nickname}
-          titleStyle={{ fontWeight: member.is_you ? "bold" : null }}
-          description={member.stop_name}
+          title={meetingUrl}
+          titleStyle={{
+            color: "dodgerblue",
+            textDecorationLine: "underline",
+          }}
           left={(props) => (
-            <List.Icon {...props} icon="account" style={{ margin: 0 }} />
+            <List.Icon {...props} icon="link" style={{ margin: 0 }} />
           )}
-          right={
-            member.is_owner
-              ? (props) => (
-                  <List.Icon
-                    {...props}
-                    icon="crown"
-                    color="goldenrod"
-                    style={{ margin: 0 }}
-                  />
-                )
-              : null
+          onPress={handleCopyToClipboard}
+          onLongPress={() =>
+            navigation.navigate("JoinMeeting", { meetingUuid })
           }
-          onPress={() => {}}
           style={{ backgroundColor: "white" }}
         />
-      ))}
-      <List.Subheader>Zaproś znajomych</List.Subheader>
-      <List.Item
-        title={meetingUrl}
-        titleStyle={{
-          color: "dodgerblue",
-          textDecorationLine: "underline",
-        }}
-        left={(props) => (
-          <List.Icon {...props} icon="link" style={{ margin: 0 }} />
-        )}
-        onPress={handleCopyToClipboard}
-        onLongPress={() => navigation.navigate("JoinMeeting", { meetingUuid })}
-        style={{ backgroundColor: "white" }}
-      />
-      <List.Item
-        title="Udostępnij..."
-        left={(props) => (
-          <List.Icon {...props} icon="share-variant" style={{ margin: 0 }} />
-        )}
-        onPress={handleShare}
-        style={{ backgroundColor: "white" }}
-      />
-    </ScrollView>
+        <List.Item
+          title="Udostępnij..."
+          left={(props) => (
+            <List.Icon {...props} icon="share-variant" style={{ margin: 0 }} />
+          )}
+          onPress={handleShare}
+          style={{ backgroundColor: "white" }}
+        />
+      </ScrollView>
+    </>
   );
 }

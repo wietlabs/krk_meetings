@@ -4,7 +4,7 @@ import { Button, IconButton, TextInput, FAB } from "react-native-paper";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { findConnections } from "../../../api/ConnectionsApi";
 import { makeDateTime } from "../../../utils";
-import NearestStopsMap from "./NearestStopsMap";
+import NearestStopsMap from "../../../components/NearestStopsMap";
 
 const initialState = {
   startStopName: "Czerwone Maki P+R",

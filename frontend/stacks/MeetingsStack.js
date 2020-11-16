@@ -6,6 +6,7 @@ import ShowAccountQRCodeScreen from "../screens/accounts/ShowAccountQRCodeScreen
 import ScanAccountQRCodeScreen from "../screens/accounts/ScanAccountQRCodeScreen";
 import MeetingsScreen from "../screens/meetings/MeetingsScreen";
 import MeetingDetailsScreen from "../screens/meetings/MeetingDetailsScreen";
+import SelectStartStopScreen from "../screens/meetings/SelectStartStopScreen";
 import CreateMeetingScreen from "../screens/meetings/CreateMeetingScreen";
 import JoinMeetingScreen from "../screens/meetings/JoinMeetingScreen";
 
@@ -33,6 +34,11 @@ export default function MeetingsStack() {
         name="MeetingDetails"
         component={MeetingDetailsScreen}
         options={{ title: "Spotkanie" }}
+      />
+      <Stack.Screen
+        name="SelectStartStop"
+        component={SelectStartStopScreen}
+        options={{ title: "Ustaw przystanek początkowy" }}
       />
       <Stack.Screen
         name="CreateMeeting"

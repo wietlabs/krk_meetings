@@ -60,11 +60,8 @@ export default function CreateMeetingScreen({ navigation, route }) {
     });
 
     navigation.pop();
-    navigation.replace("Meetings", { userUuid: userUuid });
-    navigation.navigate("MeetingDetails", {
-      userUuid: userUuid,
-      meetingUuid: meetingUuid,
-    });
+    navigation.replace("Meetings", { userUuid });
+    navigation.navigate("MeetingDetails", { userUuid, meetingUuid });
   };
 
   return (

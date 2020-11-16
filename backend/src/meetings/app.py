@@ -108,6 +108,7 @@ def get_meeting_details(user_uuid: str, meeting_uuid: str):
         uuid.UUID(user_uuid, version=4)
     except ValueError:
         return {'error': 'Invalid user_uuid'}, 400
+
     try:
         uuid.UUID(meeting_uuid, version=4)
     except ValueError:
@@ -127,6 +128,8 @@ def get_meeting_details(user_uuid: str, meeting_uuid: str):
     if user not in members:
         return {'error': 'Not a member'}, 403
 
+    membership = next(membership for membership in memberships if membership.user == user)
+
     return {
         'uuid': meeting.uuid,
         'name': meeting.name,
@@ -138,8 +141,40 @@ def get_meeting_details(user_uuid: str, meeting_uuid: str):
                 'stop_name': membership.stop_name,
             }
             for membership in memberships
-        ]
+        ],
+        'membership': {
+            'stop_name': membership.stop_name,
+        }
     }, 200
+
+
+@app.route('/api/v1/users/<user_uuid>/meetings/<meeting_uuid>', methods=['PATCH'])
+def update_meeting_member_details(user_uuid: str, meeting_uuid: str):
+    try:
+        uuid.UUID(user_uuid, version=4)
+    except ValueError:
+        return {'error': 'Invalid user_uuid'}, 400
+
+    try:
+        uuid.UUID(meeting_uuid, version=4)
+    except ValueError:
+        return {'error': 'Invalid meeting_uuid'}, 400
+
+    if 'stop_name' in request.json:
+        stop_name = request.json['stop_name']
+        if len(stop_name) > STOP_NAME_MAX_LENGTH:
+            return {'error': 'Stop name too long'}, 400
+    else:
+        stop_name = None
+
+    membership = Membership.query.get((meeting_uuid, user_uuid))
+
+    if stop_name is not None:
+        membership.stop_name = stop_name
+
+    db.session.commit()
+
+    return {}, 200
 
 
 @app.route('/api/v1/meetings', methods=['POST'])

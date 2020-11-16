@@ -136,5 +136,8 @@ def test_create_meeting(client: FlaskClient) -> None:
                 'is_you': True,
                 'stop_name': None,
             }
-        ]
+        ],
+        'membership': {
+            'stop_name': None,
+        },
     }
