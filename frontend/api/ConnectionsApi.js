@@ -29,8 +29,29 @@ export const findConnections = async (
   await sleep(first_interval);
 
   for (let i = 0; i < retries; ++i) {
-    const connections = await getResults(queryId);
-    if (connections !== null) return connections;
+    const result = await getResults(queryId);
+    if (result !== null) return result.connections;
+    await sleep(next_interval);
+  }
+  throw new Error("Reached max retries");
+};
+
+export const findMeetingPoints = async (
+  { startStopNames, metric },
+  first_interval = 500,
+  next_interval = 500,
+  retries = 20
+) => {
+  const url = `${baseUrl}/meeting`;
+  const params = { start_stop_names: startStopNames, metric };
+  const response = await axios.post(url, params);
+  const queryId = response.data.query_id;
+
+  await sleep(first_interval);
+
+  for (let i = 0; i < retries; ++i) {
+    const result = await getResults(queryId);
+    if (result !== null) return result.meeting_points;
     await sleep(next_interval);
   }
   throw new Error("Reached max retries");
@@ -41,6 +62,6 @@ const getResults = async (queryId) => {
   const response = await axios.get(url);
   const ready = response.data.is_done;
   if (!ready) return null;
-  const connections = response.data.connections;
-  return connections;
+  const result = response.data;
+  return result;
 };
