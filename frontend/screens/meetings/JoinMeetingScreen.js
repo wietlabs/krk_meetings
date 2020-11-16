@@ -25,12 +25,10 @@ export default function JoinMeetingScreen({ navigation, route }) {
   const [submitting, setSubmitting] = React.useState(false);
 
   const refreshMeeting = async () => {
-    if (meetingUuid) {
-      setRefreshing(true);
-      const meeting = await getMeeting(meetingUuid);
-      setMeeting(meeting);
-      setRefreshing(false);
-    }
+    setRefreshing(true);
+    const meeting = await getMeeting(meetingUuid);
+    setMeeting(meeting);
+    setRefreshing(false);
   };
 
   const refreshUsers = async () => {
