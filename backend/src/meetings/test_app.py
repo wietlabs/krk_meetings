@@ -119,10 +119,22 @@ def test_create_meeting(client: FlaskClient) -> None:
     assert response.json == {
         'uuid': expected_uuid,
         'name': 'My meeting',
+        'members_count': 1,
+        'owner_nickname': 'Alice',
+    }
+
+    response = client.get(f'/api/v1/users/{owner_uuid}/meetings/{expected_uuid}')
+
+    assert response.status_code == 200
+    assert response.json == {
+        'uuid': expected_uuid,
+        'name': 'My meeting',
         'members': [
             {
                 'nickname': 'Alice',
                 'is_owner': True,
-            },
-        ],
+                'is_you': True,
+                'stop_name': None,
+            }
+        ]
     }

@@ -43,7 +43,3 @@ export const createRandomNickname = () => {
     .substring(1);
   return "Guest#" + digits;
 };
-
-export const getMeetingOwnerNickname = (meeting) => {
-  return meeting.members.filter((member) => member.is_owner)[0].nickname;
-};

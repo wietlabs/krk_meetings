@@ -1,15 +1,10 @@
 import * as React from "react";
 import { Alert, ScrollView, RefreshControl, View, Text } from "react-native";
 import { Card, Chip, List, RadioButton, Button } from "react-native-paper";
-import {
-  validateUuid,
-  getMeetingOwnerNickname,
-  createRandomNickname,
-  censorUuid,
-} from "../../utils";
+import { validateUuid, createRandomNickname, censorUuid } from "../../utils";
 import {
   checkIfMeetingExists,
-  getMeeting,
+  getMeetingJoinInfo,
   joinMeeting,
 } from "../../api/MeetingsApi";
 import Placeholder from "../../components/Placeholder";
@@ -26,7 +21,7 @@ export default function JoinMeetingScreen({ navigation, route }) {
 
   const refreshMeeting = async () => {
     setRefreshing(true);
-    const meeting = await getMeeting(meetingUuid);
+    const meeting = await getMeetingJoinInfo(meetingUuid);
     setMeeting(meeting);
     setRefreshing(false);
   };
@@ -120,9 +115,9 @@ export default function JoinMeetingScreen({ navigation, route }) {
             />
             <Card.Content style={{ flexDirection: "row" }}>
               <Chip icon="account-multiple" style={{ marginRight: 8 }}>
-                {meeting.members.length}
+                {meeting.members_count}
               </Chip>
-              <Chip icon="crown">{getMeetingOwnerNickname(meeting)}</Chip>
+              <Chip icon="crown">{meeting.owner_nickname}</Chip>
             </Card.Content>
           </Card>
           <RadioButton.Group value={userUuid} onValueChange={setUserUuid}>

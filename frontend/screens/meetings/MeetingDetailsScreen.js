@@ -6,8 +6,8 @@ import {
   Share,
   ToastAndroid,
 } from "react-native";
-import { ActivityIndicator, Chip, List } from "react-native-paper";
-import { getMeeting } from "../../api/MeetingsApi";
+import { ActivityIndicator, Chip, Divider, List } from "react-native-paper";
+import { getMeetingDetails } from "../../api/MeetingsApi";
 import { createMeetingLink } from "../../LinkManager";
 import { getNickname } from "../../UserManager";
 
@@ -33,7 +33,7 @@ export default function MeetingDetailsScreen({ navigation, route }) {
   };
 
   const loadMeeting = async () => {
-    const meeting = await getMeeting(meetingUuid);
+    const meeting = await getMeetingDetails(meetingUuid, userUuid);
     setMeeting(meeting);
   };
 
@@ -87,7 +87,8 @@ export default function MeetingDetailsScreen({ navigation, route }) {
         <List.Item
           key={i}
           title={member.nickname}
-          // description={"Czerwone Maki P+R"}
+          titleStyle={{ fontWeight: member.is_you ? "bold" : null }}
+          description={member.stop_name}
           left={(props) => (
             <List.Icon {...props} icon="account" style={{ margin: 0 }} />
           )}
