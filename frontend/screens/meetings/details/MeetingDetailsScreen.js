@@ -63,6 +63,10 @@ export default function MeetingDetailsScreen({ navigation, route }) {
     navigation.navigate("SelectStartStop", { meetingUuid, userUuid });
   };
 
+  const handleSelectEndStop = () => {
+    navigation.navigate("SelectEndStop", { meetingUuid, userUuid });
+  };
+
   const handleCopyToClipboard = () => {
     Clipboard.setString(meetingUrl);
     ToastAndroid.show("Skopiowano do schowka", ToastAndroid.SHORT);
@@ -82,6 +86,9 @@ export default function MeetingDetailsScreen({ navigation, route }) {
     );
   }
 
+  const startStopName = meeting.membership.stop_name;
+  const endStopName = meeting.stop_name;
+
   return (
     <>
       <ScrollView
@@ -89,12 +96,39 @@ export default function MeetingDetailsScreen({ navigation, route }) {
           <RefreshControl refreshing={refreshing} onRefresh={refresh} />
         }
       >
+        <List.Subheader>Twoja lokalizacja</List.Subheader>
+        <List.Item
+          title={startStopName || "Wybierz punkt początkowy..."}
+          left={(props) => (
+            <List.Icon {...props} icon="map-marker" style={{ margin: 0 }} />
+          )}
+          onPress={handleSelectStartStop}
+          style={{ backgroundColor: "white" }}
+          titleStyle={
+            startStopName
+              ? { fontWeight: "bold" }
+              : { color: "rgba(0, 0, 0, 0.5)" }
+          }
+        />
+        <List.Subheader>Miejsce spotkania</List.Subheader>
+        <List.Item
+          title={endStopName || "Wybierz miejsce spotkania..."}
+          left={(props) => (
+            <List.Icon {...props} icon="flag-checkered" style={{ margin: 0 }} />
+          )}
+          onPress={handleSelectEndStop}
+          style={{ backgroundColor: "white" }}
+          titleStyle={
+            endStopName
+              ? { fontWeight: "bold" }
+              : { color: "rgba(0, 0, 0, 0.5)" }
+          }
+        />
         <List.Subheader>Członkowie ({meeting.members.length})</List.Subheader>
         {meeting.members.map((member, i) => (
           <List.Item
             key={i}
             title={member.nickname}
-            titleStyle={{ fontWeight: member.is_you ? "bold" : null }}
             description={member.stop_name}
             left={(props) => (
               <List.Icon {...props} icon="account" style={{ margin: 0 }} />
@@ -115,27 +149,6 @@ export default function MeetingDetailsScreen({ navigation, route }) {
             style={{ backgroundColor: "white" }}
           />
         ))}
-        <List.Subheader>Twój przystanek początkowy</List.Subheader>
-        {meeting.membership.stop_name ? (
-          <List.Item
-            title={meeting.membership.stop_name}
-            left={(props) => (
-              <List.Icon {...props} icon="map-marker" style={{ margin: 0 }} />
-            )}
-            onPress={handleSelectStartStop}
-            style={{ backgroundColor: "white" }}
-          />
-        ) : (
-          <List.Item
-            title="Wybierz przystanek początkowy"
-            left={(props) => (
-              <List.Icon {...props} icon="map-marker" style={{ margin: 0 }} />
-            )}
-            onPress={handleSelectStartStop}
-            style={{ backgroundColor: "white" }}
-            titleStyle={{ color: "red" }}
-          />
-        )}
         <List.Subheader>Zaproś znajomych</List.Subheader>
         <List.Item
           title={meetingUrl}
