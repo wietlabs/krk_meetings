@@ -8,6 +8,7 @@ class ConnectionQuerySamples(Enum):
     dunikowskoego_struga = {"start_datetime": "2020-05-24 12:00:00", "start_stop_name": 'Dunikowskiego', "end_stop_name": 'Struga'}
     maki_pleszow = {"start_datetime": "2020-05-24 12:00:00", "start_stop_name": 'Czerwone Maki P+R', "end_stop_name": 'Pleszów'}
     maki_kolorowe = {"start_datetime": "2020-05-24 12:00:00", "start_stop_name": 'Czerwone Maki P+R',"end_stop_name": 'Os. Kolorowe'}
+    brzeska_liberalow = {"start_datetime": "2020-05-24 12:00:00", "start_stop_name": 'Brzeska (nż)',"end_stop_name": 'Libertów Działy (nż)'}
     walking_only = {"start_datetime": "2020-05-24 12:00:00", "start_stop_name": 'Urząd Marszałkowski', "end_stop_name": 'Mazowiecka'}
     nightly_maki_biezanow = {"start_datetime": "2020-11-14 23:00:00", "start_stop_name": 'Czerwone Maki P+R', "end_stop_name": 'Nowy Bieżanów P+R'}
     bad_start_stop_name = {"start_datetime": "2020-05-24 12:00:00", "start_stop_name": 'AAAAAA', "end_stop_name": 'Struga'}

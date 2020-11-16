@@ -7,14 +7,14 @@ from src.config import URL
 from src.examples.flask_examples.sample_queries import ConnectionQuerySamples
 
 if __name__ == "__main__":
-    query_json = ConnectionQuerySamples.value_error.value
+    query_json = ConnectionQuerySamples.brzeska_liberalow.value
 
     execution_start = time.time()
     response = requests.post(URL.CONNECTION.value, json=query_json, timeout=1.0)
     query_id = response.json()["query_id"]
     result = None
 
-    for _ in range(30):
+    for _ in range(100):
         response = requests.get(URL.RESULTS.value.format(query_id), timeout=1.0)
         result = response.json()
         if response.status_code != 202:

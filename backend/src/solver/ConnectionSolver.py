@@ -77,16 +77,20 @@ class ConnectionSolver(IConnectionSolver):
         connections = []
         connection_dfs = {}
         first_partition = True
-        for earliest_start_time in range(current_time, current_time + self.configuration.max_searching_time, self.configuration.partition_time):
-            partition_connections = self.find_partition_connections(paths, earliest_start_time, current_datetime, connection_dfs)
+        for earliest_start_time in range(current_time, current_time + self.configuration.max_searching_time,
+                                         self.configuration.partition_time):
+            partition_connections = self.find_partition_connections(paths, earliest_start_time, current_datetime,
+                                                                    connection_dfs)
             if not first_partition:
                 partition_connections = [c for c in partition_connections if not c.walk_only]
-            partition_connections.sort(key=lambda c: c.actions[0].start_datetime if c.walk_only else c.first_transfer.start_datetime)
+            partition_connections.sort(
+                key=lambda c: c.actions[0].start_datetime if c.walk_only else c.first_transfer.start_datetime)
             connections.extend(partition_connections)
             if len(connections) >= self.configuration.number_of_connections_returned:
                 break
             first_partition = False
-        return ConnectionResults(query.query_id, ErrorCodes.OK.value, connections[0: self.configuration.number_of_connections_returned])
+        return ConnectionResults(query.query_id, ErrorCodes.OK.value,
+                                 connections[0: self.configuration.number_of_connections_returned])
 
     def find_partition_connections(self, paths, earliest_start_time, current_datetime, connection_dfs):
         connections = []
@@ -179,7 +183,8 @@ class ConnectionSolver(IConnectionSolver):
                 if (current_stop, next_stop) in self.adjacent_stops:
                     walking_time = self.adjacent_stops[(current_stop, next_stop)]
                     walking_df = copy(results_df)
-                    walking_df = walking_df[walking_df[f'route_id_{str(i-1)}'] != self.configuration.walking_route_id]
+                    walking_df = walking_df[
+                        walking_df[f'route_id_{str(i - 1)}'] != self.configuration.walking_route_id]
                     if not walking_df.empty:
                         walking_df[f'route_id_{str(i)}'] = self.configuration.walking_route_id
                         walking_df[f'index_{str(i)}'] = [self.configuration.walking_index] * len(walking_df)
@@ -229,8 +234,10 @@ class ConnectionSolver(IConnectionSolver):
 
         def resolve_neighbor(node_id, neighbor_id, weight, path, routes, graph):
             n_weight = weight + graph.edges[node_id, neighbor_id]['weight'] + self.configuration.change_penalty
-            n_queue_priority = n_weight + self.distances[neighbor_id][end_node_id] * self.configuration.path_calculation_boost
-            n_priority = n_weight + self.distances[neighbor_id][end_node_id] * self.configuration.max_priority_multiplier
+            n_queue_priority = n_weight + self.distances[neighbor_id][
+                end_node_id] * self.configuration.path_calculation_boost
+            n_priority = n_weight + self.distances[neighbor_id][
+                end_node_id] * self.configuration.max_priority_multiplier
             n_path = copy(path)
             n_path.append(neighbor_id)
             n_routes = copy(routes)
@@ -238,7 +245,7 @@ class ConnectionSolver(IConnectionSolver):
             if self.is_redundant(n_routes, route):
                 return
 
-            if n_queue_priority <= max_queue_priority and n_priority <= max_priority:
+            if n_queue_priority <= max_queue_priority and n_priority <= max_priority and len(n_path) <= self.configuration.max_path_len:
                 n_routes.append(route)
                 if (n_routes, neighbor_id) not in routes_dict:
                     routes_dict.append((n_routes, neighbor_id))

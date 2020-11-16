@@ -16,10 +16,4 @@ class RmqProducer(RmqHelper):
     def start(self):
         self.heartbeat_thread.start()
 
-    def send_msg(self, message, lost_stream_msg="Rabbitmq error: Stream connection lost"):
-        try:
-            self.channel.basic_publish(exchange=self.exchange_name, routing_key=self.routing_key, body=self.to_json(message))
-        except pika.exceptions.StreamLostError:
-            print(f"{lost_stream_msg} {self.routing_key}")
-
 
