@@ -151,9 +151,8 @@ export default function SelectEndStopScreen({ navigation, route }) {
       <Divider />
       <ScrollView style={{ flex: 1 }}>
         {points.map((point, i) => (
-          <>
+          <React.Fragment key={i}>
             <List.Item
-              key={i}
               title={point.name}
               // description={() => (
               //   <ProgressBar
@@ -174,7 +173,7 @@ export default function SelectEndStopScreen({ navigation, route }) {
               onLongPress={() => handleSelect(point)}
             />
             <Divider />
-          </>
+          </React.Fragment>
         ))}
       </ScrollView>
     </View>
