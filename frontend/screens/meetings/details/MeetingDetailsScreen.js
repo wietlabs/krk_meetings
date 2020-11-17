@@ -58,9 +58,9 @@ export default function MeetingDetailsScreen({ navigation, route }) {
     if (meeting) navigation.setOptions({ title: meeting.name });
   }, [meeting]);
 
-  const startStopName = meeting?.membership.stop_name;
+  const startStopName = meeting?.membership?.stop_name;
   const endStopName = meeting?.stop_name;
-  const isMeetingOwner = meeting?.membership.is_owner;
+  const isMeetingOwner = meeting?.membership?.is_owner;
   const meetingUrl = createMeetingLink(meetingUuid);
 
   const handleSelectStartStop = () => {
