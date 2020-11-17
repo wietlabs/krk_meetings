@@ -19,3 +19,4 @@
 <img src="docs/screenshots/MeetingDetailsScreen.jpg" alt="" width="250" />
 <img src="docs/screenshots/JoinMeetingScreeen.jpg" alt="" width="250" />
 <img src="docs/screenshots/SelectStartStopScreen.jpg" alt="" width="250" />
+<img src="docs/screenshots/SelectEndStopScreen.jpg" alt="" width="250" />
