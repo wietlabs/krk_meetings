@@ -1,6 +1,6 @@
 import * as React from "react";
 import { View, ScrollView } from "react-native";
-import MapView, { Marker } from "react-native-maps";
+import MapView, { Marker, Polyline } from "react-native-maps";
 import { Button, Divider, List, ProgressBar } from "react-native-paper";
 import { getStops, findMeetingPoints } from "../../api/ConnectionsApi";
 import {
@@ -59,7 +59,6 @@ export default function SelectEndStopScreen({ navigation, route }) {
     const stops = await getStops();
 
     const meeting = await getMeetingDetails(meetingUuid, userUuid);
-    setSelected({ name: meeting?.stop_name });
 
     const stopNames = getMeetingMembersStopNames(meeting);
 
@@ -132,15 +131,27 @@ export default function SelectEndStopScreen({ navigation, route }) {
           style={{ flex: 1 }}
           // opacity={loading ? 0.6 : 1}
         >
-          {locations.map((location, i) => (
-            <Marker
-              key={"location-" + i}
-              coordinate={location}
-              pinColor="red"
-              onPress={() => handleSelect(location)}
-              zIndex={2}
-            />
-          ))}
+          {locations.map((location, i) => {
+            const isSelected = location.name === selected?.name;
+            return (
+              <React.Fragment key={"location-" + i}>
+                <Marker
+                  coordinate={location}
+                  pinColor={isSelected ? "green" : "red"}
+                  onPress={() => handleSelect(location)}
+                  zIndex={4}
+                />
+                {selected && (
+                  <Polyline
+                    coordinates={[selected, location]}
+                    strokeColor="tomato"
+                    strokeWidth={4}
+                    zIndex={1}
+                  />
+                )}
+              </React.Fragment>
+            );
+          })}
           {points.map((point, i) => {
             const isSelected = point.name === selected?.name;
             return (
@@ -149,7 +160,7 @@ export default function SelectEndStopScreen({ navigation, route }) {
                 coordinate={point}
                 pinColor={isSelected ? "green" : "yellow"}
                 onPress={() => handlePress(point)}
-                zIndex={isSelected ? 3 : 1}
+                zIndex={isSelected ? 3 : 2}
               />
             );
           })}
