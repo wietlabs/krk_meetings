@@ -3,7 +3,10 @@ import { View, ScrollView } from "react-native";
 import MapView, { Marker } from "react-native-maps";
 import { Button, Divider, List, ProgressBar } from "react-native-paper";
 import { getStops, findMeetingPoints } from "../../api/ConnectionsApi";
-import { getMeetingDetails } from "../../api/MeetingsApi";
+import {
+  getMeetingDetails,
+  updateMeetingStopName,
+} from "../../api/MeetingsApi";
 import { getMeetingMembersStopNames, getStopsByNames } from "../../utils";
 
 const initialRegion = {
@@ -89,9 +92,8 @@ export default function SelectEndStopScreen({ navigation, route }) {
     setHovered(stop);
   };
 
-  const handleSelect = (stop) => {
-    console.log(stop.name);
-
+  const handleSelect = async (stop) => {
+    await updateMeetingStopName(meetingUuid, userUuid, stop.name);
     navigation.pop();
   };
 

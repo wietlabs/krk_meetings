@@ -31,6 +31,7 @@ class Meeting(db.Model):
     uuid = db.Column(CHAR(36), default=lambda: str(uuid.uuid4()), primary_key=True)
     name = db.Column(db.String(MEETING_NAME_MAX_LENGTH), nullable=True)
     datetime = db.Column(db.DateTime(), nullable=True)
+    stop_name = db.Column(db.String(STOP_NAME_MAX_LENGTH), nullable=True)
     owner_uuid = owner_uuid = db.Column(CHAR(36), db.ForeignKey('users.uuid'), nullable=False)
     created_at = db.Column(db.DateTime(), default=func.now(), nullable=False)
 
@@ -78,7 +79,7 @@ def get_user(user_uuid: str):
 
 
 @app.route('/api/v1/users/<user_uuid>/meetings', methods=['GET'])
-def get_meetings(user_uuid: str):
+def get_user_meetings(user_uuid: str):
     try:
         uuid.UUID(user_uuid, version=4)
     except ValueError:
@@ -133,6 +134,7 @@ def get_meeting_details(user_uuid: str, meeting_uuid: str):
     return {
         'uuid': meeting.uuid,
         'name': meeting.name,
+        'stop_name': meeting.stop_name,
         'members': [
             {
                 'nickname': membership.nickname,
@@ -250,6 +252,50 @@ def get_meeting_join_info(meeting_uuid: str):
         'members_count': len(meeting.users),
         'owner_nickname': next(membership.nickname for membership in memberships if membership.user == meeting.owner)
     }, 200
+
+
+@app.route('/api/v1/meetings/<meeting_uuid>', methods=['PATCH'])
+def edit_meeting(meeting_uuid: str):
+    try:
+        uuid.UUID(meeting_uuid, version=4)
+    except ValueError:
+        return {'error': 'Invalid meeting_uuid'}, 400
+
+    if 'user_uuid' not in request.json:
+        return {'error': 'Missing user_uuid'}, 400
+    user_uuid = request.json['user_uuid']
+
+    try:
+        uuid.UUID(user_uuid, version=4)
+    except ValueError:
+        return {'error': 'Invalid user_uuid'}, 400
+
+    if 'stop_name' in request.json:
+        stop_name = request.json['stop_name']
+        if len(stop_name) > STOP_NAME_MAX_LENGTH:
+            return {'error': 'Stop name too long'}, 400
+    else:
+        stop_name = None
+
+    meeting = Meeting.query.get(meeting_uuid)
+    if meeting is None:
+        return {'error': 'Meeting not found'}, 404
+
+    user = User.query.get(user_uuid)
+    if not user:
+        return {'error': 'User not found'}, 404
+
+    if user != meeting.owner:
+        return {'error': 'You are not a meeting owner'}, 403
+
+    print(meeting.stop_name)
+
+    if stop_name is not None:
+        meeting.stop_name = stop_name
+
+    db.session.commit()
+
+    return {}, 200
 
 
 @app.route('/api/v1/meetings/<meeting_uuid>/members', methods=['POST'])
