@@ -124,7 +124,7 @@ export default function MeetingDetailsScreen({ navigation, route }) {
           title={
             endStopName ||
             (isMeetingOwner
-              ? "Wybierz punkt początkowy..."
+              ? "Wybierz miejsce spotkania..."
               : "Nie wybrano miejsca spotkania")
           }
           left={(props) => (
