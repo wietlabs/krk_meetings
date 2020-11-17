@@ -7,7 +7,7 @@ import {
   Share,
   ToastAndroid,
 } from "react-native";
-import { ActivityIndicator, Chip, List } from "react-native-paper";
+import { ActivityIndicator, Button, Chip, List } from "react-native-paper";
 import { getMeetingDetails } from "../../../api/MeetingsApi";
 import { createMeetingLink } from "../../../LinkManager";
 import { getNickname } from "../../../UserManager";
@@ -58,9 +58,9 @@ export default function MeetingDetailsScreen({ navigation, route }) {
     if (meeting) navigation.setOptions({ title: meeting.name });
   }, [meeting]);
 
-  const startStopName = meeting?.membership.stop_name;
+  const startStopName = meeting?.membership?.stop_name;
   const endStopName = meeting?.stop_name;
-  const isMeetingOwner = meeting?.membership.is_owner;
+  const isMeetingOwner = meeting?.membership?.is_owner;
   const meetingUrl = createMeetingLink(meetingUuid);
 
   const handleSelectStartStop = () => {
@@ -77,6 +77,13 @@ export default function MeetingDetailsScreen({ navigation, route }) {
     }
 
     navigation.navigate("SelectEndStop", { meetingUuid, userUuid });
+  };
+
+  const handleFindConnections = () => {
+    navigation.navigate("ConnectionsStack", {
+      screen: "FindConnections",
+      params: { startStopName, endStopName },
+    });
   };
 
   const handleCopyToClipboard = () => {
@@ -124,7 +131,7 @@ export default function MeetingDetailsScreen({ navigation, route }) {
           title={
             endStopName ||
             (isMeetingOwner
-              ? "Wybierz punkt początkowy..."
+              ? "Wybierz miejsce spotkania..."
               : "Nie wybrano miejsca spotkania")
           }
           left={(props) => (
@@ -138,6 +145,20 @@ export default function MeetingDetailsScreen({ navigation, route }) {
               : { color: "rgba(0, 0, 0, 0.5)" }
           }
         />
+        <Button
+          mode="contained"
+          disabled={!startStopName || !endStopName}
+          icon="magnify"
+          style={{
+            marginLeft: 16,
+            marginRight: 16,
+            marginTop: 8,
+            marginBottom: 8,
+          }}
+          onPress={handleFindConnections}
+        >
+          Znajdź połączenie
+        </Button>
         <List.Subheader>Członkowie ({meeting.members.length})</List.Subheader>
         {meeting.members.map((member, i) => (
           <List.Item
