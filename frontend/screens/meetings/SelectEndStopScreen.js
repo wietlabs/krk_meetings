@@ -1,7 +1,7 @@
 import * as React from "react";
-import { View } from "react-native";
+import { View, ScrollView } from "react-native";
 import MapView, { Marker } from "react-native-maps";
-import { Divider, Button, RadioButton, Text } from "react-native-paper";
+import { Button, Divider, List, ProgressBar } from "react-native-paper";
 import { getStops, findMeetingPoints } from "../../api/ConnectionsApi";
 import { getMeetingDetails } from "../../api/MeetingsApi";
 import { getMeetingMembersStopNames, getStopsByNames } from "../../utils";
@@ -14,8 +14,8 @@ const initialRegion = {
 };
 
 const padding = {
-  top: 100,
-  bottom: 100,
+  top: 150,
+  bottom: 50,
   left: 100,
   right: 100,
 };
@@ -41,9 +41,10 @@ export default function SelectEndStopScreen({ navigation, route }) {
 
   const mapRef = React.useRef();
 
+  const [metric, setMetric] = React.useState("square");
   const [locations, setLocations] = React.useState([]);
   const [points, setPoints] = React.useState([]);
-  const [metric, setMetric] = React.useState("square");
+  const [hovered, setHovered] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
 
   const refresh = async () => {
@@ -84,11 +85,17 @@ export default function SelectEndStopScreen({ navigation, route }) {
     });
   };
 
+  const handleHover = (stop) => {
+    setHovered(stop);
+  };
+
   const handleSelect = (stop) => {
     console.log(stop.name);
 
     navigation.pop();
   };
+
+  const maxMetricValue = Math.max(...points.map((point) => point.metric));
 
   return (
     <View style={{ height: "100%" }}>
@@ -116,7 +123,7 @@ export default function SelectEndStopScreen({ navigation, route }) {
           initialRegion={initialRegion}
           maxZoomLevel={18}
           moveOnMarkerPress={false}
-          style={{ height: "100%" }}
+          style={{ flex: 1 }}
           // opacity={loading ? 0.6 : 1}
         >
           {locations.map((location, i) => (
@@ -128,17 +135,49 @@ export default function SelectEndStopScreen({ navigation, route }) {
               zIndex={2}
             />
           ))}
-          {points.map((point, i) => (
-            <Marker
-              key={"point-" + i}
-              coordinate={point}
-              pinColor="green"
-              onPress={() => handleSelect(point)}
-              zIndex={1}
-            />
-          ))}
+          {points.map((point, i) => {
+            const isHovered = point.name === hovered?.name;
+            return (
+              <Marker
+                key={"point-" + i + (isHovered ? "-hovered" : "")}
+                coordinate={point}
+                pinColor={isHovered ? "blue" : "green"}
+                onPress={() => handleSelect(point)}
+                zIndex={1}
+              />
+            );
+          })}
         </MapView>
       </View>
+      <Divider />
+      <ScrollView style={{ flex: 1 }}>
+        {points.map((point, i) => (
+          <>
+            <List.Item
+              key={i}
+              title={point.name}
+              // description={() => (
+              //   <ProgressBar
+              //     progress={point.metric / maxMetricValue}
+              //     style={{ marginTop: 2 }}
+              //   />
+              // )}
+              // description={point.metric}
+              left={(props) => (
+                <List.Icon
+                  {...props}
+                  icon="map-marker-outline"
+                  style={{ margin: 0 }}
+                />
+              )}
+              style={{ backgroundColor: "white" }}
+              onPress={() => handleHover(point)}
+              onLongPress={() => handleSelect(point)}
+            />
+            <Divider />
+          </>
+        ))}
+      </ScrollView>
     </View>
   );
 }
