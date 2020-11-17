@@ -1,5 +1,6 @@
 import * as React from "react";
 import {
+  Alert,
   Clipboard,
   RefreshControl,
   ScrollView,
@@ -57,6 +58,9 @@ export default function MeetingDetailsScreen({ navigation, route }) {
     if (meeting) navigation.setOptions({ title: meeting.name });
   }, [meeting]);
 
+  const startStopName = meeting?.membership.stop_name;
+  const endStopName = meeting?.stop_name;
+  const isMeetingOwner = meeting?.membership.is_owner;
   const meetingUrl = createMeetingLink(meetingUuid);
 
   const handleSelectStartStop = () => {
@@ -64,6 +68,14 @@ export default function MeetingDetailsScreen({ navigation, route }) {
   };
 
   const handleSelectEndStop = () => {
+    if (!isMeetingOwner) {
+      Alert.alert(
+        "Wystąpił błąd",
+        "Tylko organizator może ustawić miejsce spotkania."
+      );
+      return;
+    }
+
     navigation.navigate("SelectEndStop", { meetingUuid, userUuid });
   };
 
@@ -85,9 +97,6 @@ export default function MeetingDetailsScreen({ navigation, route }) {
       />
     );
   }
-
-  const startStopName = meeting?.membership.stop_name;
-  const endStopName = meeting?.stop_name;
 
   return (
     <>
@@ -112,7 +121,12 @@ export default function MeetingDetailsScreen({ navigation, route }) {
         />
         <List.Subheader>Miejsce spotkania</List.Subheader>
         <List.Item
-          title={endStopName || "Wybierz miejsce spotkania..."}
+          title={
+            endStopName ||
+            (isMeetingOwner
+              ? "Wybierz punkt początkowy..."
+              : "Nie wybrano miejsca spotkania")
+          }
           left={(props) => (
             <List.Icon {...props} icon="flag-checkered" style={{ margin: 0 }} />
           )}

@@ -47,3 +47,14 @@ export const createRandomNickname = () => {
     .substring(1);
   return "Guest#" + digits;
 };
+
+export const getMeetingMembersStopNames = (meeting) => {
+  return meeting.members.map((member) => member.stop_name).filter((x) => x);
+};
+
+export const getStopsByNames = (stopNames, stops) => {
+  const findStopByName = (stopName) =>
+    stops.find((stop) => stop.name === stopName);
+
+  return stopNames.map(findStopByName);
+};

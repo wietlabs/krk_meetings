@@ -129,6 +129,7 @@ def test_create_meeting(client: FlaskClient) -> None:
     assert response.json == {
         'uuid': expected_uuid,
         'name': 'My meeting',
+        'stop_name': None,
         'members': [
             {
                 'nickname': 'Alice',
@@ -138,6 +139,7 @@ def test_create_meeting(client: FlaskClient) -> None:
             }
         ],
         'membership': {
+            'is_owner': True,
             'stop_name': None,
         },
     }
