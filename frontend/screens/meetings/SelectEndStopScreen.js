@@ -59,6 +59,7 @@ export default function SelectEndStopScreen({ navigation, route }) {
     const stops = await getStops();
 
     const meeting = await getMeetingDetails(meetingUuid, userUuid);
+    setSelected({ name: meeting?.stop_name });
 
     const stopNames = getMeetingMembersStopNames(meeting);
 
