@@ -101,9 +101,8 @@ export default function SelectEndStopScreen({ navigation, route }) {
     <View style={{ height: "100%" }}>
       <View style={{ flexDirection: "row" }}>
         {availableMetrics.map(({ name, label }) => (
-          <View style={{ flex: 1 }}>
+          <View key={name} style={{ flex: 1 }}>
             <Button
-              key={name}
               onPress={() => setMetric(name)}
               mode="contained"
               color={name === metric ? "lightgray" : "white"}
