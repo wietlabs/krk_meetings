@@ -1,7 +1,7 @@
 import * as React from "react";
 import { View, ScrollView } from "react-native";
 import MapView, { Marker, Polyline } from "react-native-maps";
-import { Button, Divider, List, ProgressBar } from "react-native-paper";
+import { Button, Divider, FAB, List, ProgressBar } from "react-native-paper";
 import { getStops, findMeetingPoints } from "../../api/ConnectionsApi";
 import {
   getMeetingDetails,
@@ -89,17 +89,13 @@ export default function SelectEndStopScreen({ navigation, route }) {
     });
   };
 
-  const handlePress = (stop) => {
-    if (stop.name === selected?.name) handleSubmit(stop);
-    else handleSelect(stop);
-  };
-
   const handleSelect = (stop) => {
     setSelected(stop);
   };
 
-  const handleSubmit = async (stop) => {
-    await updateMeetingStopName(meetingUuid, userUuid, stop.name);
+  const handleSubmit = async () => {
+    if (!selected) return;
+    await updateMeetingStopName(meetingUuid, userUuid, selected.name);
     navigation.pop();
   };
 
@@ -129,6 +125,7 @@ export default function SelectEndStopScreen({ navigation, route }) {
           initialRegion={initialRegion}
           maxZoomLevel={18}
           moveOnMarkerPress={false}
+          onPress={() => setSelected(null)}
           style={{ flex: 1 }}
           // opacity={loading ? 0.6 : 1}
         >
@@ -160,7 +157,7 @@ export default function SelectEndStopScreen({ navigation, route }) {
                 key={"point-" + i + (isSelected ? "-selected" : "")}
                 coordinate={point}
                 pinColor={isSelected ? "green" : "yellow"}
-                onPress={() => handlePress(point)}
+                onPress={() => handleSelect(point)}
                 zIndex={isSelected ? 3 : 2}
               />
             );
@@ -168,7 +165,7 @@ export default function SelectEndStopScreen({ navigation, route }) {
         </MapView>
       </View>
       <Divider />
-      <ScrollView style={{ flex: 1 }}>
+      {/* <ScrollView style={{ flex: 1 }}>
         {points.map((point, i) => {
           const isSelected = point.name === selected?.name;
           return (
@@ -191,13 +188,27 @@ export default function SelectEndStopScreen({ navigation, route }) {
                 )}
                 style={{ backgroundColor: "white" }}
                 titleStyle={isSelected && { fontWeight: "bold" }}
-                onPress={() => handlePress(point)}
+                onPress={() => handleSelect(point)}
               />
               <Divider />
             </React.Fragment>
           );
         })}
-      </ScrollView>
+      </ScrollView> */}
+      <FAB
+        icon={"arrow-right"}
+        // loading={loading}
+        // disabled={!selected}
+        visible={!!selected}
+        onPress={handleSubmit}
+        style={{
+          position: "absolute",
+          margin: 16,
+          right: 0,
+          bottom: 0,
+          backgroundColor: "lime",
+        }}
+      />
     </View>
   );
 }
