@@ -63,7 +63,7 @@ export default function SelectEndStopScreen({ navigation, route }) {
 
     const stopNames = getMeetingMembersStopNames(meeting);
 
-    const locations = await getStopsByNames(stopNames, stops);
+    const locations = getStopsByNames(stopNames, stops);
     setLocations(locations);
 
     const query = { startStopNames: stopNames, metric };
