@@ -139,6 +139,7 @@ def test_create_meeting(client: FlaskClient) -> None:
             }
         ],
         'membership': {
+            'is_owner': True,
             'stop_name': None,
         },
     }

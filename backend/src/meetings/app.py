@@ -145,6 +145,7 @@ def get_meeting_details(user_uuid: str, meeting_uuid: str):
             for membership in memberships
         ],
         'membership': {
+            'is_owner': membership.user == meeting.owner,
             'stop_name': membership.stop_name,
         }
     }, 200
