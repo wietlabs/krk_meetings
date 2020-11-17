@@ -7,7 +7,7 @@ import {
   Share,
   ToastAndroid,
 } from "react-native";
-import { ActivityIndicator, Chip, List } from "react-native-paper";
+import { ActivityIndicator, Button, Chip, List } from "react-native-paper";
 import { getMeetingDetails } from "../../../api/MeetingsApi";
 import { createMeetingLink } from "../../../LinkManager";
 import { getNickname } from "../../../UserManager";
@@ -79,6 +79,13 @@ export default function MeetingDetailsScreen({ navigation, route }) {
     navigation.navigate("SelectEndStop", { meetingUuid, userUuid });
   };
 
+  const handleFindConnections = () => {
+    navigation.navigate("ConnectionsStack", {
+      screen: "FindConnections",
+      params: { startStopName, endStopName },
+    });
+  };
+
   const handleCopyToClipboard = () => {
     Clipboard.setString(meetingUrl);
     ToastAndroid.show("Skopiowano do schowka", ToastAndroid.SHORT);
@@ -138,6 +145,20 @@ export default function MeetingDetailsScreen({ navigation, route }) {
               : { color: "rgba(0, 0, 0, 0.5)" }
           }
         />
+        <Button
+          mode="contained"
+          disabled={!startStopName || !endStopName}
+          icon="magnify"
+          style={{
+            marginLeft: 16,
+            marginRight: 16,
+            marginTop: 8,
+            marginBottom: 8,
+          }}
+          onPress={handleFindConnections}
+        >
+          Znajdź połączenie
+        </Button>
         <List.Subheader>Członkowie ({meeting.members.length})</List.Subheader>
         {meeting.members.map((member, i) => (
           <List.Item

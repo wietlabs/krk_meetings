@@ -8,7 +8,7 @@ import NearestStopsMap from "../../../components/NearestStopsMap";
 
 const initialState = {
   startStopName: "Czerwone Maki P+R",
-  endStopName: "Jerzmanowskiego",
+  endStopName: "Czarnowiejska",
   date: null,
   time: null,
   mode: null,
@@ -17,6 +17,7 @@ const initialState = {
 };
 
 const ACTIONS = {
+  SET_START_END_STOP_NAME: "set-start-end-stop-name",
   SET_START_STOP_NAME: "set-start-stop-name",
   SET_END_STOP_NAME: "set-end-stop-name",
   CLEAR_START_STOP_NAME: "clear-start-stop-name",
@@ -34,12 +35,19 @@ const ACTIONS = {
   CLEAR_TIME: "clear-time",
 };
 
-export default function HomeScreen({ navigation }) {
+export default function HomeScreen({ navigation, route }) {
   const startStopNameRef = React.useRef();
   const endStopNameRef = React.useRef();
 
   const reducer = (state, action) => {
     switch (action.type) {
+      case ACTIONS.SET_START_END_STOP_NAME:
+        return {
+          ...state,
+          startStopName: action.payload.startStopName,
+          endStopName: action.payload.endStopName,
+        };
+
       case ACTIONS.SET_START_STOP_NAME:
         return { ...state, startStopName: action.payload.startStopName };
 
@@ -103,6 +111,15 @@ export default function HomeScreen({ navigation }) {
 
   const [state, dispatch] = React.useReducer(reducer, initialState);
   const [loading, setLoading] = React.useState(false);
+
+  React.useEffect(() => {
+    if (route.params?.startStopName && route.params?.endStopName) {
+      dispatch({
+        type: ACTIONS.SET_START_END_STOP_NAME,
+        payload: { ...route.params },
+      });
+    }
+  }, [route.params]);
 
   const handleChangeStartStopName = (startStopName) => {
     dispatch({ type: ACTIONS.SET_START_STOP_NAME, payload: { startStopName } });
