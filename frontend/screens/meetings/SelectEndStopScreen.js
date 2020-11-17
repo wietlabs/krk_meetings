@@ -47,7 +47,7 @@ export default function SelectEndStopScreen({ navigation, route }) {
   const [metric, setMetric] = React.useState("square");
   const [locations, setLocations] = React.useState([]);
   const [points, setPoints] = React.useState([]);
-  const [hovered, setHovered] = React.useState(null);
+  const [selected, setSelected] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
 
   const refresh = async () => {
@@ -88,11 +88,16 @@ export default function SelectEndStopScreen({ navigation, route }) {
     });
   };
 
-  const handleHover = (stop) => {
-    setHovered(stop);
+  const handlePress = (stop) => {
+    if (stop.name === selected?.name) handleSubmit(stop);
+    else handleSelect(stop);
   };
 
-  const handleSelect = async (stop) => {
+  const handleSelect = (stop) => {
+    setSelected(stop);
+  };
+
+  const handleSubmit = async (stop) => {
     await updateMeetingStopName(meetingUuid, userUuid, stop.name);
     navigation.pop();
   };
@@ -109,7 +114,6 @@ export default function SelectEndStopScreen({ navigation, route }) {
               mode="contained"
               color={name === metric ? "lightgray" : "white"}
               style={{ borderRadius: 0 }}
-              textStyle={{ borderRadius: 0 }}
             >
               {label}
             </Button>
@@ -137,14 +141,14 @@ export default function SelectEndStopScreen({ navigation, route }) {
             />
           ))}
           {points.map((point, i) => {
-            const isHovered = point.name === hovered?.name;
+            const isSelected = point.name === selected?.name;
             return (
               <Marker
-                key={"point-" + i + (isHovered ? "-hovered" : "")}
+                key={"point-" + i + (isSelected ? "-selected" : "")}
                 coordinate={point}
-                pinColor={isHovered ? "blue" : "green"}
-                onPress={() => handleSelect(point)}
-                zIndex={1}
+                pinColor={isSelected ? "green" : "yellow"}
+                onPress={() => handlePress(point)}
+                zIndex={isSelected ? 3 : 1}
               />
             );
           })}
@@ -152,31 +156,34 @@ export default function SelectEndStopScreen({ navigation, route }) {
       </View>
       <Divider />
       <ScrollView style={{ flex: 1 }}>
-        {points.map((point, i) => (
-          <React.Fragment key={i}>
-            <List.Item
-              title={point.name}
-              // description={() => (
-              //   <ProgressBar
-              //     progress={point.metric / maxMetricValue}
-              //     style={{ marginTop: 2 }}
-              //   />
-              // )}
-              // description={point.metric}
-              left={(props) => (
-                <List.Icon
-                  {...props}
-                  icon="map-marker-outline"
-                  style={{ margin: 0 }}
-                />
-              )}
-              style={{ backgroundColor: "white" }}
-              onPress={() => handleHover(point)}
-              onLongPress={() => handleSelect(point)}
-            />
-            <Divider />
-          </React.Fragment>
-        ))}
+        {points.map((point, i) => {
+          const isSelected = point.name === selected?.name;
+          return (
+            <React.Fragment key={i}>
+              <List.Item
+                title={point.name}
+                // description={() => (
+                //   <ProgressBar
+                //     progress={point.metric / maxMetricValue}
+                //     style={{ marginTop: 2 }}
+                //   />
+                // )}
+                // description={point.metric}
+                left={(props) => (
+                  <List.Icon
+                    {...props}
+                    icon={"map-marker"}
+                    style={{ margin: 0 }}
+                  />
+                )}
+                style={{ backgroundColor: "white" }}
+                titleStyle={isSelected && { fontWeight: "bold" }}
+                onPress={() => handlePress(point)}
+              />
+              <Divider />
+            </React.Fragment>
+          );
+        })}
       </ScrollView>
     </View>
   );
