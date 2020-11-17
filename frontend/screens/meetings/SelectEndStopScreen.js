@@ -52,7 +52,8 @@ export default function SelectEndStopScreen({ navigation, route }) {
 
   const refresh = async () => {
     setLoading(true);
-    // setPoints([]);
+    setPoints([]);
+    setSelected(null);
 
     // TODO: use Promise.all
 
