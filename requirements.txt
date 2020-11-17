@@ -1,8 +1,0 @@
-pandas
-networkx
-numpy
-matplotlib
-requests
-flask
-pytest
-pika

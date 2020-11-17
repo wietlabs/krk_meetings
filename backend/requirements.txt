@@ -1,0 +1,11 @@
+pandas
+networkx
+numpy==1.19.3
+matplotlib
+requests
+flask
+flask_sqlalchemy
+sqlalchemy
+pytest
+pika
+openrouteservice
