@@ -41,7 +41,7 @@ export const sleep = (ms) => {
   return new Promise((r) => setTimeout(r, ms));
 };
 
-export const createRandomNickname = () => {
+export const generateRandomNickname = () => {
   const digits = (Math.floor(Math.random() * 10000) + 10000)
     .toString()
     .substring(1);

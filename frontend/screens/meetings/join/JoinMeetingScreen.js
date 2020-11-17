@@ -1,7 +1,11 @@
 import * as React from "react";
 import { Alert, ScrollView, RefreshControl, View, Text } from "react-native";
 import { Card, Chip, List, RadioButton, Button } from "react-native-paper";
-import { validateUuid, createRandomNickname, censorUuid } from "../../../utils";
+import {
+  validateUuid,
+  generateRandomNickname,
+  censorUuid,
+} from "../../../utils";
 import {
   checkIfMeetingExists,
   getMeetingJoinInfo,
@@ -70,7 +74,7 @@ export default function JoinMeetingScreen({ navigation, route }) {
       return;
     }
 
-    const nickname = (await getNickname(userUuid)) || createRandomNickname();
+    const nickname = (await getNickname(userUuid)) || generateRandomNickname();
 
     try {
       await joinMeeting({ meetingUuid, userUuid, nickname });
