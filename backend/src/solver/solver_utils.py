@@ -9,15 +9,24 @@ def get_stop_id_by_name(stop_name, stops_df_by_name):
 
 
 def get_stop_name_by_id(stop_id, stops_df):
-    return stops_df.at[stop_id, 'stop_name']
+    try:
+        return stops_df.at[stop_id, 'stop_name']
+    except KeyError:
+        return None
 
 
 def get_route_name_by_id(route_id, routes_df):
-    return routes_df.at[route_id, 'route_name']
+    try:
+        return routes_df.at[route_id, 'route_name']
+    except KeyError:
+        return None
 
 
 def get_headsign_by_id(route_id, routes_df):
-    return routes_df.at[route_id, 'headsign']
+    try:
+        return routes_df.at[route_id, 'headsign']
+    except KeyError:
+        return None
 
 
 def get_stop_list(route_id, start_stop_id, end_stop_id, stops_df, routes_to_stops_dict):

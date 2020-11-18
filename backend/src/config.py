@@ -10,7 +10,7 @@ MAX_WALKING_DISTANCE = 1000  # min
 WALKING_SPEED: float = 1.0
 WALKING_ROUTE_ID: int = -1
 DATETIME_FORMAT: str = "%Y-%m-%d %H:%M:%S"
-CHANGE_PENALTY = 120  # sec
+CHANGE_PENALTY = 1200  # sec
 
 DEFAULT_FLOYD_EXTRACTOR_CONFIGURATION = FloydExtractorConfiguration(
     daily_period_multiplier=0.8,
@@ -29,7 +29,7 @@ DEFAULT_CONNECTION_SOLVER_CONFIGURATION = ConnectionSolverConfiguration(
     max_travel_time=4*3600,  # sec
     number_of_connections_returned=25,
     max_priority_multiplier=1.2,
-    max_priority_cap=600,  # sec - cant be 0 due to ban of walking from stop to stop twice in a row
+    max_priority_cap=2400,  # sec - cant be 0 due to ban of walking from stop to stop twice in a row
     path_calculation_boost=1.5,
     max_number_of_paths=6,
     change_penalty=CHANGE_PENALTY,
