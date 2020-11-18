@@ -16,7 +16,7 @@ from src.utils import time_to_int
 from src.solver.IConnectionSolver import IConnectionSolver
 from src.data_classes.Transfer import Transfer
 from src.data_classes.ConnectionQuery import ConnectionQuery
-from src.config import ErrorCodes, DEFAULT_CONNECTION_SOLVER_CONFIGURATION
+from src.config import ErrorCodes, DEFAULT_CONNECTION_SOLVER_CONFIGURATION, WALKING_ROUTE_ID
 
 
 class ConnectionSolver(IConnectionSolver):
@@ -200,8 +200,7 @@ class ConnectionSolver(IConnectionSolver):
                                            'route_id_n': f'route_id_{str(i)}',
                                            'index': f'index_{str(i)}'},
                                   inplace=True)
-                results_df = results_df[
-                    results_df[f'departure_time_n_{str(i - 1)}'] < results_df[f'departure_time_c_{str(i)}']]
+                results_df = results_df[results_df[f'departure_time_n_{str(i - 1)}'] < results_df[f'departure_time_c_{str(i)}']]
                 if (current_stop, next_stop) in self.adjacent_stops:
                     results_df = results_df.append(walking_df)
                 results_df = results_df.sort_values(by=[f'departure_time_n_{str(i)}'])
@@ -232,6 +231,13 @@ class ConnectionSolver(IConnectionSolver):
         print("ConnectionSolver: calculating paths")
         calculation_start_time = time.time()
 
+        def get_max_priority(prior):
+            return prior * self.configuration.max_priority_multiplier + self.configuration.max_priority_cap
+
+        def get_max_queue_priority(prior):
+            return (prior * self.configuration.max_priority_multiplier
+                    + self.configuration.max_priority_cap) * self.configuration.path_calculation_boost
+
         def resolve_neighbor(node_id, neighbor_id, weight, path, routes, graph):
             n_weight = weight + graph.edges[node_id, neighbor_id]['weight'] + self.configuration.change_penalty
             n_queue_priority = n_weight + self.distances[neighbor_id][
@@ -255,10 +261,9 @@ class ConnectionSolver(IConnectionSolver):
         paths = []
         routes_dict = []
         routes_to_node = {}
-        max_priority = int(self.distances[start_node_id][end_node_id] * self.configuration.max_priority_multiplier +
-                           self.configuration.max_priority_cap)
-        max_queue_priority = int(self.distances[start_node_id][end_node_id] * self.configuration.path_calculation_boost
-                                 * self.configuration.max_priority_multiplier + self.configuration.max_priority_cap)
+        priority_distance = float("inf")
+        max_priority = float("inf")
+        max_queue_priority = float("inf")
 
         last_hubs = []
         if end_node_id not in self.kernelized_graph.nodes:
@@ -294,6 +299,10 @@ class ConnectionSolver(IConnectionSolver):
             if node_id == end_node_id:
                 if priority < max_priority:
                     paths.append(path)
+                    if priority < priority_distance:
+                        max_priority = get_max_priority(priority_distance)
+                        max_queue_priority = get_max_queue_priority(priority_distance)
+                        priority_distance = priority
                     continue
             if node_id in last_hubs:
                 resolve_neighbor(node_id, end_node_id, weight, path, routes, self.graph)

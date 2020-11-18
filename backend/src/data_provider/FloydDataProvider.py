@@ -1,5 +1,6 @@
 import copy
 import json
+import socket
 import time
 from datetime import datetime
 
@@ -30,15 +31,18 @@ class FloydDataProvider:
         self.alive = True
         print("FloydDataProvider: has started.")
         while self.alive:
-            new_update_date = self.downloader.get_last_update_time()
-            last_update_date = self.load_update_date()
-            if last_update_date is None or new_update_date > last_update_date:
-                print("FloydDataProvider: updating data")
-                merged_data = self.downloader.download_merged_data()
-                self.extract_floyd_data(merged_data)
-                self.save_update_date(new_update_date)
-                self.floyd_data_producer.send_msg(MESSAGES.DATA_UPDATED.value, lost_stream_msg="Solvers are down.")
-                print("FloydDataProvider: data updated")
+            try:
+                new_update_date = self.downloader.get_last_update_time()
+                last_update_date = self.load_update_date()
+                if last_update_date is None or new_update_date > last_update_date:
+                    print("FloydDataProvider: updating data")
+                    merged_data = self.downloader.download_merged_data()
+                    self.extract_floyd_data(merged_data)
+                    self.save_update_date(new_update_date)
+                    self.floyd_data_producer.send_msg(MESSAGES.DATA_UPDATED.value, lost_stream_msg="Solvers are down.")
+                    print("FloydDataProvider: data updated")
+            except socket.gaierror:
+                print("FloydDataProvider: internet connection lost")
             time.sleep(3600)
 
     def stop(self):
