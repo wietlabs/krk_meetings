@@ -5,7 +5,7 @@ import { DefaultTheme, Provider as PaperProvider } from "react-native-paper";
 import { registerLinkingHandler } from "./LinkManager";
 import MeetingsStack from "./stacks/MeetingsStack";
 import ConnectionsStack from "./stacks/ConnectionsStack";
-import TimetableScreen from "./screens/timetable/TimetableScreen";
+import TimetableStack from "./stacks/TimetableStack";
 
 const Tab = createMaterialBottomTabNavigator();
 
@@ -50,8 +50,8 @@ export default function App() {
             }}
           />
           <Tab.Screen
-            name="Timetable"
-            component={TimetableScreen}
+            name="TimetableStack"
+            component={TimetableStack}
             options={{
               tabBarLabel: "Rozkłady jazdy",
               tabBarIcon: "bus-clock",
