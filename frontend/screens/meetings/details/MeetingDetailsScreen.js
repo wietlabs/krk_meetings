@@ -115,16 +115,13 @@ export default function MeetingDetailsScreen({ navigation, route }) {
         <List.Subheader>Twoja lokalizacja</List.Subheader>
         <List.Item
           title={startStopName || "Wybierz punkt początkowy..."}
+          description={startStopName && "Kliknij, aby zmienić"}
           left={(props) => (
             <List.Icon {...props} icon="map-marker" style={{ margin: 0 }} />
           )}
           onPress={handleSelectStartStop}
           style={{ backgroundColor: "white" }}
-          titleStyle={
-            startStopName
-              ? { fontWeight: "bold" }
-              : { color: "rgba(0, 0, 0, 0.5)" }
-          }
+          titleStyle={startStopName || { color: "rgba(0, 0, 0, 0.5)" }}
         />
         <List.Subheader>Miejsce spotkania</List.Subheader>
         <List.Item
@@ -134,16 +131,13 @@ export default function MeetingDetailsScreen({ navigation, route }) {
               ? "Wybierz miejsce spotkania..."
               : "Nie wybrano miejsca spotkania")
           }
+          description={endStopName && isMeetingOwner && "Kliknij, aby zmienić"}
           left={(props) => (
             <List.Icon {...props} icon="flag-checkered" style={{ margin: 0 }} />
           )}
           onPress={handleSelectEndStop}
           style={{ backgroundColor: "white" }}
-          titleStyle={
-            endStopName
-              ? { fontWeight: "bold" }
-              : { color: "rgba(0, 0, 0, 0.5)" }
-          }
+          titleStyle={endStopName || { color: "rgba(0, 0, 0, 0.5)" }}
         />
         <Button
           mode="contained"
