@@ -69,6 +69,7 @@ export default function SelectEndStopScreen({ navigation, route }) {
     const query = { startStopNames: stopNames, metric };
     const points = await findMeetingPoints(query);
     setPoints(points);
+    setSelected(points[0]);
 
     setLoading(false);
   };
