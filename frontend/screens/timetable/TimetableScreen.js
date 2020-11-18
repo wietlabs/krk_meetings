@@ -2,7 +2,7 @@ import * as React from "react";
 import { SafeAreaView, StatusBar } from "react-native";
 import { WebView } from "react-native-webview";
 
-const url = "http://rozklady.mpk.krakow.pl/";
+const url = "http://rozklady.ztp.krakow.pl/";
 
 export default function TimetableScreen() {
   return (
