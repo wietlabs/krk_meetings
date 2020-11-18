@@ -78,6 +78,7 @@ export default function SelectEndStopScreen({ navigation, route }) {
   }, [metric]);
 
   React.useEffect(() => {
+    if (!points.length) return;
     const coords = [...locations, ...points];
     fitToContents(coords);
   }, [locations, points]);
