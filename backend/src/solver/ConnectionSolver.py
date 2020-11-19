@@ -16,13 +16,13 @@ from src.utils import time_to_int
 from src.solver.IConnectionSolver import IConnectionSolver
 from src.data_classes.Transfer import Transfer
 from src.data_classes.ConnectionQuery import ConnectionQuery
-from src.config import ErrorCodes, DEFAULT_CONNECTION_SOLVER_CONFIGURATION, WALKING_ROUTE_ID
+from src.config import ErrorCodes, DEFAULT_CONNECTION_SOLVER_CONFIGURATION, WALKING_ROUTE_ID, FloydDataPaths
 
 
 class ConnectionSolver(IConnectionSolver):
-    def __init__(self, configuration: ConnectionSolverConfiguration = DEFAULT_CONNECTION_SOLVER_CONFIGURATION):
+    def __init__(self, configuration: ConnectionSolverConfiguration = DEFAULT_CONNECTION_SOLVER_CONFIGURATION, data_path=FloydDataPaths):
         self.configuration = configuration
-        self.data_manager = ConnectionDataManager()
+        self.data_manager = ConnectionDataManager(data_path)
         self.graph = None
         self.kernelized_graph = None
         self.distances = None
@@ -320,3 +320,5 @@ class ConnectionSolver(IConnectionSolver):
         if set(last_route).issubset(route) or set(route).issubset(last_route):
             return True
         return False
+
+
