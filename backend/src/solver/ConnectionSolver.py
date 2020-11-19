@@ -38,6 +38,7 @@ class ConnectionSolver(IConnectionSolver):
         self.exception_days_dict = None
         self.last_data_update = None
 
+    def start(self):
         self.data_manager.start()
         self.update_data()
 
@@ -62,7 +63,7 @@ class ConnectionSolver(IConnectionSolver):
 
     def find_connections(self, query: ConnectionQuery) -> ConnectionResults:
         print("ConnectionSolver: finding connections")
-        if self.last_data_update < self.data_manager.last_data_update:
+        if self.last_data_update is None or self.last_data_update < self.data_manager.last_data_update:
             self.update_data()
         current_datetime = query.start_datetime
         current_time = time_to_int(current_datetime.time())

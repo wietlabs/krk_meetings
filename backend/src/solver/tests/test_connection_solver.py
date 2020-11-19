@@ -37,6 +37,7 @@ class ConnectionSolverTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.connection_solver = ConnectionSolver(data_path=FloydDataPath)
+        cls.connection_solver.data_manager.update_data()
 
     @data(*itertools.product(sample_queries))
     @unpack
