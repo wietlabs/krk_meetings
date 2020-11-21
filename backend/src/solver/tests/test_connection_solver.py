@@ -6,11 +6,16 @@ import networkx as nx
 from ddt import ddt, data, unpack
 from enum import Enum
 
+from src.config import DATETIME_FORMAT
 from src.data_classes.ConnectionQuery import ConnectionQuery
 from src.data_classes.ConnectionResults import ConnectionResults
 from src.data_classes.Walk import Walk
 from src.solver.ConnectionSolver import ConnectionSolver
 import itertools
+
+from src.solver.solver_utils import get_stop_id_by_name
+from src.utils import load_pickle
+
 RESOURCES_DIR_PATH = Path(__file__).parent / 'resources'
 
 
@@ -47,16 +52,17 @@ class ConnectionSolverTests(unittest.TestCase):
         connection_results: ConnectionResults = self.connection_solver.find_connections(connection_query)
         self.assertNotEqual(len(connection_results.connections), 0)
 
-    @data(*itertools.product([{"start_datetime": "2020-11-19 12:00:00", "start_stop_name": 'Jubilat', "end_stop_name": 'Kostrze Szkoła'}]))
+    @data(*itertools.product([({"start_datetime": "2020-11-19 12:00:00", "start_stop_name": 'Jubilat', "end_stop_name": 'Kostrze Szkoła'}, "Rynek Dębnicki")]))
     @unpack
-    def test_connection_has_walking_edge(self, query):
+    def test_connection_has_walking_edge(self, parameters):
+        query, start_walking_stop = parameters
         query["query_id"] = 1
         connection_query = ConnectionQuery.from_dict(query)
         connection_results: ConnectionResults = self.connection_solver.find_connections(connection_query)
         connections = connection_results.connections
         for connection in connections:
             for action in connection.actions:
-                if isinstance(action, Walk):
+                if isinstance(action, Walk) and action.end_stop_name:
                     return
         self.fail()
 
@@ -113,9 +119,13 @@ class ConnectionSolverTests(unittest.TestCase):
                                  for action in connection.actions] for connection in connection_results_2.connections]
         self.assertNotEqual(connection_results_1, connection_results_2)
 
-    @data(*itertools.product([({"start_datetime": "2020-11-19 12:00:00", "start_stop_name": 'Górka Narodowa Wschód', "end_stop_name": 'Wieliczka Miasto'}, ["503", "304"])]))
+    @data(*itertools.product([
+        ({"start_datetime": "2020-11-19 12:00:00", "start_stop_name": 'Górka Narodowa Wschód', "end_stop_name": 'Wieliczka Miasto'}, ["503", "304"]),
+        ({"start_datetime": "2020-11-19 12:00:00", "start_stop_name": 'Kawiory', "end_stop_name": 'Azory'}, ["173"]),
+        ({"start_datetime": "2020-11-19 12:00:00", "start_stop_name": 'Kawiory', "end_stop_name": 'Azory'}, ["144"])
+                              ]))
     @unpack
-    def test_particular_connection_exists(self, parameters):
+    def test_particular_connection_exists_by_routes(self, parameters):
         query, exppected_route_names = parameters
         query["query_id"] = 1
         connection_query = ConnectionQuery.from_dict(query)
@@ -124,6 +134,23 @@ class ConnectionSolverTests(unittest.TestCase):
         for connection in connections:
             route_names = [transfer.route_name for transfer in connection.transfers]
             if route_names == exppected_route_names:
+                return
+        self.fail()
+
+    @data(*itertools.product([({"start_datetime": "2020-11-19 12:00:00", "start_stop_name": 'Cracovia Stadion', "end_stop_name": 'ZOO'}, "2020-11-19 12:04:00", "2020-11-19 12:20:00"),
+                            ({"start_datetime": "2020-11-19 12:14:00", "start_stop_name": 'Rondo Grunwaldzkie', "end_stop_name": 'Rynek Dębnicki'}, "2020-11-19 12:15:00", "2020-11-19 12:17:00"),
+                            ({"start_datetime": "2020-11-19 12:00:00", "start_stop_name": 'Os. Podwawelskie', "end_stop_name": 'Rondo Grunwaldzkie'}, "2020-11-19 12:10:00", "2020-11-19 12:12:00")]))
+    @unpack
+    def test_particular_connection_exists_by_times(self, parameters):
+        query, start_datetime, end_datetime = parameters
+        start_datetime = datetime.strptime(start_datetime, DATETIME_FORMAT)
+        end_datetime = datetime.strptime(end_datetime, DATETIME_FORMAT)
+        query["query_id"] = 1
+        connection_query = ConnectionQuery.from_dict(query)
+        connection_results: ConnectionResults = self.connection_solver.find_connections(connection_query)
+        connections = connection_results.connections
+        for connection in connections:
+            if connection.start_datetime == start_datetime and connection.end_datetime == end_datetime:
                 return
         self.fail()
 
