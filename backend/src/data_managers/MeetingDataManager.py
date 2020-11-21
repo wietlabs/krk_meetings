@@ -6,6 +6,10 @@ from src.config import FloydDataPaths
 
 
 class MeetingDataManager(DataManager):
+    def __init__(self, data_path):
+        super().__init__()
+        self.data_path = data_path
+
     @property
     def exchange(self):
         return EXCHANGES.MEETING_DATA_MANAGER.value

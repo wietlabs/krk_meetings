@@ -1,4 +1,4 @@
-from src.config import ErrorCodes
+from src.config import ErrorCodes, FloydDataPaths
 from src.data_classes.MeetingQuery import MeetingQuery
 from src.data_classes.MeetingResults import MeetingResults
 from src.solver import solver_utils
@@ -8,8 +8,8 @@ from src.solver.solver_utils import meeting_stop_data
 
 
 class MeetingSolver(IMeetingSolver):
-    def __init__(self, ):
-        self.data_manager = MeetingDataManager()
+    def __init__(self, data_path=FloydDataPaths):
+        self.data_manager = MeetingDataManager(data_path)
         self.distances = None
         self.stops_df = None
         self.stops_df_by_name = None

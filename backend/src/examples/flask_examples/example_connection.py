@@ -8,7 +8,6 @@ from src.examples.flask_examples.sample_queries import ConnectionQuerySamples
 
 if __name__ == "__main__":
     query_json = ConnectionQuerySamples.jubilat_baluckiego.value
-    query_json = {"start_datetime": "2020-11-19 12:00:00", "start_stop_name": 'Chopina', "end_stop_name": 'Azory'}
 
     execution_start = time.time()
     response = requests.post(URL.CONNECTION.value, json=query_json, timeout=1.0)

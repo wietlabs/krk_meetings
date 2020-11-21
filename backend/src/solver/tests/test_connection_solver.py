@@ -1,53 +1,25 @@
 import unittest
 from datetime import datetime, timedelta
-from pathlib import Path
-
-import networkx as nx
 from ddt import ddt, data, unpack
-from enum import Enum
-
 from src.config import DATETIME_FORMAT
 from src.data_classes.ConnectionQuery import ConnectionQuery
 from src.data_classes.ConnectionResults import ConnectionResults
 from src.data_classes.Walk import Walk
 from src.solver.ConnectionSolver import ConnectionSolver
 import itertools
+from src.solver.tests.config import TestFloydDataPaths
 
-from src.solver.solver_utils import get_stop_id_by_name
-from src.utils import load_pickle
-
-RESOURCES_DIR_PATH = Path(__file__).parent / 'resources'
-
-
-class FloydDataPath(Enum):
-    floyd_graph = RESOURCES_DIR_PATH / "floyd_graph.pickle"
-    kernelized_floyd_graph = RESOURCES_DIR_PATH / "kernelized_floyd_graph.pickle"
-    distances = RESOURCES_DIR_PATH / "distances.pickle"
-    day_to_services_dict = RESOURCES_DIR_PATH / "day_to_services_dict.pickle"
-    stop_times_0_dict = RESOURCES_DIR_PATH / "stop_times_0_dict.pickle"
-    stop_times_24_dict = RESOURCES_DIR_PATH / "stop_times_24_dict.pickle"
-    routes_to_stops_dict = RESOURCES_DIR_PATH / "routes_to_stops_dict.pickle"
-    adjacent_stops = RESOURCES_DIR_PATH / "adjacent_stops.pickle"
-    stops_df = RESOURCES_DIR_PATH / "stops_df.pickle"
-    routes_df = RESOURCES_DIR_PATH / "routes_df.pickle"
-    stops_df_by_name = RESOURCES_DIR_PATH / "stops_df_by_name.pickle"
-    api_walking_distances = RESOURCES_DIR_PATH / "api_walking_distances.pickle"
-    exception_days = RESOURCES_DIR_PATH / "exception_days.pickle"
-
-
-sample_queries = [{"start_datetime": "2020-05-24 12:00:00", "start_stop_name": 'Krzeszowice Dworzec Autobusowy', "end_stop_name": 'Wolica Most'}]
 
 @ddt
 class ConnectionSolverTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.connection_solver = ConnectionSolver(data_path=FloydDataPath)
+        cls.connection_solver = ConnectionSolver(data_path=TestFloydDataPaths)
         cls.connection_solver.data_manager.update_data()
 
-    @data(*itertools.product(sample_queries))
+    @data(*itertools.product([{"start_datetime": "2020-05-24 12:00:00", "start_stop_name": 'Krzeszowice Dworzec Autobusowy', "end_stop_name": 'Wolica Most'}]))
     @unpack
     def test_connection_result_not_empty(self, query):
-        query["query_id"] = 1
         connection_query = ConnectionQuery.from_dict(query)
         connection_results: ConnectionResults = self.connection_solver.find_connections(connection_query)
         self.assertNotEqual(len(connection_results.connections), 0)
@@ -56,7 +28,6 @@ class ConnectionSolverTests(unittest.TestCase):
     @unpack
     def test_connection_has_walking_edge(self, parameters):
         query, start_walking_stop = parameters
-        query["query_id"] = 1
         connection_query = ConnectionQuery.from_dict(query)
         connection_results: ConnectionResults = self.connection_solver.find_connections(connection_query)
         connections = connection_results.connections
@@ -72,7 +43,6 @@ class ConnectionSolverTests(unittest.TestCase):
     @unpack
     def test_connection_duration(self, parameters):
         query, duration = parameters
-        query["query_id"] = 1
         connection_query = ConnectionQuery.from_dict(query)
         connection_results: ConnectionResults = self.connection_solver.find_connections(connection_query)
         connections = connection_results.connections
@@ -87,8 +57,6 @@ class ConnectionSolverTests(unittest.TestCase):
     @unpack
     def test_exception_days(self, queries):
         query_1, query_2 = queries
-        query_1["query_id"] = 1
-        query_2["query_id"] = 2
         connection_query = ConnectionQuery.from_dict(query_1)
         connection_results_1 = self.connection_solver.find_connections(connection_query)
         connection_results_1 = [[(transfer.start_stop_name, transfer.end_stop_name, transfer.route_name, transfer.headsign)
@@ -106,8 +74,6 @@ class ConnectionSolverTests(unittest.TestCase):
     @unpack
     def test_different_services(self, queries):
         query_1, query_2 = queries
-        query_1["query_id"] = 1
-        query_2["query_id"] = 2
         connection_query = ConnectionQuery.from_dict(query_1)
         connection_results_1 = self.connection_solver.find_connections(connection_query)
         connection_results_1 = [[(action.start_stop_name, action.end_stop_name)
@@ -127,7 +93,6 @@ class ConnectionSolverTests(unittest.TestCase):
     @unpack
     def test_particular_connection_exists_by_routes(self, parameters):
         query, exppected_route_names = parameters
-        query["query_id"] = 1
         connection_query = ConnectionQuery.from_dict(query)
         connection_results: ConnectionResults = self.connection_solver.find_connections(connection_query)
         connections = connection_results.connections
@@ -145,7 +110,6 @@ class ConnectionSolverTests(unittest.TestCase):
         query, start_datetime, end_datetime = parameters
         start_datetime = datetime.strptime(start_datetime, DATETIME_FORMAT)
         end_datetime = datetime.strptime(end_datetime, DATETIME_FORMAT)
-        query["query_id"] = 1
         connection_query = ConnectionQuery.from_dict(query)
         connection_results: ConnectionResults = self.connection_solver.find_connections(connection_query)
         connections = connection_results.connections
