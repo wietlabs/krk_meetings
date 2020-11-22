@@ -13,7 +13,7 @@ class Connection:
     actions: List[IAction]
 
     @property
-    def transfers(self) -> List[IAction]:
+    def transfers(self) -> List[Transfer]:
         return [action for action in self.actions if isinstance(action, Transfer)]
 
     @property

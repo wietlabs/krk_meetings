@@ -1,4 +1,4 @@
-from src.config import ErrorCodes
+from src.config import ErrorCodes, FloydDataPaths
 from src.data_classes.MeetingQuery import MeetingQuery
 from src.data_classes.MeetingResults import MeetingResults
 from src.solver import solver_utils
@@ -8,13 +8,14 @@ from src.solver.solver_utils import meeting_stop_data
 
 
 class MeetingSolver(IMeetingSolver):
-    def __init__(self, ):
-        self.data_manager = MeetingDataManager()
+    def __init__(self, data_path=FloydDataPaths):
+        self.data_manager = MeetingDataManager(data_path)
         self.distances = None
         self.stops_df = None
         self.stops_df_by_name = None
         self.last_data_update = None
 
+    def start(self):
         self.data_manager.start()
         self.update_data()
 
@@ -26,7 +27,7 @@ class MeetingSolver(IMeetingSolver):
         self.last_data_update = self.data_manager.last_data_update
 
     def find_meeting_points(self, query: MeetingQuery) -> MeetingResults:
-        if self.last_data_update < self.data_manager.last_data_update:
+        if self.last_data_update is None or self.last_data_update < self.data_manager.last_data_update:
             self.update_data()
         start_stop_ids = [solver_utils.get_stop_id_by_name(stop_name, self.stops_df_by_name) for stop_name in query.start_stop_names]
         if None in start_stop_ids:

@@ -16,13 +16,13 @@ from src.utils import time_to_int
 from src.solver.IConnectionSolver import IConnectionSolver
 from src.data_classes.Transfer import Transfer
 from src.data_classes.ConnectionQuery import ConnectionQuery
-from src.config import ErrorCodes, DEFAULT_CONNECTION_SOLVER_CONFIGURATION, WALKING_ROUTE_ID
+from src.config import ErrorCodes, DEFAULT_CONNECTION_SOLVER_CONFIGURATION, WALKING_ROUTE_ID, FloydDataPaths
 
 
 class ConnectionSolver(IConnectionSolver):
-    def __init__(self, configuration: ConnectionSolverConfiguration = DEFAULT_CONNECTION_SOLVER_CONFIGURATION):
+    def __init__(self, configuration: ConnectionSolverConfiguration = DEFAULT_CONNECTION_SOLVER_CONFIGURATION, data_path=FloydDataPaths):
         self.configuration = configuration
-        self.data_manager = ConnectionDataManager()
+        self.data_manager = ConnectionDataManager(data_path)
         self.graph = None
         self.kernelized_graph = None
         self.distances = None
@@ -38,6 +38,7 @@ class ConnectionSolver(IConnectionSolver):
         self.exception_days_dict = None
         self.last_data_update = None
 
+    def start(self):
         self.data_manager.start()
         self.update_data()
 
@@ -62,7 +63,7 @@ class ConnectionSolver(IConnectionSolver):
 
     def find_connections(self, query: ConnectionQuery) -> ConnectionResults:
         print("ConnectionSolver: finding connections")
-        if self.last_data_update < self.data_manager.last_data_update:
+        if self.last_data_update is None or self.last_data_update < self.data_manager.last_data_update:
             self.update_data()
         current_datetime = query.start_datetime
         current_time = time_to_int(current_datetime.time())
@@ -320,3 +321,5 @@ class ConnectionSolver(IConnectionSolver):
         if set(last_route).issubset(route) or set(route).issubset(last_route):
             return True
         return False
+
+
