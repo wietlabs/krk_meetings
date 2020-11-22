@@ -18,8 +18,9 @@ class RmqConnectionSolver:
         self.results_producer = RmqProducer(EXCHANGES.FLASK_SERVER_CONNECTION.value)
 
     def start(self):
-        print("ConnectionSolver: started.")
+        self.connection_solver.start()
         self.results_producer.start()
+        print("ConnectionSolver: started.")
         self.query_consumer.start()
 
     def stop(self):

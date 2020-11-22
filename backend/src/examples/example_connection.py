@@ -8,7 +8,6 @@ from src.examples.sample_queries import ConnectionQuerySamples
 
 if __name__ == "__main__":
     query_json = ConnectionQuerySamples.jubilat_baluckiego.value
-    query_json = {'start_datetime': '2020-05-24 12:00:00', 'start_stop_name': 'Skawina Korabnicka Szkoła (nż)', 'end_stop_name': 'Tor Kajakowy'}
 
     execution_start = time.time()
     response = requests.post(URL.CONNECTION.value, json=query_json, timeout=1.0)

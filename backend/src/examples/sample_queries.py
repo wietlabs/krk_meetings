@@ -17,6 +17,7 @@ class ConnectionQuerySamples(Enum):
     bad_end_stop_name = {"start_datetime": "2020-05-24 12:00:00", "start_stop_name": 'Dunikowskiego' ,"end_stop_name": 'AAAAAA'}
     value_error = {"start_datetime": "2020-05-24 12:00:00", "start_stop_name": 'AGH / UR' ,"end_stop_name": 'Cechowa (nż)'}
 
+
 class MeetingQuerySamples(Enum):
     square_3_stops = {"start_stop_names": ["Azory", "Kawiory", "Rondo Mogilskie"], "metric": "square"}
     bad_names = {"start_stop_names": ["AAAAA", "BBBBB", "Rondo Mogilskie"], "metric": "square"}
