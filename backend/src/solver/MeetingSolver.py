@@ -27,7 +27,7 @@ class MeetingSolver(IMeetingSolver):
         self.last_data_update = self.data_manager.last_data_update
 
     def find_meeting_points(self, query: MeetingQuery) -> MeetingResults:
-        if self.last_data_update < self.data_manager.last_data_update:
+        if self.last_data_update is None or self.last_data_update < self.data_manager.last_data_update:
             self.update_data()
         start_stop_ids = [solver_utils.get_stop_id_by_name(stop_name, self.stops_df_by_name) for stop_name in query.start_stop_names]
         if None in start_stop_ids:

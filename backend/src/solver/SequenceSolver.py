@@ -28,7 +28,7 @@ class SequenceSolver(ISequenceSolver):
         self.last_data_update = self.data_manager.last_data_update
 
     def find_best_sequence(self, query: SequenceQuery) -> SequenceResults:
-        if self.last_data_update < self.data_manager.last_data_update:
+        if self.last_data_update is None or self.last_data_update < self.data_manager.last_data_update:
             self.update_data()
 
         def gen(stop_ids: list, current_stop_id, last_stop_id, sequence: list, weight: int):
