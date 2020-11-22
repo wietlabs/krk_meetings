@@ -1,6 +1,6 @@
 from copy import copy
 
-from src.config import ErrorCodes
+from src.config import ErrorCodes, FloydDataPaths
 from src.data_classes.SequenceQuery import SequenceQuery
 from src.data_classes.SequenceResults import SequenceResults
 from src.solver import solver_utils
@@ -9,8 +9,8 @@ from src.data_managers.SequenceDataManager import SequenceDataManager
 
 
 class SequenceSolver(ISequenceSolver):
-    def __init__(self, ):
-        self.data_manager = SequenceDataManager()
+    def __init__(self, data_path=FloydDataPaths):
+        self.data_manager = SequenceDataManager(data_path)
         self.distances = None
         self.stops_df = None
         self.stops_df_by_name = None
