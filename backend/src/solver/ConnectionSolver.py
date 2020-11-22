@@ -13,10 +13,10 @@ from src.solver.ConnectionSolverConfiguration import ConnectionSolverConfigurati
 from src.data_managers.ConnectionDataManager import ConnectionDataManager
 from src.solver.solver_utils import get_services
 from src.utils import time_to_int
-from src.solver.IConnectionSolver import IConnectionSolver
+from src.solver.interfaces.IConnectionSolver import IConnectionSolver
 from src.data_classes.Transfer import Transfer
 from src.data_classes.ConnectionQuery import ConnectionQuery
-from src.config import ErrorCodes, DEFAULT_CONNECTION_SOLVER_CONFIGURATION, WALKING_ROUTE_ID, FloydDataPaths
+from src.config import ErrorCodes, DEFAULT_CONNECTION_SOLVER_CONFIGURATION, FloydDataPaths
 
 
 class ConnectionSolver(IConnectionSolver):
@@ -240,7 +240,7 @@ class ConnectionSolver(IConnectionSolver):
                     + self.configuration.max_priority_cap) * self.configuration.path_calculation_boost
 
         def resolve_neighbor(node_id, neighbor_id, weight, path, routes, graph):
-            n_weight = weight + graph.edges[node_id, neighbor_id]['weight'] + self.configuration.change_penalty
+            n_weight = weight + graph.edges[node_id, neighbor_id]['weight']
             n_queue_priority = n_weight + self.distances[neighbor_id][
                 end_node_id] * self.configuration.path_calculation_boost
             n_priority = n_weight + self.distances[neighbor_id][

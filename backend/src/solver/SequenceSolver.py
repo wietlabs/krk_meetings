@@ -4,7 +4,7 @@ from src.config import ErrorCodes, FloydDataPaths
 from src.data_classes.SequenceQuery import SequenceQuery
 from src.data_classes.SequenceResults import SequenceResults
 from src.solver import solver_utils
-from src.solver.ISequenceSolver import ISequenceSolver
+from src.solver.interfaces.ISequenceSolver import ISequenceSolver
 from src.data_managers.SequenceDataManager import SequenceDataManager
 
 

@@ -14,11 +14,11 @@ from src.data_classes.SequenceQuery import SequenceQuery
 
 
 def start_flask_server():
-    flask_server = FlaskServer('FlaskServer')
+    flask_server = BackendServer('FlaskServer')
     flask_server.start()
 
 
-class FlaskServer:
+class BackendServer:
     app = None
 
     def __init__(self, name):

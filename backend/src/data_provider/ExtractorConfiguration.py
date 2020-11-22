@@ -2,7 +2,7 @@ from dataclasses import dataclass
 
 
 @dataclass
-class FloydExtractorConfiguration:
+class ExtractorConfiguration:
     daily_period_multiplier: float
     nightly_period_multiplier: float
     change_penalty: int
@@ -11,5 +11,6 @@ class FloydExtractorConfiguration:
     nightly_hours: int
     walking_route_id: int
     number_of_services: int
+    max_walking_time_in_minutes: float
 
 

@@ -11,7 +11,6 @@ class ConnectionSolverConfiguration:
     max_priority_cap: int
     path_calculation_boost: float
     max_number_of_paths: int
-    change_penalty: int
     max_path_calculation_time: int
     max_path_len: int
     walking_route_id: int

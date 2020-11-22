@@ -1,17 +1,20 @@
-import requests
+import json
 import time
+
+import requests
+
 from src.config import URL
-from src.examples.flask_examples.sample_queries import SequenceQuerySamples
+from src.examples.sample_queries import ConnectionQuerySamples
 
 if __name__ == "__main__":
-    query_json = SequenceQuerySamples.four_stops_to_fisit.value
+    query_json = ConnectionQuerySamples.jubilat_baluckiego.value
 
     execution_start = time.time()
-    response = requests.post(URL.SEQUENCE.value, json=query_json, timeout=1.0)
+    response = requests.post(URL.CONNECTION.value, json=query_json, timeout=1.0)
     query_id = response.json()["query_id"]
     result = None
 
-    for _ in range(30):
+    for _ in range(100):
         response = requests.get(URL.RESULTS.value.format(query_id), timeout=1.0)
         result = response.json()
         if response.status_code != 202:
@@ -20,5 +23,5 @@ if __name__ == "__main__":
             break
         time.sleep(0.2)
 
-    print(result)
+    print(json.dumps(result, ensure_ascii=False))
     print(time.time() - execution_start)
