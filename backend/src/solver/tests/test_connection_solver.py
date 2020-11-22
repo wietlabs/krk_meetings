@@ -24,16 +24,15 @@ class ConnectionSolverTests(unittest.TestCase):
         connection_results: ConnectionResults = self.connection_solver.find_connections(connection_query)
         self.assertNotEqual(len(connection_results.connections), 0)
 
-    @data(*itertools.product([({"start_datetime": "2020-11-19 12:00:00", "start_stop_name": 'Jubilat', "end_stop_name": 'Kostrze Szkoła'}, "Rynek Dębnicki")]))
+    @data(*itertools.product([({"start_datetime": "2020-11-19 12:00:00", "start_stop_name": 'Jubilat', "end_stop_name": 'Kostrze Szkoła'})]))
     @unpack
-    def test_connection_has_walking_edge(self, parameters):
-        query, start_walking_stop = parameters
+    def test_connection_has_walking_edge(self, query):
         connection_query = ConnectionQuery.from_dict(query)
         connection_results: ConnectionResults = self.connection_solver.find_connections(connection_query)
         connections = connection_results.connections
         for connection in connections:
             for action in connection.actions:
-                if isinstance(action, Walk) and action.end_stop_name:
+                if isinstance(action, Walk):
                     return
         self.fail()
 

@@ -16,6 +16,7 @@ class SequenceSolver(ISequenceSolver):
         self.stops_df_by_name = None
         self.last_data_update = None
 
+    def start(self):
         self.data_manager.start()
         self.update_data()
 

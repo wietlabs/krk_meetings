@@ -17,8 +17,9 @@ class RmqMeetingSolver:
         self.results_producer = RmqProducer(EXCHANGES.FLASK_SERVER_MEETING.value)
 
     def start(self):
-        print("MeetingSolver: started.")
+        self.meeting_solver.start()
         self.results_producer.start()
+        print("MeetingSolver: started.")
         self.query_consumer.start()
 
     def stop(self):
