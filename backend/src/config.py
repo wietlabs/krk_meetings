@@ -1,26 +1,25 @@
 from enum import Enum
 from pathlib import Path
 
-from src.data_provider.FloydExtractorConfiguration import FloydExtractorConfiguration
+from src.data_provider.ExtractorConfiguration import ExtractorConfiguration
 from src.solver.ConnectionSolverConfiguration import ConnectionSolverConfiguration
 
 
-MAX_WALKING_TIME_IN_MINUTES: float = 10
 MAX_WALKING_DISTANCE = 1000  # min
 WALKING_SPEED: float = 1.0
 WALKING_ROUTE_ID: int = -1
 DATETIME_FORMAT: str = "%Y-%m-%d %H:%M:%S"
-CHANGE_PENALTY = 1200  # sec
 
-DEFAULT_FLOYD_EXTRACTOR_CONFIGURATION = FloydExtractorConfiguration(
+DEFAULT_FLOYD_EXTRACTOR_CONFIGURATION = ExtractorConfiguration(
     daily_period_multiplier=0.8,
     nightly_period_multiplier=0.4,
-    change_penalty=CHANGE_PENALTY,
+    change_penalty=1800,
     nightly_route_ranges=[(600, 699), (900, 999)],
     daily_hours=19,  # from 5 to 24
     nightly_hours=5,  # from 24 to 5
     walking_route_id=WALKING_ROUTE_ID,
-    number_of_services=3
+    number_of_services=3,
+    max_walking_time_in_minutes=10
 )
 
 DEFAULT_CONNECTION_SOLVER_CONFIGURATION = ConnectionSolverConfiguration(
@@ -32,7 +31,6 @@ DEFAULT_CONNECTION_SOLVER_CONFIGURATION = ConnectionSolverConfiguration(
     max_priority_cap=2400,  # sec - cant be 0 due to ban of walking from stop to stop twice in a row
     path_calculation_boost=1.5,
     max_number_of_paths=6,
-    change_penalty=CHANGE_PENALTY,
     max_path_len=6,
     max_path_calculation_time=3,  # sec
     walking_route_id=WALKING_ROUTE_ID,

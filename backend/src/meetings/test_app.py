@@ -4,7 +4,7 @@ import pytest
 from flask.testing import FlaskClient
 from sqlalchemy.testing import mock
 
-from src.meetings.app import app, db, User
+from src.meetings.MeetingsServer import app, db, User
 
 
 @pytest.fixture

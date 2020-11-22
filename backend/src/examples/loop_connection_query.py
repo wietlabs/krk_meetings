@@ -3,8 +3,6 @@ import requests
 from src.config import URL
 import random
 
-from src.examples.flask_examples.sample_queries import FAILING_CONNECTIONS
-
 
 def loop_connection_query():
     response = requests.get(URL.STOPS.value, timeout=1.0)

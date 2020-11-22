@@ -1,13 +1,13 @@
 import requests
 import time
 from src.config import URL
-from src.examples.flask_examples.sample_queries import SequenceQuerySamples
+from src.examples.sample_queries import MeetingQuerySamples
 
 if __name__ == "__main__":
-    query_json = SequenceQuerySamples.four_stops_to_fisit.value
+    query_json = MeetingQuerySamples.square_3_stops.value
 
     execution_start = time.time()
-    response = requests.post(URL.SEQUENCE.value, json=query_json, timeout=1.0)
+    response = requests.post(URL.MEETING.value, json=query_json, timeout=1.0)
     query_id = response.json()["query_id"]
     result = None
 

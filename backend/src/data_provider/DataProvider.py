@@ -8,7 +8,7 @@ import networkx as nx
 
 from src.data_classes.ParsedData import ParsedData
 from src.data_provider.Downloader import Downloader
-from src.data_provider.FloydDataExtractor import FloydDataExtractor
+from src.data_provider.Extractor import Extractor
 from src.rabbitmq.RmqProducer import RmqProducer
 from src.exchanges import EXCHANGES, MESSAGES
 from src.config import FloydDataPaths, CONFIG_JSON_PATH
@@ -16,11 +16,11 @@ from src.utils import save_pickle
 
 
 def start_data_provider():
-    data_provider = FloydDataProvider()
+    data_provider = DataProvider()
     data_provider.start()
 
 
-class FloydDataProvider:
+class DataProvider:
     def __init__(self):
         self.floyd_data_producer = RmqProducer(EXCHANGES.DATA_PROVIDER.value)
         self.downloader = Downloader()
@@ -51,7 +51,7 @@ class FloydDataProvider:
 
     @staticmethod
     def extract_floyd_data(merged_data: ParsedData):
-        extractor = FloydDataExtractor()
+        extractor = Extractor()
         stops_df = merged_data.stops_df
         transfers_df = merged_data.transfers_df
         stop_times_df = merged_data.stop_times_df
@@ -124,7 +124,7 @@ class FloydDataProvider:
             }
             json.dump(update_date, json_file)
 
-    def reparse_floyd_data(self):
+    def reparse_data(self):
         new_update_date = self.downloader.get_last_update_time()
         merged_data = self.downloader.download_merged_data()
         self.extract_floyd_data(merged_data)
@@ -132,6 +132,6 @@ class FloydDataProvider:
 
 
 if __name__ == "__main__":
-    data_provider = FloydDataProvider()
-    data_provider.reparse_floyd_data()
+    data_provider = DataProvider()
+    data_provider.reparse_data()
     data_provider.stop()

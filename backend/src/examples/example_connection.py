@@ -4,7 +4,7 @@ import time
 import requests
 
 from src.config import URL
-from src.examples.flask_examples.sample_queries import ConnectionQuerySamples
+from src.examples.sample_queries import ConnectionQuerySamples
 
 if __name__ == "__main__":
     query_json = ConnectionQuerySamples.jubilat_baluckiego.value

@@ -2,7 +2,7 @@ from src.config import ErrorCodes
 from src.data_classes.MeetingQuery import MeetingQuery
 from src.data_classes.MeetingResults import MeetingResults
 from src.solver import solver_utils
-from src.solver.IMeetingSolver import IMeetingSolver
+from src.solver.interfaces.IMeetingSolver import IMeetingSolver
 from src.data_managers.MeetingDataManager import MeetingDataManager
 from src.solver.solver_utils import meeting_stop_data
 

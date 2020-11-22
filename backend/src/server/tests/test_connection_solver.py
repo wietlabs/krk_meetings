@@ -8,7 +8,7 @@ import pytest
 import requests
 
 from src.config import URL
-from src.server.FlaskServer import start_flask_server
+from src.server.BackendServer import start_flask_server
 from src.rabbitmq.RmqConnectionSolver import start_connection_solver
 
 

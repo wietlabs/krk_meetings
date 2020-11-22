@@ -7,7 +7,7 @@ from src.alternative_solvers.BfsSolverData import BfsSolverData
 from src.data_classes.ConnectionQuery import ConnectionQuery
 from src.data_classes.Connection import Connection
 from src.data_classes.Transfer import Transfer
-from src.solver.IConnectionSolver import IConnectionSolver
+from src.solver.interfaces.IConnectionSolver import IConnectionSolver
 
 
 class BfsConnectionSolver(IConnectionSolver):
