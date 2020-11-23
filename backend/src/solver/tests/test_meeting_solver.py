@@ -11,14 +11,14 @@ from src.solver.ConnectionSolver import ConnectionSolver
 import itertools
 
 from src.solver.MeetingSolver import MeetingSolver
-from src.solver.tests.config import TestFloydDataPaths
+from src.solver.tests.config import FloydDataPathsTest
 
 
 @ddt
 class ConnectionSolverTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.meeting_solver = MeetingSolver(data_path=TestFloydDataPaths)
+        cls.meeting_solver = MeetingSolver(data_path=FloydDataPathsTest)
         cls.meeting_solver.data_manager.update_data()
 
     @data(*itertools.product([({"start_stop_names": ["Kampus UJ", "AGH / UR", "Prokocim Szpital"], "metric": "square"}, "Rondo Matecznego"),

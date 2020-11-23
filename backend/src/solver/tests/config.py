@@ -4,7 +4,7 @@ from pathlib import Path
 RESOURCES_DIR_PATH = Path(__file__).parent / 'resources'
 
 
-class TestFloydDataPaths(Enum):
+class FloydDataPathsTest(Enum):
     floyd_graph = RESOURCES_DIR_PATH / "floyd_graph.pickle"
     kernelized_floyd_graph = RESOURCES_DIR_PATH / "kernelized_floyd_graph.pickle"
     distances = RESOURCES_DIR_PATH / "distances.pickle"

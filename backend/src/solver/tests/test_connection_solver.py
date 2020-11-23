@@ -7,14 +7,14 @@ from src.data_classes.ConnectionResults import ConnectionResults
 from src.data_classes.Walk import Walk
 from src.solver.ConnectionSolver import ConnectionSolver
 import itertools
-from src.solver.tests.config import TestFloydDataPaths
+from src.solver.tests.config import FloydDataPathsTest
 
 
 @ddt
 class ConnectionSolverTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.connection_solver = ConnectionSolver(data_path=TestFloydDataPaths)
+        cls.connection_solver = ConnectionSolver(data_path=FloydDataPathsTest)
         cls.connection_solver.data_manager.update_data()
 
     @data(*itertools.product([{"start_datetime": "2020-05-24 12:00:00", "start_stop_name": 'Krzeszowice Dworzec Autobusowy', "end_stop_name": 'Wolica Most'}]))
