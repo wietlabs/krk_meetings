@@ -8,7 +8,7 @@ import {
   ToastAndroid,
 } from "react-native";
 import { ActivityIndicator, Button, Chip, List } from "react-native-paper";
-import { getMeetingDetails } from "../../../api/MeetingsApi";
+import { getMeetingDetails, leaveMeeting } from "../../../api/MeetingsApi";
 import { createMeetingLink } from "../../../LinkManager";
 import { getNickname } from "../../../UserManager";
 
@@ -79,6 +79,23 @@ export default function MeetingDetailsScreen({ navigation, route }) {
     navigation.navigate("SelectEndStop", { meetingUuid, userUuid });
   };
 
+  const handleLeave = () => {
+    leaveMeeting(meetingUuid, userUuid);
+    navigation.pop();
+  };
+
+  const handleConfirmLeave = () => {
+    if (isMeetingOwner) {
+      Alert.alert("Wystąpił błąd", "Organizator nie może opuścić spotkania.");
+      return;
+    }
+
+    Alert.alert("Potwierdzenie", `Czy na pewno chcesz opuścić spotkanie?`, [
+      { text: "Tak", style: "destructive", onPress: () => handleLeave() },
+      { text: "Nie", style: "cancel" },
+    ]);
+  };
+
   const handleFindConnections = () => {
     navigation.navigate("ConnectionsStack", {
       screen: "FindConnections",
@@ -146,7 +163,7 @@ export default function MeetingDetailsScreen({ navigation, route }) {
           style={{
             marginLeft: 16,
             marginRight: 16,
-            marginTop: 8,
+            marginTop: 12,
             marginBottom: 8,
           }}
           onPress={handleFindConnections}
@@ -178,6 +195,20 @@ export default function MeetingDetailsScreen({ navigation, route }) {
             style={{ backgroundColor: "white" }}
           />
         ))}
+        <Button
+          mode="contained"
+          icon="account-remove"
+          style={{
+            marginLeft: 16,
+            marginRight: 16,
+            marginTop: 12,
+            marginBottom: 8,
+          }}
+          color="red"
+          onPress={handleConfirmLeave}
+        >
+          Opuść spotkanie
+        </Button>
         <List.Subheader>Zaproś znajomych</List.Subheader>
         <List.Item
           title={meetingUrl}

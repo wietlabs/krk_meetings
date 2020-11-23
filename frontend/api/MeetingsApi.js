@@ -92,3 +92,8 @@ export const updateMeetingStopName = async (
   const params = { user_uuid: userUuid, stop_name: stopName };
   await axios.patch(url, params);
 };
+
+export const leaveMeeting = async (meetingUuid, userUuid) => {
+  const url = `${baseUrl}/api/v1/meetings/${meetingUuid}/members/${userUuid}`;
+  await axios.delete(url);
+};
