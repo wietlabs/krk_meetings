@@ -143,3 +143,33 @@ def test_create_meeting(client: FlaskClient) -> None:
             'stop_name': None,
         },
     }
+
+
+def test_leave_meeting(client: FlaskClient) -> None:
+    response = client.post('/api/v1/users')
+    owner_uuid = response.json['uuid']
+
+    response = client.post('/api/v1/users')
+    member_uuid = response.json['uuid']
+
+    response = client.post('/api/v1/meetings', json={
+        'user_uuid': owner_uuid,
+        'nickname': 'Alice',
+        'name': 'My meeting',
+        'datetime': '2020-01-02T03:04:05',
+    })
+    meeting_uuid = response.json['uuid']
+
+    client.post(f'/api/v1/meetings/{meeting_uuid}/members', json={
+        'user_uuid': member_uuid,
+        'nickname': 'Bob',
+    })
+
+    response = client.get(f'/api/v1/meetings/{meeting_uuid}')
+    assert response.json['members_count'] == 2
+
+    response = client.delete(f'/api/v1/meetings/{meeting_uuid}/members/{member_uuid}')
+    assert response.status_code == 204
+
+    response = client.get(f'/api/v1/meetings/{meeting_uuid}')
+    assert response.json['members_count'] == 1

@@ -171,6 +171,8 @@ def update_meeting_member_details(user_uuid: str, meeting_uuid: str):
         stop_name = None
 
     membership = Membership.query.get((meeting_uuid, user_uuid))
+    if not membership:
+        return {'error': 'Membership not found'}, 404
 
     if stop_name is not None:
         membership.stop_name = stop_name
@@ -289,14 +291,12 @@ def edit_meeting(meeting_uuid: str):
     if user != meeting.owner:
         return {'error': 'You are not a meeting owner'}, 403
 
-    print(meeting.stop_name)
-
     if stop_name is not None:
         meeting.stop_name = stop_name
 
     db.session.commit()
 
-    return {}, 200
+    return '', 204
 
 
 @app.route('/api/v1/meetings/<meeting_uuid>/members', methods=['POST'])
@@ -343,6 +343,43 @@ def join_meeting(meeting_uuid: str):
         return {'error': 'Already a member'}, 400
 
     return {}, 201
+
+
+@app.route('/api/v1/meetings/<meeting_uuid>/members/<user_uuid>', methods=['DELETE'])
+def leave_meeting(meeting_uuid: str, user_uuid: str):
+    try:
+        uuid.UUID(meeting_uuid, version=4)
+    except ValueError:
+        return {'error': 'Invalid meeting_uuid'}, 400
+
+    try:
+        uuid.UUID(user_uuid, version=4)
+    except ValueError:
+        return {'error': 'Invalid user_uuid'}, 400
+
+    user = User.query.get(user_uuid)
+    if not user:
+        return {'error': 'User not found'}, 404
+
+    meeting = Meeting.query.get(meeting_uuid)
+    if meeting is None:
+        return {'error': 'Meeting not found'}, 404
+
+    user = User.query.get(user_uuid)
+    if user is None:
+        return {'error': 'User not found'}, 404
+
+    if meeting.owner == user:
+        return {'error': 'Meeting owner cannot leave meeting'}, 403
+
+    membership = Membership.query.get((meeting_uuid, user_uuid))
+    if not membership:
+        return {'error': 'Membership not found'}, 404
+
+    db.session.delete(membership)
+    db.session.commit()
+
+    return '', 204
 
 
 if __name__ == '__main__':

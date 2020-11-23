@@ -32,7 +32,9 @@ export default function MeetingsScreen({ navigation, route }) {
   };
 
   React.useEffect(() => {
-    refresh();
+    navigation.addListener("focus", () => {
+      refresh();
+    });
   }, []);
 
   React.useLayoutEffect(() => {
