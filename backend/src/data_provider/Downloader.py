@@ -17,7 +17,7 @@ class Downloader:
 
         return max(mtime_A, mtime_T)
 
-    def download_merged_data(self) -> ParsedData:
+    def download_gtfs_static_data(self) -> Tuple[BytesIO, BytesIO]:
         gtfs_zip_T = BytesIO()
         gtfs_zip_A = BytesIO()
 
@@ -26,14 +26,7 @@ class Downloader:
             ftp.retrbinary('RETR /pliki-gtfs/GTFS_KRK_T.zip', gtfs_zip_T.write)
             ftp.retrbinary('RETR /pliki-gtfs/GTFS_KRK_A.zip', gtfs_zip_A.write)
 
-        parser = Parser()
-        parsed_data_T = parser.parse(gtfs_zip_T)
-        parsed_data_A = parser.parse(gtfs_zip_A)
-
-        merger = Merger()
-        merged_data, service_id_offset = merger.merge(parsed_data_T, parsed_data_A)
-
-        return merged_data
+        return gtfs_zip_T, gtfs_zip_A
 
     def download_vehicle_positions(self) -> Tuple[BytesIO, BytesIO]:
         vehicle_positions_pb_T = BytesIO()

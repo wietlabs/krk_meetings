@@ -9,6 +9,8 @@ import networkx as nx
 from src.data_classes.ParsedData import ParsedData
 from src.data_provider.Downloader import Downloader
 from src.data_provider.Extractor import Extractor
+from src.data_provider.Merger import Merger
+from src.data_provider.Parser import Parser
 from src.rabbitmq.RmqProducer import RmqProducer
 from src.exchanges import EXCHANGES, MESSAGES
 from src.config import FloydDataPaths, CONFIG_JSON_PATH
@@ -36,7 +38,16 @@ class DataProvider:
                 last_update_date = self.load_update_date()
                 if last_update_date is None or new_update_date > last_update_date:
                     print("FloydDataProvider: updating data")
-                    merged_data = self.downloader.download_merged_data()
+
+                    gtfs_zip_T, gtfs_zip_A = self.downloader.download_gtfs_static_data()
+
+                    parser = Parser()
+                    parsed_data_T = parser.parse(gtfs_zip_T)
+                    parsed_data_A = parser.parse(gtfs_zip_A)
+
+                    merger = Merger()
+                    merged_data, service_id_offset = merger.merge(parsed_data_T, parsed_data_A)
+
                     self.extract_floyd_data(merged_data)
                     self.save_update_date(new_update_date)
                     self.floyd_data_producer.send_msg(MESSAGES.DATA_UPDATED.value, lost_stream_msg="Solvers are down.")
@@ -126,7 +137,16 @@ class DataProvider:
 
     def reparse_data(self):
         new_update_date = self.downloader.get_last_update_time()
-        merged_data = self.downloader.download_merged_data()
+
+        gtfs_zip_T, gtfs_zip_A = self.downloader.download_gtfs_static_data()
+
+        parser = Parser()
+        parsed_data_T = parser.parse(gtfs_zip_T)
+        parsed_data_A = parser.parse(gtfs_zip_A)
+
+        merger = Merger()
+        merged_data, service_id_offset = merger.merge(parsed_data_T, parsed_data_A)
+
         self.extract_floyd_data(merged_data)
         self.save_update_date(new_update_date)
 
