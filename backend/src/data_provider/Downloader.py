@@ -1,6 +1,7 @@
 from datetime import datetime
 from ftplib import FTP
 from io import BytesIO
+from typing import Tuple
 
 from src.data_classes.ParsedData import ParsedData
 from src.data_provider.Merger import Merger
@@ -16,7 +17,7 @@ class Downloader:
 
         return max(mtime_A, mtime_T)
 
-    def download_merged_data(self) -> ParsedData:
+    def download_gtfs_static_data(self) -> Tuple[BytesIO, BytesIO]:
         gtfs_zip_T = BytesIO()
         gtfs_zip_A = BytesIO()
 
@@ -25,14 +26,18 @@ class Downloader:
             ftp.retrbinary('RETR /pliki-gtfs/GTFS_KRK_T.zip', gtfs_zip_T.write)
             ftp.retrbinary('RETR /pliki-gtfs/GTFS_KRK_A.zip', gtfs_zip_A.write)
 
-        parser = Parser()
-        parsed_data_T = parser.parse(gtfs_zip_T)
-        parsed_data_A = parser.parse(gtfs_zip_A)
+        return gtfs_zip_T, gtfs_zip_A
 
-        merger = Merger()
-        merged_data = merger.merge(parsed_data_T, parsed_data_A)
+    def download_vehicle_positions(self) -> Tuple[BytesIO, BytesIO]:
+        vehicle_positions_pb_T = BytesIO()
+        vehicle_positions_pb_A = BytesIO()
 
-        return merged_data
+        with FTP('ztp.krakow.pl') as ftp:
+            ftp.login()
+            ftp.retrbinary('RETR /pliki-gtfs/VehiclePositions_T.pb', vehicle_positions_pb_T.write)
+            ftp.retrbinary('RETR /pliki-gtfs/VehiclePositions_A.pb', vehicle_positions_pb_A.write)
+
+        return vehicle_positions_pb_T, vehicle_positions_pb_A
 
     @staticmethod
     def _get_file_mtime(ftp: FTP, path: str) -> datetime:
