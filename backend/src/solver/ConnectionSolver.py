@@ -29,8 +29,9 @@ class ConnectionSolver(IConnectionSolver):
         self.stops_df = None
         self.routes_df = None
         self.stops_df_by_name = None
-        self.stop_times_0 = None
-        self.stop_times_24 = None
+        self.current_stop_times = None
+        self.next_stop_times = None
+        self.previous_stop_times = None
         self.paths = None
         self.day_to_services_dict = None
         self.adjacent_stops = None
@@ -50,8 +51,9 @@ class ConnectionSolver(IConnectionSolver):
         self.stops_df = data["stops_df"]
         self.routes_df = data["routes_df"]
         self.stops_df_by_name = data["stops_df_by_name"]
-        self.stop_times_0 = data["stop_times_0"]
-        self.stop_times_24 = data["stop_times_24"]
+        self.current_stop_times = data["current_stop_times"]
+        self.next_stop_times = data["next_stop_times"]
+        self.previous_stop_times = data["previous_stop_times"]
         self.day_to_services_dict = data["day_to_services_dict"]
         self.adjacent_stops = data["adjacent_stops"]
         self.routes_to_stops_dict = data["routes_to_stops_dict"]
@@ -128,10 +130,10 @@ class ConnectionSolver(IConnectionSolver):
     def find_routes(self, path: List[int], earliest_start_time: int, latest_start_time: int, start_datetime: datetime,
                     connection_dfs: dict) -> list:
         current_services = get_services(start_datetime, self.day_to_services_dict, self.exception_days_dict)
-        next_services = get_services(start_datetime + timedelta(days=1), self.day_to_services_dict,
-                                     self.exception_days_dict)
+        previous_services = get_services(start_datetime - timedelta(days=1), self.day_to_services_dict, self.exception_days_dict)
+        next_services = get_services(start_datetime + timedelta(days=1), self.day_to_services_dict, self.exception_days_dict)
         results_df = self.find_result_routes_df(earliest_start_time, latest_start_time, path, current_services,
-                                                next_services, connection_dfs)
+                                                next_services, previous_services, connection_dfs)
         results = []
         for row in results_df.itertuples():
             result = []
@@ -144,14 +146,14 @@ class ConnectionSolver(IConnectionSolver):
         return results
 
     def find_result_routes_df(self, start_time: int, end_time: int, path, current_services, next_services,
-                              connection_dfs: dict) -> pd.DataFrame:
+                              previous_services, connection_dfs: dict) -> pd.DataFrame:
         results_df = pd.DataFrame()
         for i in range(len(path) - 1):
             current_stop = path[i]
             next_stop = path[i + 1]
 
-            cst_df = self.get_stoptimes_for_stop(current_stop, connection_dfs, current_services, next_services)
-            nst_df = self.get_stoptimes_for_stop(next_stop, connection_dfs, current_services, next_services)
+            cst_df = self.get_stoptimes_for_stop(current_stop, connection_dfs, current_services, next_services, previous_services)
+            nst_df = self.get_stoptimes_for_stop(next_stop, connection_dfs, current_services, next_services, previous_services)
 
             cst_df = cst_df[start_time <= cst_df.departure_time]
             cst_df = cst_df[cst_df.departure_time < end_time]
@@ -210,12 +212,13 @@ class ConnectionSolver(IConnectionSolver):
                     return pd.DataFrame()
         return results_df
 
-    def get_stoptimes_for_stop(self, stop_id, connection_dfs, current_services, next_services):
+    def get_stoptimes_for_stop(self, stop_id, connection_dfs, current_services, next_services, previous_services):
         if stop_id in connection_dfs.keys():
             return connection_dfs[stop_id]
 
-        df = pd.concat(chain([self.stop_times_0[stop_id][service] for service in current_services],
-                             [self.stop_times_24[stop_id][service] for service in next_services]))
+        df = pd.concat(chain([self.current_stop_times[stop_id][service] for service in current_services],
+                             [self.next_stop_times[stop_id][service] for service in next_services],
+                             [self.previous_stop_times[stop_id][service] for service in previous_services]))
         connection_dfs[stop_id] = df
         return df
 
