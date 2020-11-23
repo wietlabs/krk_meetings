@@ -1,15 +1,10 @@
+import itertools
 import unittest
-from datetime import datetime, timedelta
+
 from ddt import ddt, data, unpack
-from src.config import DATETIME_FORMAT
-from src.data_classes.ConnectionQuery import ConnectionQuery
-from src.data_classes.ConnectionResults import ConnectionResults
+
 from src.data_classes.MeetingQuery import MeetingQuery
 from src.data_classes.MeetingResults import MeetingResults
-from src.data_classes.Walk import Walk
-from src.solver.ConnectionSolver import ConnectionSolver
-import itertools
-
 from src.solver.MeetingSolver import MeetingSolver
 from src.solver.tests.config import FloydDataPathsTest
 
