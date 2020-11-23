@@ -66,7 +66,7 @@ class DataProvider:
         stops_df = extractor.set_first_and_last_stop(stop_times_df, route_ids_df, stops_df)
         stops_df_by_name = stops_df.reset_index().set_index('stop_name')
         transfers_df = extractor.create_transfers_trips_df(transfers_df, route_ids_df)
-        stop_times_0_df = extractor.create_stop_times_trips_df_for_service_id(stop_times_df, route_ids_df)
+        current_stop_times_df = extractor.create_stop_times_trips_df_for_service_id(stop_times_df, route_ids_df)
         day_to_services_dict = extractor.get_day_to_services_dict(calendar_df)
         routes_df = extractor.create_routes_trips_df(trips_df, routes_df, route_ids_df)
         services_list = extractor.get_services_list(calendar_df)
@@ -76,8 +76,8 @@ class DataProvider:
         print("FloydDataProvider: basic extraction done")
 
         # Floyd extraction
-        stop_times_0_df['service'] = stop_times_0_df.index.get_level_values('service_id')
-        stop_times_0_df = stop_times_0_df.reset_index('stop_sequence')
+        current_stop_times_df['service'] = current_stop_times_df.index.get_level_values('service_id')
+        current_stop_times_df = current_stop_times_df.reset_index('stop_sequence')
         graph = extractor.extract_graph(stops_df, transfers_df, period_df)
         extended_graph = extractor.extend_graph(graph, stops_df)
         adjacent_stops = extractor.get_adjacent_stops_dict(stops_df)
@@ -86,10 +86,18 @@ class DataProvider:
         floyd_graph = extractor.create_floyd_graph(floyd_transfers_df, stops_df)
         kernelized_floyd_graph = extractor.create_kernelized_floyd_graph(floyd_graph, stops_df)
         distances = extractor.get_distances(floyd_graph)
-        stop_times_24_df = copy.deepcopy(stop_times_0_df)
-        stop_times_24_df['departure_time'] = stop_times_24_df['departure_time'].apply(lambda t: t + 24 * 3600)
-        stop_times_0_dict = extractor.transform_stop_times_df_to_dict(stops_df, stop_times_0_df, services_list)
-        stop_times_24_dict = extractor.transform_stop_times_df_to_dict(stops_df, stop_times_24_df, services_list)
+
+        previous_stop_times_df = copy.deepcopy(current_stop_times_df)
+        previous_stop_times_df['departure_time'] = previous_stop_times_df['departure_time'].apply(lambda t: t - 24 * 3600)
+        previous_stop_times_df = previous_stop_times_df[previous_stop_times_df['departure_time'] >= 0]
+
+        next_stop_times_df = copy.deepcopy(current_stop_times_df)
+        next_stop_times_df['departure_time'] = next_stop_times_df['departure_time'].apply(lambda t: t + 24 * 3600)
+        next_stop_times_df = next_stop_times_df[next_stop_times_df['departure_time'] <= 36 * 3600]
+
+        current_stop_times_dict = extractor.transform_stop_times_df_to_dict(stops_df, current_stop_times_df, services_list)
+        previous_stop_times_dict = extractor.transform_stop_times_df_to_dict(stops_df, previous_stop_times_df, services_list)
+        next_stop_times_dict = extractor.transform_stop_times_df_to_dict(stops_df, next_stop_times_df, services_list)
         print("FloydDataProvider: floyd extraction done")
 
         # Pickle saving
@@ -97,8 +105,9 @@ class DataProvider:
         nx.write_gpickle(kernelized_floyd_graph, FloydDataPaths.kernelized_floyd_graph.value)
         save_pickle(distances, FloydDataPaths.distances.value)
         save_pickle(day_to_services_dict, FloydDataPaths.day_to_services_dict.value)
-        save_pickle(stop_times_0_dict, FloydDataPaths.stop_times_0_dict.value)
-        save_pickle(stop_times_24_dict, FloydDataPaths.stop_times_24_dict.value)
+        save_pickle(current_stop_times_dict, FloydDataPaths.current_stop_times_dict.value)
+        save_pickle(previous_stop_times_dict, FloydDataPaths.previous_stop_times_dict.value)
+        save_pickle(next_stop_times_dict, FloydDataPaths.next_stop_times_dict.value)
         save_pickle(routes_to_stops_dict, FloydDataPaths.routes_to_stops_dict.value)
         save_pickle(adjacent_stops, FloydDataPaths.adjacent_stops.value)
         save_pickle(exception_days, FloydDataPaths.exception_days.value)
