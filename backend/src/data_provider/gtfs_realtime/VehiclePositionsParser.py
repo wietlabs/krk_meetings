@@ -1,5 +1,6 @@
+from io import BytesIO
 from pathlib import Path
-from typing import Union, IO
+from typing import Union
 
 import pandas as pd
 from google.transit import gtfs_realtime_pb2
@@ -8,15 +9,16 @@ from src.data_provider.utils import parse_trip_id, parse_stop_id
 
 
 class VehiclePositionsParser:
-    def parse(self, path_or_buffer: Union[str, Path, IO]) -> pd.DataFrame:
-        if isinstance(path_or_buffer, IO):
-            return self._parse_io(path_or_buffer)
-        with open(path_or_buffer, 'rb') as f:
-            return self._parse_io(f)
+    def parse(self, path_or_buffer: Union[str, Path, BytesIO]) -> pd.DataFrame:
+        if isinstance(path_or_buffer, BytesIO):
+            return self._parse(path_or_buffer.getvalue())
 
-    def _parse_io(self, io: IO) -> pd.DataFrame:
+        with open(path_or_buffer, 'rb') as f:
+            return self._parse(f.read())
+
+    def _parse(self, data) -> pd.DataFrame:
         feed = gtfs_realtime_pb2.FeedMessage()
-        feed.ParseFromString(io.read())
+        feed.ParseFromString(data)
         feed_timestamp = feed.header.timestamp
 
         def gen():
