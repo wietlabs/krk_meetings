@@ -30,7 +30,7 @@ class Downloader:
         parsed_data_A = parser.parse(gtfs_zip_A)
 
         merger = Merger()
-        merged_data = merger.merge(parsed_data_T, parsed_data_A)
+        merged_data, service_id_offset = merger.merge(parsed_data_T, parsed_data_A)
 
         return merged_data
 

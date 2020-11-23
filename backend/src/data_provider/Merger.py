@@ -7,7 +7,7 @@ from src.data_classes.ParsedData import ParsedData
 
 
 class Merger:
-    def merge(self, parsed_data_1: ParsedData, parsed_data_2: ParsedData) -> ParsedData:
+    def merge(self, parsed_data_1: ParsedData, parsed_data_2: ParsedData) -> Tuple[ParsedData, int]:
         parsed_data_2 = deepcopy(parsed_data_2)
 
         calendar_df, service_id_offset = self._merge_calendar_dfs(parsed_data_1.calendar_df,
@@ -39,14 +39,16 @@ class Merger:
                                                 parsed_data_2.transfers_df,
                                                 service_id_offset, stop_id_offset, stop_id_mapping, peron_id_offset)
 
-        return ParsedData(calendar_df=calendar_df,
-                          calendar_dates_df=calendar_dates_df,
-                          routes_df=routes_df,
-                          trips_df=trips_df,
-                          stops_df=stops_df,
-                          perons_df=perons_df,
-                          stop_times_df=stop_times_df,
-                          transfers_df=transfers_df)
+        merged_data = ParsedData(calendar_df=calendar_df,
+                                 calendar_dates_df=calendar_dates_df,
+                                 routes_df=routes_df,
+                                 trips_df=trips_df,
+                                 stops_df=stops_df,
+                                 perons_df=perons_df,
+                                 stop_times_df=stop_times_df,
+                                 transfers_df=transfers_df)
+
+        return merged_data, service_id_offset
 
     def _merge_calendar_dfs(self, calendar_df_1: pd.DataFrame, calendar_df_2: pd.DataFrame) -> Tuple[
         pd.DataFrame, int]:
