@@ -1,6 +1,7 @@
 from datetime import datetime
 from ftplib import FTP
 from io import BytesIO
+from typing import Tuple
 
 from src.data_classes.ParsedData import ParsedData
 from src.data_provider.Merger import Merger
@@ -33,6 +34,17 @@ class Downloader:
         merged_data, service_id_offset = merger.merge(parsed_data_T, parsed_data_A)
 
         return merged_data
+
+    def download_vehicle_positions(self) -> Tuple[BytesIO, BytesIO]:
+        vehicle_positions_pb_T = BytesIO()
+        vehicle_positions_pb_A = BytesIO()
+
+        with FTP('ztp.krakow.pl') as ftp:
+            ftp.login()
+            ftp.retrbinary('RETR /pliki-gtfs/VehiclePositions_T.pb', vehicle_positions_pb_T.write)
+            ftp.retrbinary('RETR /pliki-gtfs/VehiclePositions_A.pb', vehicle_positions_pb_A.write)
+
+        return vehicle_positions_pb_T, vehicle_positions_pb_A
 
     @staticmethod
     def _get_file_mtime(ftp: FTP, path: str) -> datetime:
