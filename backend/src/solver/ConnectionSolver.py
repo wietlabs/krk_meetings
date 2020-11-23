@@ -23,7 +23,7 @@ class ConnectionSolver(IConnectionSolver):
     def __init__(self, configuration: ConnectionSolverConfiguration = DEFAULT_CONNECTION_SOLVER_CONFIGURATION, data_path=FloydDataPaths):
         self.configuration = configuration
         self.data_manager = ConnectionDataManager(data_path)
-        self.graph = None
+        self.averge_graph = None
         self.kernelized_graph = None
         self.distances = None
         self.stops_df = None
@@ -44,7 +44,7 @@ class ConnectionSolver(IConnectionSolver):
 
     def update_data(self):
         data = self.data_manager.get_updated_data()
-        self.graph = data["graph"]
+        self.averge_graph = data["averge_graph"]
         self.kernelized_graph = data["kernelized_graph"]
         self.distances = data["distances"]
         self.stops_df = data["stops_df"]
@@ -57,7 +57,7 @@ class ConnectionSolver(IConnectionSolver):
         self.routes_to_stops_dict = data["routes_to_stops_dict"]
         self.exception_days_dict = data["exception_days_dict"]
         self.paths = dict()
-        for node in self.graph.nodes():
+        for node in self.averge_graph.nodes():
             self.paths[node] = dict()
         self.last_data_update = self.data_manager.last_data_update
 
@@ -268,16 +268,16 @@ class ConnectionSolver(IConnectionSolver):
 
         last_hubs = []
         if end_node_id not in self.kernelized_graph.nodes:
-            for neighbor_id in self.graph.neighbors(end_node_id):
+            for neighbor_id in self.averge_graph.neighbors(end_node_id):
                 if neighbor_id in self.kernelized_graph.nodes:
                     last_hubs.append(neighbor_id)
 
         if start_node_id in self.kernelized_graph.nodes:
             queue.put((0, 0, start_node_id, [start_node_id], []))
         else:
-            for neighbor_id in self.graph.neighbors(start_node_id):
+            for neighbor_id in self.averge_graph.neighbors(start_node_id):
                 if neighbor_id in self.kernelized_graph.nodes:
-                    resolve_neighbor(start_node_id, neighbor_id, 0, [start_node_id], [], self.graph)
+                    resolve_neighbor(start_node_id, neighbor_id, 0, [start_node_id], [], self.averge_graph)
 
         while not queue.empty() and len(paths) <= self.configuration.max_number_of_paths:
             if time.time() > calculation_start_time + self.configuration.max_path_calculation_time:
@@ -306,7 +306,7 @@ class ConnectionSolver(IConnectionSolver):
                         priority_distance = priority
                     continue
             if node_id in last_hubs:
-                resolve_neighbor(node_id, end_node_id, weight, path, routes, self.graph)
+                resolve_neighbor(node_id, end_node_id, weight, path, routes, self.averge_graph)
             for neighbor_id in self.kernelized_graph.neighbors(node_id):
                 resolve_neighbor(node_id, neighbor_id, weight, path, routes, self.kernelized_graph)
         if [start_node_id, end_node_id] not in paths:

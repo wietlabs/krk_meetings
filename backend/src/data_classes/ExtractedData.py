@@ -4,7 +4,7 @@ from src.data_classes.Data import Data
 
 
 @dataclass
-class ExtractedData(Data):  # server has reference to its instance
+class ExtractedData(Data):  # api has reference to its instance
     stops_df: pd.DataFrame
     transfers_df: pd.DataFrame
     stop_times_df: pd.DataFrame

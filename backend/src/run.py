@@ -1,5 +1,5 @@
 from src.data_provider.DataProvider import start_data_provider
-from src.server.BackendServer import start_flask_server
+from src.api.BackendApi import start_flask_server
 from src.rabbitmq.RmqConnectionSolver import start_connection_solver
 from src.rabbitmq.RmqMeetingSolver import start_meeting_solver
 from src.rabbitmq.RmqSequenceSolver import start_sequence_solver

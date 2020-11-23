@@ -83,9 +83,9 @@ class DataProvider:
         adjacent_stops = extractor.get_adjacent_stops_dict(stops_df)
         floyd_transfers_df = extractor.create_floyd_transfers_df(extended_graph, adjacent_stops)
         stops_df = extractor.extend_stops_df(floyd_transfers_df, stops_df)
-        floyd_graph = extractor.create_floyd_graph(floyd_transfers_df, stops_df)
-        kernelized_floyd_graph = extractor.create_kernelized_floyd_graph(floyd_graph, stops_df)
-        distances = extractor.get_distances(floyd_graph)
+        averge_graph = extractor.create_floyd_graph(floyd_transfers_df, stops_df)
+        kernelized_floyd_graph = extractor.create_kernelized_floyd_graph(averge_graph, stops_df)
+        distances = extractor.get_distances(averge_graph)
         stop_times_24_df = copy.deepcopy(stop_times_0_df)
         stop_times_24_df['departure_time'] = stop_times_24_df['departure_time'].apply(lambda t: t + 24 * 3600)
         stop_times_0_dict = extractor.transform_stop_times_df_to_dict(stops_df, stop_times_0_df, services_list)
@@ -93,8 +93,8 @@ class DataProvider:
         print("FloydDataProvider: floyd extraction done")
 
         # Pickle saving
-        nx.write_gpickle(floyd_graph, FloydDataPaths.floyd_graph.value)
-        nx.write_gpickle(kernelized_floyd_graph, FloydDataPaths.kernelized_floyd_graph.value)
+        nx.write_gpickle(averge_graph, FloydDataPaths.averge_graph.value)
+        nx.write_gpickle(kernelized_floyd_graph, FloydDataPaths.kernelized_graph.value)
         save_pickle(distances, FloydDataPaths.distances.value)
         save_pickle(day_to_services_dict, FloydDataPaths.day_to_services_dict.value)
         save_pickle(stop_times_0_dict, FloydDataPaths.stop_times_0_dict.value)

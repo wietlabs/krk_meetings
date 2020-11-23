@@ -42,8 +42,8 @@ CONFIG_JSON_PATH = Path(__file__).parent / 'data' / 'config.json'
 
 
 class FloydDataPaths(Enum):
-    floyd_graph = FLOYD_DATA_DIR_PATH / "floyd_graph.pickle"
-    kernelized_floyd_graph = FLOYD_DATA_DIR_PATH / "kernelized_floyd_graph.pickle"
+    averge_graph = FLOYD_DATA_DIR_PATH / "floyd_graph.pickle"
+    kernelized_graph = FLOYD_DATA_DIR_PATH / "kernelized_floyd_graph.pickle"
     distances = FLOYD_DATA_DIR_PATH / "distances.pickle"
     day_to_services_dict = FLOYD_DATA_DIR_PATH / "day_to_services_dict.pickle"
     stop_times_0_dict = FLOYD_DATA_DIR_PATH / "stop_times_0_dict.pickle"

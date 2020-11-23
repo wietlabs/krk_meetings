@@ -8,7 +8,7 @@ from networkx.readwrite import json_graph
 
 
 @dataclass
-class FloydSolverData(Data):  # server has reference to its instance
+class FloydSolverData(Data):  # api has reference to its instance
     graph: nx.DiGraph
     kernelized_graph: nx.DiGraph
     distances_dict: dict

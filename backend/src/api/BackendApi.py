@@ -6,7 +6,7 @@ from src.data_managers.FlaskDataManager import FlaskDataManager
 from src.exchanges import EXCHANGES
 from src.rabbitmq.RmqConsumer import RmqConsumer
 from src.rabbitmq.RmqProducer import RmqProducer
-from src.server.CacheDict import CacheDict
+from src.api.CacheDict import CacheDict
 from src.data_classes.ConnectionQuery import ConnectionQuery
 from src.config import ErrorCodes
 from src.data_classes.MeetingQuery import MeetingQuery

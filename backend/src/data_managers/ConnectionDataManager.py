@@ -22,8 +22,8 @@ class ConnectionDataManager(DataManager):
 
     def get_data(self):
         data = dict()
-        data["graph"] = nx.read_gpickle(self.data_path.floyd_graph.value)
-        data["kernelized_graph"] = nx.read_gpickle(self.data_path.kernelized_floyd_graph.value)
+        data["averge_graph"] = nx.read_gpickle(self.data_path.averge_graph.value)
+        data["kernelized_graph"] = nx.read_gpickle(self.data_path.kernelized_graph.value)
         data["distances"] = load_pickle(self.data_path.distances.value)
         data["stops_df"] = pd.read_pickle(self.data_path.stops_df.value)
         data["routes_df"] = pd.read_pickle(self.data_path.routes_df.value)
