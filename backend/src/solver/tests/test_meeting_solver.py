@@ -10,17 +10,18 @@ from src.solver.tests.config import FloydDataPathsTest
 
 
 @ddt
-class ConnectionSolverTests(unittest.TestCase):
+class MeetingSolverTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.meeting_solver = MeetingSolver(data_path=FloydDataPathsTest)
         cls.meeting_solver.data_manager.update_data()
 
-    @data(*itertools.product([({"start_stop_names": ["Kampus UJ", "AGH / UR", "Prokocim Szpital"], "metric": "square"}, "Rondo Matecznego"),
-                              ({"start_stop_names": ["Czerwone Maki P+R", "Skotniki Szkoła", "Chmieleniec"], "metric": "square"}, "Czerwone Maki P+R")]))
+    @data(
+        ({"start_stop_names": ["Kampus UJ", "AGH / UR", "Prokocim Szpital"], "metric": "square"}, "Rondo Matecznego"),
+        ({"start_stop_names": ["Czerwone Maki P+R", "Skotniki Szkoła", "Chmieleniec"], "metric": "square"}, "Czerwone Maki P+R"),
+    )
     @unpack
-    def test_meeting_place(self, parameters):
-        query, meeting_point = parameters
+    def test_meeting_place(self, query, meeting_point):
         query["query_id"] = 1
         meeting_results = MeetingQuery.from_dict(query)
         connection_results: MeetingResults = self.meeting_solver.find_meeting_points(meeting_results)
