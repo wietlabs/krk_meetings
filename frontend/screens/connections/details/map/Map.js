@@ -2,6 +2,13 @@ import * as React from "react";
 import MapView, { Marker, Polyline } from "react-native-maps";
 import { filterTransfers } from "../../../../utils";
 
+const edgePadding = {
+  top: 150,
+  bottom: 120,
+  left: 100,
+  right: 100,
+};
+
 export default function ConnectionDetailsMap({ connection }) {
   const actions = connection.actions;
   const transfers = filterTransfers(actions);
@@ -17,7 +24,7 @@ export default function ConnectionDetailsMap({ connection }) {
   const fitToContents = () => {
     var coords = transfers.map((transfer) => transfer.stops).flat();
     mapRef.current.fitToCoordinates(coords, {
-      edgePadding: { top: 100, left: 100, right: 100, bottom: 100 },
+      edgePadding: edgePadding,
       animated: false,
     });
   };

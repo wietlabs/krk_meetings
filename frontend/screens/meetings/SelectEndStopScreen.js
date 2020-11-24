@@ -16,7 +16,7 @@ const initialRegion = {
   longitudeDelta: 0.4,
 };
 
-const padding = {
+const edgePadding = {
   top: 150,
   bottom: 50,
   left: 100,
@@ -86,8 +86,8 @@ export default function SelectEndStopScreen({ navigation, route }) {
 
   const fitToContents = (coords) => {
     mapRef.current.fitToCoordinates(coords, {
+      edgePadding: edgePadding,
       animated: true,
-      edgePadding: padding,
     });
   };
 
