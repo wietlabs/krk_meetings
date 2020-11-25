@@ -11,7 +11,7 @@ from src.data_classes.Walk import Walk
 from src.solver import solver_utils
 from src.solver.ConnectionSolverConfiguration import ConnectionSolverConfiguration
 from src.data_managers.ConnectionDataManager import ConnectionDataManager
-from src.solver.solver_utils import get_services
+from src.solver.solver_utils import get_services, connection_stop_data
 from src.utils import time_to_int
 from src.solver.interfaces.IConnectionSolver import IConnectionSolver
 from src.data_classes.Transfer import Transfer
@@ -119,9 +119,10 @@ class ConnectionSolver(IConnectionSolver):
                                 Transfer(route_name, headsign, current_stop_name, next_stop_name, start_datetime,
                                          end_datetime, stops))
                         else:
+                            stops = [connection_stop_data(stop, self.stops_df) for stop in [current_stop_id, next_stop_id]]
                             duration_in_minutes = int((arrival_time - departure_time) / 60)
                             transfers.append(Walk(current_stop_name, next_stop_name, duration_in_minutes,
-                                                  start_datetime, end_datetime))
+                                                  start_datetime, end_datetime, stops))
 
                     connection = Connection(transfers)
                     connections.append(connection)
