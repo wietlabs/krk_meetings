@@ -7,7 +7,7 @@ from src.config import URL
 from src.examples.sample_queries import ConnectionQuerySamples
 
 if __name__ == "__main__":
-    query_json = ConnectionQuerySamples.nightly_maki_biezanow_before_midnight.value
+    query_json = ConnectionQuerySamples.jubilat_kostrze.value
 
     execution_start = time.time()
     response = requests.post(URL.CONNECTION.value, json=query_json, timeout=1.0)
