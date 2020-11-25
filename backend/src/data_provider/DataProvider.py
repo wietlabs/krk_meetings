@@ -125,6 +125,7 @@ class DataProvider:
         stops_df.to_pickle(FloydDataPaths.stops_df.value)
         routes_df.to_pickle(FloydDataPaths.routes_df.value)
         stops_df_by_name.to_pickle(FloydDataPaths.stops_df_by_name.value)
+        stop_times_df.to_pickle(FloydDataPaths.stops_times_df.value)
         print("FloydDataProvider: pickles saved")
 
     @staticmethod

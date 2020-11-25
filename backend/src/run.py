@@ -7,7 +7,7 @@ from src.rabbitmq.RmqSequenceSolver import start_sequence_solver
 import multiprocessing
 
 
-CONNECTION_SOLVER_INSTANCES = 2
+CONNECTION_SOLVER_INSTANCES = 1
 MEETING_SOLVER_INSTANCES = 1
 SEQUENCE_SOLVER_INSTANCES = 1
 

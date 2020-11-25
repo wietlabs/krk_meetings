@@ -57,6 +57,8 @@ class FloydDataPaths(Enum):
     api_walking_distances = FLOYD_DATA_DIR_PATH / "api_walking_distances.pickle"
     exception_days = FLOYD_DATA_DIR_PATH / "exception_days.pickle"
     delays_dict = FLOYD_DATA_DIR_PATH / "delays_dict.pickle"
+    stops_times_df = FLOYD_DATA_DIR_PATH / "stops_times_df.pickle"
+    delays_df = FLOYD_DATA_DIR_PATH / "delays_df.pickle"
 
 
 class URL(Enum):

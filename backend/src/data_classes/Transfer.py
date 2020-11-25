@@ -13,6 +13,7 @@ class Transfer(IAction):
     end_stop_name: str
     start_datetime: datetime
     end_datetime: datetime
+    delay: int
     stops: list
 
     def to_serializable(self):
@@ -24,6 +25,7 @@ class Transfer(IAction):
             "end_stop_name": self.end_stop_name,
             "start_datetime": self.start_datetime.strftime(DATETIME_FORMAT),
             "end_datetime": self.end_datetime.strftime(DATETIME_FORMAT),
+            "delay": self.delay,
             "stops": self.stops
         }
 
@@ -36,6 +38,7 @@ class Transfer(IAction):
             transfer["end_stop_name"],
             datetime.strptime(transfer["start_date"], DATETIME_FORMAT),
             datetime.strptime(transfer["end_date"], DATETIME_FORMAT),
+            transfer["delays"],
             transfer["stops"]
         )
 

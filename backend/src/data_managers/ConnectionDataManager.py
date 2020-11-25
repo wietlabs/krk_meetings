@@ -1,6 +1,8 @@
 import networkx as nx
 import pandas as pd
 import time
+
+from src.config import FloydDataPaths
 from src.data_managers.DataManager import DataManager
 from src.utils import load_pickle
 from src.exchanges import EXCHANGES, MESSAGES
@@ -10,6 +12,7 @@ class ConnectionDataManager(DataManager):
     def __init__(self, data_path):
         super().__init__()
         self.data_path = data_path
+        self.delays_df = None
         self.last_delay_update = time.time()
 
     @property
@@ -20,7 +23,7 @@ class ConnectionDataManager(DataManager):
         if msg == MESSAGES.DATA_UPDATED.value:
             self.update_data()
         elif msg == MESSAGES.DELAYS_UPDATED.value:
-            self.update_delays()
+            self.update_delays_df()
 
     def get_data(self):
         data = dict()
@@ -39,5 +42,8 @@ class ConnectionDataManager(DataManager):
         data["exception_days_dict"] = load_pickle(self.data_path.exception_days.value)
         return data
 
-    def update_delays(self):
-        pass
+    def update_delays_df(self):
+        self.delays_df = load_pickle(self.data_path.delays_df.value)
+
+    def get_delays_df(self):
+        return self.delays_df

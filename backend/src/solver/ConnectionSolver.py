@@ -3,6 +3,7 @@ from queue import PriorityQueue
 from typing import List
 from itertools import chain
 import pandas as pd
+import numpy as np
 from datetime import datetime, timedelta
 import time
 from src.data_classes.Connection import Connection
@@ -17,6 +18,14 @@ from src.solver.interfaces.IConnectionSolver import IConnectionSolver
 from src.data_classes.Transfer import Transfer
 from src.data_classes.ConnectionQuery import ConnectionQuery
 from src.config import ErrorCodes, DEFAULT_CONNECTION_SOLVER_CONFIGURATION, FloydDataPaths
+
+
+class ConnectionTask:
+    def __init__(self, query, paths, connections, connection_dfs):
+        self.query: ConnectionQuery = query
+        self.paths = paths
+        self.connections = connections
+        self.connection_dfs = connection_dfs
 
 
 class ConnectionSolver(IConnectionSolver):
@@ -38,6 +47,8 @@ class ConnectionSolver(IConnectionSolver):
         self.routes_to_stops_dict = None
         self.exception_days_dict = None
         self.last_data_update = None
+        self.last_delay_update = None
+        self.delays_df = None
 
     def start(self):
         self.data_manager.start()
@@ -64,11 +75,16 @@ class ConnectionSolver(IConnectionSolver):
             self.paths[node] = dict()
         self.last_data_update = self.data_manager.last_data_update
 
+    def update_delays_df(self):
+        self.delays_df = self.data_manager.get_delays_df()
+        self.last_delay_update = self.data_manager.last_delay_update
+
     def find_connections(self, query: ConnectionQuery) -> ConnectionResults:
         print(f"ConnectionSolver {id(self)}: finding connections")
-        print(id(self))
         if self.last_data_update is None or self.last_data_update < self.data_manager.last_data_update:
             self.update_data()
+        if self.last_delay_update is None or self.last_delay_update < self.data_manager.last_delay_update:
+            self.update_delays_df()
         current_datetime = query.start_datetime
         current_time = time_to_int(current_datetime.time())
         start_stop_id = solver_utils.get_stop_id_by_name(query.start_stop_name, self.stops_df_by_name)
@@ -79,34 +95,32 @@ class ConnectionSolver(IConnectionSolver):
             return ConnectionResults(query.query_id, ErrorCodes.BAD_END_STOP_NAME.value, [])
 
         paths = self.get_paths(start_stop_id, end_stop_id)
-        connections = []
-        connection_dfs = {}
+        connection_task = ConnectionTask(query, paths, [] ,{})
         first_partition = True
         for earliest_start_time in range(current_time, current_time + self.configuration.max_searching_time,
                                          self.configuration.partition_time):
-            partition_connections = self.find_partition_connections(paths, earliest_start_time, current_datetime,
-                                                                    connection_dfs)
+            partition_connections = self.find_partition_connections(connection_task, earliest_start_time, current_datetime)
             if not first_partition:
                 partition_connections = [c for c in partition_connections if not c.walk_only]
             partition_connections.sort(
                 key=lambda c: c.actions[0].start_datetime if c.walk_only else c.first_transfer.start_datetime)
-            connections.extend(partition_connections)
-            if len(connections) >= self.configuration.number_of_connections_returned:
+            connection_task.connections.extend(partition_connections)
+            if len(connection_task.connections) >= self.configuration.number_of_connections_returned:
                 break
             first_partition = False
         return ConnectionResults(query.query_id, ErrorCodes.OK.value,
-                                 connections[0: self.configuration.number_of_connections_returned])
+                                 connection_task.connections[0: self.configuration.number_of_connections_returned])
 
-    def find_partition_connections(self, paths, earliest_start_time, current_datetime, connection_dfs):
+    def find_partition_connections(self, connection_task: ConnectionTask, earliest_start_time, current_datetime):
         connections = []
-        for path in paths:
+        for path in connection_task.paths:
             lastest_start_time = earliest_start_time + self.configuration.max_travel_time
-            results = self.find_routes(path, earliest_start_time, lastest_start_time, current_datetime, connection_dfs)
+            results = self.find_routes(connection_task, path, earliest_start_time, lastest_start_time, current_datetime)
             if results is not None:
                 for result in results:
                     transfers = []
                     for transfer in result:
-                        route_id, current_stop_id, next_stop_id, departure_time, arrival_time = transfer
+                        route_id, current_stop_id, next_stop_id, departure_time, arrival_time, delay = transfer
                         current_stop_name = solver_utils.get_stop_name_by_id(current_stop_id, self.stops_df)
                         next_stop_name = solver_utils.get_stop_name_by_id(next_stop_id, self.stops_df)
                         format_datetime = datetime(current_datetime.year, current_datetime.month, current_datetime.day)
@@ -119,7 +133,7 @@ class ConnectionSolver(IConnectionSolver):
                                                                self.routes_to_stops_dict)
                             transfers.append(
                                 Transfer(route_name, headsign, current_stop_name, next_stop_name, start_datetime,
-                                         end_datetime, stops))
+                                         end_datetime, delay, stops))
                         else:
                             stops = [connection_stop_data(stop, self.stops_df) for stop in [current_stop_id, next_stop_id]]
                             duration_in_minutes = int((arrival_time - departure_time) / 60)
@@ -130,38 +144,40 @@ class ConnectionSolver(IConnectionSolver):
                     connections.append(connection)
         return connections
 
-    def find_routes(self, path: List[int], earliest_start_time: int, latest_start_time: int, start_datetime: datetime,
-                    connection_dfs: dict) -> list:
+    def find_routes(self, connection_task: ConnectionTask, path: List[int], earliest_start_time: int, latest_start_time: int, start_datetime: datetime) -> list:
         current_services = get_services(start_datetime, self.day_to_services_dict, self.exception_days_dict)
         previous_services = get_services(start_datetime - timedelta(days=1), self.day_to_services_dict, self.exception_days_dict)
         next_services = get_services(start_datetime + timedelta(days=1), self.day_to_services_dict, self.exception_days_dict)
-        results_df = self.find_result_routes_df(earliest_start_time, latest_start_time, path, current_services,
-                                                next_services, previous_services, connection_dfs)
+        results_df = self.find_result_routes_df(connection_task, earliest_start_time, latest_start_time, path, current_services,
+                                                next_services, previous_services)
         results = []
         for row in results_df.itertuples():
             result = []
             for i in range(len(path) - 1):
-                route_id = row[4 * i + 3]
-                departure_time = row[4 * i + 1]
-                arrival_time = row[4 * i + 2]
-                result.append((route_id, path[i], path[i + 1], departure_time, arrival_time))
+                route_id = row[5 * i + 3]
+                departure_time = row[5 * i + 1]
+                arrival_time = row[5 * i + 2]
+                delay = row[5 * i + 4]
+                result.append((route_id, path[i], path[i + 1], departure_time, arrival_time, delay))
             results.append(result)
         return results
 
-    def find_result_routes_df(self, start_time: int, end_time: int, path, current_services, next_services,
-                              previous_services, connection_dfs: dict) -> pd.DataFrame:
+    def find_result_routes_df(self, connection_task: ConnectionTask, start_time: int, end_time: int, path, current_services, next_services,
+                              previous_services) -> pd.DataFrame:
         results_df = pd.DataFrame()
         for i in range(len(path) - 1):
             current_stop = path[i]
             next_stop = path[i + 1]
 
-            cst_df = self.get_stoptimes_for_stop(current_stop, connection_dfs, current_services, next_services, previous_services)
-            nst_df = self.get_stoptimes_for_stop(next_stop, connection_dfs, current_services, next_services, previous_services)
-
+            cst_df = self.get_stoptimes_for_stop(current_stop, connection_task.connection_dfs, current_services, next_services, previous_services)
+            nst_df = self.get_stoptimes_for_stop(next_stop, connection_task.connection_dfs, current_services, next_services, previous_services)
             cst_df = cst_df[start_time <= cst_df.departure_time]
             cst_df = cst_df[cst_df.departure_time < end_time]
+            cst_df = self.add_delays_to_stop_times(cst_df, connection_task)
+
             nst_df = nst_df[start_time <= nst_df.departure_time]
             nst_df = nst_df[nst_df.departure_time < end_time]
+            nst_df = self.add_delays_to_stop_times(nst_df, connection_task)
 
             transfers_df = cst_df.join(nst_df, how='inner', lsuffix='_c', rsuffix='_n')
             transfers_df = transfers_df[transfers_df.departure_time_c < transfers_df.departure_time_n]
@@ -174,15 +190,16 @@ class ConnectionSolver(IConnectionSolver):
                 results_df.columns = [str(col) + '_0' for col in results_df.columns]
                 results_df = results_df.sort_values(by=['departure_time_n_0'])
                 results_df = results_df.drop_duplicates(subset='departure_time_c_0', keep='first')
-                results_df.rename(columns={'route_id_n_0': 'route_id_0'}, inplace=True)
-                results_df.drop(columns=['route_id_c_0'], axis=1, inplace=True)
+                results_df.rename(columns={'route_id_n_0': 'route_id_0', 'delay_n_0': 'delay_0'}, inplace=True)
+                results_df.drop(columns=['route_id_c_0', 'delay_c_0'], axis=1, inplace=True)
                 if (current_stop, next_stop) in self.adjacent_stops:
                     end_time = start_time + self.adjacent_stops[(current_stop, next_stop)]
                     walking_row = pd.DataFrame({
                         'departure_time_c_0': start_time,
                         'departure_time_n_0': end_time,
                         'route_id_0': self.configuration.walking_route_id,
-                        'index_0': [self.configuration.walking_index]},
+                        'index_0': [self.configuration.walking_index],
+                        'delay_0': 0},
                         index=([self.configuration.walking_index]))
                     results_df = results_df.append(walking_row)
             else:
@@ -193,6 +210,7 @@ class ConnectionSolver(IConnectionSolver):
                         walking_df[f'route_id_{str(i - 1)}'] != self.configuration.walking_route_id]
                     if not walking_df.empty:
                         walking_df[f'route_id_{str(i)}'] = self.configuration.walking_route_id
+                        walking_df[f'delay_{str(i)}'] = 0
                         walking_df[f'index_{str(i)}'] = [self.configuration.walking_index] * len(walking_df)
                         walking_df[f'departure_time_c_{str(i)}'] = walking_df.apply(
                             lambda row: row[f'departure_time_n_{str(i - 1)}'], axis=1)
@@ -200,10 +218,11 @@ class ConnectionSolver(IConnectionSolver):
                             lambda row: row[f'departure_time_n_{str(i - 1)}'] + walking_time, axis=1)
                 results_df = results_df.assign(c=1)
                 results_df = results_df.merge(transfers_df.assign(c=1))
-                results_df.drop(columns=['c', 'route_id_c'], axis=1, inplace=True)
+                results_df.drop(columns=['c', 'route_id_c', 'delay_c'], axis=1, inplace=True)
                 results_df.rename(columns={'departure_time_c': f'departure_time_c_{str(i)}',
                                            'departure_time_n': f'departure_time_n_{str(i)}',
                                            'route_id_n': f'route_id_{str(i)}',
+                                           'delay_n': f'delay_{str(i)}',
                                            'index': f'index_{str(i)}'},
                                   inplace=True)
                 results_df = results_df[results_df[f'departure_time_n_{str(i - 1)}'] < results_df[f'departure_time_c_{str(i)}']]
@@ -327,5 +346,17 @@ class ConnectionSolver(IConnectionSolver):
         if set(last_route).issubset(route) or set(route).issubset(last_route):
             return True
         return False
+
+    def add_delays_to_stop_times(self, st_df: pd.DataFrame, connection_task: ConnectionTask) -> pd.DataFrame:
+        if datetime.now() - timedelta(hours=1) < connection_task.query.start_datetime < datetime.now() + timedelta(hours=2):
+            st_df = pd.merge(st_df, self.delays_df, on=['service_id', 'block_id', 'trip_num'],
+                             how="outer", indicator=True)
+            st_df = st_df[st_df['_merge'] != 'right_only']
+            st_df['delay'].replace(np.nan, 0, inplace=True)
+            st_df = st_df[['departure_time', 'route_id', 'delay']]
+        else:
+            st_df['delay'] = 0
+        return st_df
+
 
 
