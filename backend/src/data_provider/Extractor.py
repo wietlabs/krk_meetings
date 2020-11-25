@@ -245,7 +245,6 @@ class Extractor:
             for id_2, name_2, lat_2, lon_2 in stops_df.itertuples():
                 if id_1 == id_2:
                     continue
-                #print(name_1, name_2, api_stop_list, name_1 in api_stop_list and name_2 in api_stop_list)
                 if name_1 in api_stop_list and name_2 in api_stop_list:
                     if (name_1, name_2) not in api_walking_distances:
                         continue
