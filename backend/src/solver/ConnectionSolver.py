@@ -225,10 +225,12 @@ class ConnectionSolver(IConnectionSolver):
                                            'delay_n': f'delay_{str(i)}',
                                            'index': f'index_{str(i)}'},
                                   inplace=True)
-                results_df = results_df[results_df[f'departure_time_n_{str(i - 1)}'] < results_df[f'departure_time_c_{str(i)}']]
+                results_df = results_df[results_df[f'departure_time_n_{str(i - 1)}'] + results_df[f'delay_{str(i - 1)}']
+                                        < results_df[f'departure_time_c_{str(i)}'] + results_df[f'delay_{str(i)}']]
                 if (current_stop, next_stop) in self.adjacent_stops:
                     results_df = results_df.append(walking_df)
-                results_df = results_df.sort_values(by=[f'departure_time_n_{str(i)}'])
+                results_df['sort_val'] = results_df[f'departure_time_n_{str(i)}'] + results_df[f'delay_{str(i)}']
+                results_df = results_df.sort_values('sort_val').drop('sort_val', 1)
                 results_df = results_df.drop_duplicates(subset='departure_time_c_0', keep='first')
                 if results_df.empty:
                     return pd.DataFrame()
