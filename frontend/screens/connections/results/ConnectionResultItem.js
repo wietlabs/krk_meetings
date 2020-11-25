@@ -9,14 +9,26 @@ export default function ConnectionResultItem({ connection, onPress }) {
 
   const transfers = filterTransfers(actions);
 
-  const first_transfer = transfers[0];
-  const last_transfer = transfers[transfers.length - 1];
-
-  const start_datetime = datetimeToHour(first_transfer.start_datetime);
-  const end_datetime = datetimeToHour(last_transfer.end_datetime);
-
-  const start_stop_name = first_transfer.start_stop_name;
-  const end_stop_name = last_transfer.end_stop_name;
+  let start_datetime, end_datetime, start_stop_name, end_stop_name;
+  if (transfers.length > 0) {
+    const first_transfer = transfers[0];
+    const last_transfer = transfers[transfers.length - 1];
+    start_datetime = datetimeToHour(first_transfer.start_datetime);
+    end_datetime = datetimeToHour(last_transfer.end_datetime);
+    start_stop_name = first_transfer.start_stop_name;
+    end_stop_name = last_transfer.end_stop_name;
+  } else {
+    const action = actions[0];
+    const now = new Date();
+    start_datetime = now.toLocaleTimeString().slice(0, 5);
+    end_datetime = new Date(
+      now.getTime() + action.duration_in_minutes * 60 * 1000
+    )
+      .toLocaleTimeString()
+      .slice(0, 5);
+    start_stop_name = action.start_stop_name;
+    end_stop_name = action.end_stop_name;
+  }
 
   return (
     <Card onPress={onPress} style={{ marginTop: 12, marginBottom: 16 }}>
@@ -28,14 +40,16 @@ export default function ConnectionResultItem({ connection, onPress }) {
           marginBottom: 6,
         }}
       >
-        {transfers.map((action, i) => {
+        {actions.map((action, i) => {
           switch (action.type) {
             case "transfer":
               return (
                 <RouteButton routeName={action.route_name} key={i} nth={i} />
               );
             case "walking":
-              return <WalkButton key={i} />;
+              return (
+                <WalkButton duration={action.duration_in_minutes} key={i} />
+              );
           }
         })}
       </Card.Content>
