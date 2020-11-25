@@ -3,7 +3,7 @@ import { Alert, Clipboard, RefreshControl, ScrollView } from "react-native";
 import { Divider, FAB, IconButton, List } from "react-native-paper";
 import Placeholder from "../../components/Placeholder";
 import { loadUsers, addUser, deleteUser } from "../../UserManager";
-import { censorUuid } from "../../utils";
+import { censorUuid, generateRandomNickname } from "../../utils";
 import { createUserLink } from "../../LinkManager";
 import { createUser } from "../../api/MeetingsApi";
 
@@ -34,7 +34,8 @@ export default function AccountsScreen({ navigation }) {
   const handleCreate = async () => {
     try {
       const { uuid } = await createUser();
-      const users = await addUser({ uuid, nickname: null });
+      const nickname = generateRandomNickname();
+      const users = await addUser({ uuid, nickname });
       setUsers(users);
     } catch (e) {
       Alert.alert(

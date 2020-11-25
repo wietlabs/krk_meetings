@@ -9,15 +9,24 @@ def get_stop_id_by_name(stop_name, stops_df_by_name):
 
 
 def get_stop_name_by_id(stop_id, stops_df):
-    return stops_df.at[stop_id, 'stop_name']
+    try:
+        return stops_df.at[stop_id, 'stop_name']
+    except KeyError:
+        return None
 
 
 def get_route_name_by_id(route_id, routes_df):
-    return routes_df.at[route_id, 'route_name']
+    try:
+        return routes_df.at[route_id, 'route_name']
+    except KeyError:
+        return None
 
 
 def get_headsign_by_id(route_id, routes_df):
-    return routes_df.at[route_id, 'headsign']
+    try:
+        return routes_df.at[route_id, 'headsign']
+    except KeyError:
+        return None
 
 
 def get_stop_list(route_id, start_stop_id, end_stop_id, stops_df, routes_to_stops_dict):
@@ -30,15 +39,24 @@ def get_stop_list(route_id, start_stop_id, end_stop_id, stops_df, routes_to_stop
             stops.append(stop_id)
             if stop_id == end_stop_id:
                 break
-    stops = [stop_data(stop, stops_df) for stop in stops]
+    stops = [connection_stop_data(stop, stops_df) for stop in stops]
     return stops
 
 
-def stop_data(stop_id, stops_df):
+def connection_stop_data(stop_id, stops_df):
     return {
         'name': stops_df.at[stop_id, 'stop_name'],
         'latitude': stops_df.at[stop_id, 'stop_lat'],
         'longitude': stops_df.at[stop_id, 'stop_lon'],
+    }
+
+
+def meeting_stop_data(metric, stops_df):
+    return {
+        'name': stops_df.at[metric[0], 'stop_name'],
+        'latitude': stops_df.at[metric[0], 'stop_lat'],
+        'longitude': stops_df.at[metric[0], 'stop_lon'],
+        'metric': metric[1]
     }
 
 

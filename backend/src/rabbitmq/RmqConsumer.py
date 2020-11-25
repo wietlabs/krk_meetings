@@ -13,7 +13,7 @@ class RmqConsumer(RmqHelper):
         else:
             self.channel.exchange_declare(exchange=self.exchange_name)
 
-        result = self.channel.queue_declare(queue='', exclusive=True)
+        result = self.channel.queue_declare(queue=self.routing_key)
         self.queue = result.method.queue
 
         self.channel.queue_bind(exchange=self.exchange_name, routing_key=self.routing_key, queue=self.queue)
@@ -22,11 +22,11 @@ class RmqConsumer(RmqHelper):
         self.channel.basic_consume(queue=self.queue, on_message_callback=self.callback, auto_ack=False)
         self.channel.start_consuming()
 
-    def stop(self):
-        self.connection.close()
-
     def callback(self, ch, method, properties, body):
         if self.is_heartbeat(json.loads(body)):
+            ch.basic_ack(delivery_tag=method.delivery_tag)
             return
         self.function(self.from_json(body))
         ch.basic_ack(delivery_tag=method.delivery_tag)
+
+

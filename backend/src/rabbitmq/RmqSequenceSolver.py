@@ -17,7 +17,8 @@ class RmqSequenceSolver:
         self.results_producer = RmqProducer(EXCHANGES.FLASK_SERVER_SEQUENCE.value)
 
     def start(self):
-        print("SequenceSolver: started.")
+        self.sequence_solver.start()
+        self.results_producer.start()
         self.query_consumer.start()
 
     def stop(self):

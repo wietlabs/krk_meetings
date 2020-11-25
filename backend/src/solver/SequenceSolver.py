@@ -1,23 +1,25 @@
 from copy import copy
 
-from src.config import ErrorCodes
+from src.config import ErrorCodes, FloydDataPaths
 from src.data_classes.SequenceQuery import SequenceQuery
 from src.data_classes.SequenceResults import SequenceResults
 from src.solver import solver_utils
-from src.solver.ISequenceSolver import ISequenceSolver
+from src.solver.interfaces.ISequenceSolver import ISequenceSolver
 from src.data_managers.SequenceDataManager import SequenceDataManager
 
 
 class SequenceSolver(ISequenceSolver):
-    def __init__(self, ):
-        self.data_manager = SequenceDataManager()
+    def __init__(self, data_path=FloydDataPaths):
+        self.data_manager = SequenceDataManager(data_path)
         self.distances = None
         self.stops_df = None
         self.stops_df_by_name = None
         self.last_data_update = None
 
+    def start(self):
         self.data_manager.start()
         self.update_data()
+        print(f"SequenceSolver {id(self)}: started.")
 
     def update_data(self):
         data = self.data_manager.get_updated_data()
@@ -27,7 +29,8 @@ class SequenceSolver(ISequenceSolver):
         self.last_data_update = self.data_manager.last_data_update
 
     def find_best_sequence(self, query: SequenceQuery) -> SequenceResults:
-        if self.last_data_update < self.data_manager.last_data_update:
+        print(f"SequenceSolver {id(self)}: finding best sequence.")
+        if self.last_data_update is None or self.last_data_update < self.data_manager.last_data_update:
             self.update_data()
 
         def gen(stop_ids: list, current_stop_id, last_stop_id, sequence: list, weight: int):

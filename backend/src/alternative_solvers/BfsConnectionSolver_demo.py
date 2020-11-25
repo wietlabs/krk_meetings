@@ -16,7 +16,7 @@ if __name__ == '__main__':
     parsed_data_T = parser.parse(data_dir / 'GTFS_KRK_T.zip')
 
     merger = Merger()
-    merged_data = merger.merge(parsed_data_A, parsed_data_T)
+    merged_data, service_id_offset = merger.merge(parsed_data_A, parsed_data_T)
 
     extractor = BfsSolverExtractor()
     bfs_solver_data = extractor.extract(merged_data)

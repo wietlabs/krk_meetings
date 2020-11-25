@@ -49,3 +49,14 @@ def get_walking_time(lon_1, lat_1, lon_2, lat_2) -> int:
     walking_time = distance / WALKING_SPEED
     walking_time = round(walking_time)
     return walking_time
+
+
+def is_nightly(route_name, nightly_route_ranges):
+    try:
+        route_number = int(route_name)
+        for r in nightly_route_ranges:
+            if r[0] <= route_number <= r[1]:
+                return True
+        return False
+    except ValueError:
+        return False

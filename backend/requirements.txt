@@ -9,3 +9,5 @@ sqlalchemy
 pytest
 pika
 openrouteservice
+ddt
+gtfs-realtime-bindings

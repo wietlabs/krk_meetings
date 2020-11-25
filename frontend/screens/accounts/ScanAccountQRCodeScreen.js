@@ -2,7 +2,7 @@ import * as React from "react";
 import { Alert, ToastAndroid, StyleSheet } from "react-native";
 import { BarCodeScanner } from "expo-barcode-scanner";
 import Placeholder from "../../components/Placeholder";
-import { parseUserLink, validateUserLink } from "../../LinkManager";
+import { validateUserLink, getUuidFromLink } from "../../LinkManager";
 import { addUser, hasUser } from "../../UserManager";
 import { checkIfUserExists } from "../../api/MeetingsApi";
 
@@ -31,7 +31,7 @@ export default function ScanAccountQRCodeScreen({ navigation }) {
       return;
     }
 
-    const userUuid = parseUserLink(data);
+    const userUuid = getUuidFromLink(data);
 
     const alreadyAdded = await hasUser(userUuid);
     if (alreadyAdded) {
