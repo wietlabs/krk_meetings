@@ -100,10 +100,10 @@ class Extractor:
         stop_times_dict = dict()
         stop_ids = stops_df.index.tolist()
         for stop_id in stop_ids:
-            times_by_stop_0 = stop_times_df[stop_times_df['stop_id'] == stop_id]
+            times_by_stop = stop_times_df[stop_times_df['stop_id'] == stop_id]
             stop_times_dict[stop_id] = {}
             for service in services_list:
-                stop_times_dict[stop_id][service] = times_by_stop_0[times_by_stop_0['service'] == service] \
+                stop_times_dict[stop_id][service] = times_by_stop[times_by_stop['service'] == service] \
                     [['departure_time', 'route_id']]
         return stop_times_dict
 

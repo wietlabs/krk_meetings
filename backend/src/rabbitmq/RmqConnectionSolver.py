@@ -20,7 +20,6 @@ class RmqConnectionSolver:
     def start(self):
         self.connection_solver.start()
         self.results_producer.start()
-        print("ConnectionSolver: started.")
         self.query_consumer.start()
 
     def stop(self):
