@@ -42,6 +42,7 @@ class ConnectionSolver(IConnectionSolver):
     def start(self):
         self.data_manager.start()
         self.update_data()
+        print(f"ConnectionSolver {id(self)}: started.")
 
     def update_data(self):
         data = self.data_manager.get_updated_data()
@@ -64,7 +65,8 @@ class ConnectionSolver(IConnectionSolver):
         self.last_data_update = self.data_manager.last_data_update
 
     def find_connections(self, query: ConnectionQuery) -> ConnectionResults:
-        print("ConnectionSolver: finding connections")
+        print(f"ConnectionSolver {id(self)}: finding connections")
+        print(id(self))
         if self.last_data_update is None or self.last_data_update < self.data_manager.last_data_update:
             self.update_data()
         current_datetime = query.start_datetime
@@ -223,16 +225,16 @@ class ConnectionSolver(IConnectionSolver):
         return df
 
     def get_paths(self, start_node, end_node):
-        print("ConnectionSolver: getting paths")
+        print(f"ConnectionSolver {id(self)}: getting paths")
         if start_node == end_node:
             return []
         if end_node not in self.paths[start_node]:
             self.paths[start_node][end_node] = self.calculate_paths(start_node, end_node)
-        print(f"ConnectionSolver: got paths: {self.paths[start_node][end_node]}")
+        print(f"ConnectionSolver {id(self)}: got paths: {self.paths[start_node][end_node]}")
         return self.paths[start_node][end_node]
 
     def calculate_paths(self, start_node_id: int, end_node_id: int):
-        print("ConnectionSolver: calculating paths")
+        print(f"ConnectionSolver {id(self)}: calculating paths")
         calculation_start_time = time.time()
 
         def get_max_priority(prior):

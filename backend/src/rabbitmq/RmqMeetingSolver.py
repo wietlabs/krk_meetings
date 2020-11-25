@@ -19,7 +19,6 @@ class RmqMeetingSolver:
     def start(self):
         self.meeting_solver.start()
         self.results_producer.start()
-        print("MeetingSolver: started.")
         self.query_consumer.start()
 
     def stop(self):

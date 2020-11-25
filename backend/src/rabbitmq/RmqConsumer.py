@@ -13,7 +13,7 @@ class RmqConsumer(RmqHelper):
         else:
             self.channel.exchange_declare(exchange=self.exchange_name)
 
-        result = self.channel.queue_declare(queue='', exclusive=True)
+        result = self.channel.queue_declare(queue=self.routing_key)
         self.queue = result.method.queue
 
         self.channel.queue_bind(exchange=self.exchange_name, routing_key=self.routing_key, queue=self.queue)

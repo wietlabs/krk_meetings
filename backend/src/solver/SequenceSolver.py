@@ -19,6 +19,7 @@ class SequenceSolver(ISequenceSolver):
     def start(self):
         self.data_manager.start()
         self.update_data()
+        print(f"SequenceSolver {id(self)}: started.")
 
     def update_data(self):
         data = self.data_manager.get_updated_data()
@@ -28,6 +29,7 @@ class SequenceSolver(ISequenceSolver):
         self.last_data_update = self.data_manager.last_data_update
 
     def find_best_sequence(self, query: SequenceQuery) -> SequenceResults:
+        print(f"SequenceSolver {id(self)}: finding best sequence.")
         if self.last_data_update is None or self.last_data_update < self.data_manager.last_data_update:
             self.update_data()
 
