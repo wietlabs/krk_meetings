@@ -38,11 +38,15 @@ export default function ConnectionResultsPlot({
     (connection) => {
       const actions = connection.actions;
       const transfers = filterTransfers(actions);
-      const lastTransfer = transfers[transfers.length - 1];
-      const endDateTime = parseDateTime(lastTransfer.end_datetime);
-      const durationMillis = endDateTime - startDateTime;
-      const durationMinutes = durationMillis / 1000 / 60;
-      return durationMinutes;
+      if (transfers.length > 0) {
+        const lastTransfer = transfers[transfers.length - 1];
+        const endDateTime = parseDateTime(lastTransfer.end_datetime);
+        const durationMillis = endDateTime - startDateTime;
+        const durationMinutes = durationMillis / 1000 / 60;
+        return durationMinutes;
+      } else {
+        return actions[0].duration_in_minutes;
+      }
     },
     [startDateTime]
   );

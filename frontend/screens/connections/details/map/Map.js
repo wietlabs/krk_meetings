@@ -11,18 +11,17 @@ const edgePadding = {
 
 export default function ConnectionDetailsMap({ connection }) {
   const actions = connection.actions;
-  const transfers = filterTransfers(actions);
 
-  const first_transfer = transfers[0];
-  const last_transfer = transfers[transfers.length - 1];
+  const first_action = actions[0];
+  const last_action = actions[actions.length - 1];
 
-  const start_latlng = first_transfer.stops[0];
-  const end_latlng = last_transfer.stops[last_transfer.stops.length - 1];
+  const start_latlng = first_action.stops[0];
+  const end_latlng = last_action.stops[last_action.stops.length - 1];
 
   const mapRef = React.useRef(null);
 
   const fitToContents = () => {
-    var coords = transfers.map((transfer) => transfer.stops).flat();
+    var coords = actions.map((action) => action.stops).flat();
     mapRef.current.fitToCoordinates(coords, {
       edgePadding: edgePadding,
       animated: false,
@@ -37,13 +36,17 @@ export default function ConnectionDetailsMap({ connection }) {
     >
       <Marker coordinate={start_latlng} pinColor="green" />
       <Marker coordinate={end_latlng} pinColor="red" />
-      {transfers.map((transfer, i) => {
+      {actions.map((action, i) => {
+        const isWalking = action.type === "walking";
+        const props = isWalking
+          ? { strokeColor: "#00000066", lineDashPattern: [10, 10] }
+          : { strokeColor: "#ff000088" };
         return (
           <Polyline
             key={i}
-            coordinates={transfer.stops}
-            strokeColor="#ff000088"
+            coordinates={action.stops}
             strokeWidth={5}
+            {...props}
           />
         );
       })}

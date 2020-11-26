@@ -1,8 +1,8 @@
 from functools import reduce
 import pandas as pd
 import networkx as nx
-from src.config import DEFAULT_FLOYD_EXTRACTOR_CONFIGURATION
 from src.data_provider.data_provider_utils import is_nightly, get_walking_time, load_property_from_config_json
+from src.config import DEFAULT_FLOYD_EXTRACTOR_CONFIGURATION, FloydDataPaths
 from src.utils import load_pickle
 
 
@@ -243,7 +243,7 @@ class Extractor:
 
     def get_adjacent_stops_dict(self, stops_df: pd.DataFrame) -> dict:
         try:
-            walking_distances_pickle = load_pickle("path.pickle")
+            walking_distances_pickle = load_pickle(FloydDataPaths.api_walking_distances.value)
         except FileNotFoundError:
             walking_distances_pickle = {'distances': {}, 'stop_list': []}
         api_walking_distances = walking_distances_pickle['distances']
