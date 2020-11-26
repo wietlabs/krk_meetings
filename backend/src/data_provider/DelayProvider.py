@@ -1,5 +1,6 @@
 import time
 from src.data_provider.Downloader import Downloader
+from src.data_provider.data_provider_utils import load_property_from_config_json
 from src.data_provider.gtfs_realtime.VehiclePositionsParser import VehiclePositionsParser
 from src.rabbitmq.RmqProducer import RmqProducer
 from src.exchanges import EXCHANGES, MESSAGES
@@ -28,8 +29,9 @@ class DelaysProvider:
                 parser = VehiclePositionsParser()
                 vehicle_positions_df_T = parser.parse(vehicle_positions_pb_T)
                 vehicle_positions_df_A = parser.parse(vehicle_positions_pb_A)
-                vehicle_positions_df_A['service_id'] += 3  # service_id_offset needs stored when updating GTFS Static data
-                vehicle_positions_df = pd.concat((vehicle_positions_df_T, vehicle_positions_df_A))  # TODO: move
+                services = load_property_from_config_json("services")
+                vehicle_positions_df_A['service_id'] += len(services[0])
+                vehicle_positions_df = pd.concat((vehicle_positions_df_T, vehicle_positions_df_A))
                 vehicle_positions_df.set_index(['service_id', 'block_id', 'trip_num', 'stop_sequence'], inplace=True)
                 stop_times_df = pd.read_pickle(FloydDataPaths.stops_times_df.value)
                 delays_df = vehicle_positions_df.join(stop_times_df)

@@ -6,7 +6,7 @@ import pandas as pd
 from pandas._typing import FilePathOrBuffer
 
 from src.data_classes.ParsedData import ParsedData
-from src.data_provider.utils import parse_service_id, parse_route_id, parse_trip_id, parse_stop_id, parse_time
+from src.data_provider.data_provider_utils import parse_service_id, parse_route_id, parse_trip_id, parse_stop_id, parse_time
 
 
 class Parser:

@@ -11,6 +11,7 @@ from src.data_provider.Downloader import Downloader
 from src.data_provider.Extractor import Extractor
 from src.data_provider.Merger import Merger
 from src.data_provider.Parser import Parser
+from src.data_provider.data_provider_utils import save_property_to_config_json, load_property_from_config_json
 from src.rabbitmq.RmqProducer import RmqProducer
 from src.exchanges import EXCHANGES, MESSAGES
 from src.config import FloydDataPaths, CONFIG_JSON_PATH
@@ -130,20 +131,11 @@ class DataProvider:
 
     @staticmethod
     def load_update_date():
-        try:
-            with open(CONFIG_JSON_PATH) as json_file:
-                update_date = datetime.strptime(json.load(json_file)["update_date"], "%Y-%m-%d %H:%M:%S")
-            return update_date
-        except FileNotFoundError:
-            return None
+        load_property_from_config_json("update_date")
 
     @staticmethod
     def save_update_date(update_date):
-        with open(CONFIG_JSON_PATH, 'w') as json_file:
-            update_date = {
-                "update_date": update_date.strftime("%Y-%m-%d %H:%M:%S")
-            }
-            json.dump(update_date, json_file)
+        save_property_to_config_json("update_date", update_date.strftime("%Y-%m-%d %H:%M:%S"))
 
     def reparse_data(self):
         new_update_date = self.downloader.get_last_update_time()
@@ -156,6 +148,9 @@ class DataProvider:
 
         merger = Merger()
         merged_data, service_id_offset = merger.merge(parsed_data_T, parsed_data_A)
+
+        save_property_to_config_json("services", [[index for index in parsed_data_T.calendar_df.index],
+                                                  [index for index in parsed_data_A.calendar_df.index + service_id_offset]])
 
         self.extract_floyd_data(merged_data)
         self.save_update_date(new_update_date)

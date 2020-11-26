@@ -1,6 +1,8 @@
+import json
+import os
 from typing import Tuple
 from math import sin, cos, sqrt, atan2, radians
-from src.config import WALKING_SPEED
+from src.config import WALKING_SPEED, CONFIG_JSON_PATH
 
 
 def parse_stop_id(gtfs_stop_id: str) -> Tuple[int, int]:
@@ -60,3 +62,25 @@ def is_nightly(route_name, nightly_route_ranges):
         return False
     except ValueError:
         return False
+
+
+def save_property_to_config_json(key, value):
+    if os.path.exists(CONFIG_JSON_PATH):
+        with open(CONFIG_JSON_PATH, 'r') as json_file:
+            config_json = json.load(json_file)
+            config_json[key] = value
+    else:
+        config_json = {key: value}
+    with open(CONFIG_JSON_PATH, 'w') as json_file:
+        json.dump(config_json, json_file)
+
+
+def load_property_from_config_json(key):
+    if not os.path.exists(CONFIG_JSON_PATH):
+        return None
+    with open(CONFIG_JSON_PATH) as json_file:
+        config_json = json.load(json_file)
+        if key not in config_json:
+            return None
+        return config_json[key]
+

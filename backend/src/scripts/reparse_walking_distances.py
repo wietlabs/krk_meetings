@@ -1,6 +1,6 @@
 import pandas as pd
 from src.config import FloydDataPaths, MAX_WALKING_DISTANCE
-from src.data_provider.utils import get_walking_distance
+from src.data_provider.data_provider_utils import get_walking_distance
 import openrouteservice
 from openrouteservice.directions import directions
 from src.utils import save_pickle, load_pickle

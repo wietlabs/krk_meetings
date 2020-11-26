@@ -10,7 +10,6 @@ class ExtractorConfiguration:
     daily_hours: int
     nightly_hours: int
     walking_route_id: int
-    number_of_services: int
     max_walking_time_in_minutes: float
 
 

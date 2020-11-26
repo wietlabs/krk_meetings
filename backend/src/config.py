@@ -18,7 +18,6 @@ DEFAULT_FLOYD_EXTRACTOR_CONFIGURATION = ExtractorConfiguration(
     daily_hours=19,  # from 5 to 24
     nightly_hours=5,  # from 24 to 5
     walking_route_id=WALKING_ROUTE_ID,
-    number_of_services=3,
     max_walking_time_in_minutes=10
 )
 

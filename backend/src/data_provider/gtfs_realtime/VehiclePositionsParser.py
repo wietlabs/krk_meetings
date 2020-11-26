@@ -5,7 +5,7 @@ from typing import Union
 import pandas as pd
 from google.transit import gtfs_realtime_pb2
 
-from src.data_provider.utils import parse_trip_id, parse_stop_id
+from src.data_provider.data_provider_utils import parse_trip_id, parse_stop_id
 
 
 class VehiclePositionsParser:
