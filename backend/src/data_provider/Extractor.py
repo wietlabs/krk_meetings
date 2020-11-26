@@ -1,8 +1,8 @@
 from functools import reduce
 import pandas as pd
 import networkx as nx
+from src.data_provider.data_provider_utils import is_nightly, get_walking_time, load_property_from_config_json
 from src.config import DEFAULT_FLOYD_EXTRACTOR_CONFIGURATION, FloydDataPaths
-from src.data_provider.utils import is_nightly, get_walking_time
 from src.utils import load_pickle
 
 
@@ -212,17 +212,26 @@ class Extractor:
         stop_times_df = stop_times_df.reset_index()
         df = stop_times_df.join(route_ids_df, on=['block_id', 'trip_num', 'service_id'])
         df = df[df['stop_sequence'] == 2]
-        df = df[['route_id', 'departure_time']]
-        df = df.groupby(['route_id']).agg({'departure_time': ['count', 'min', 'max']})
+        df = df[['route_id', 'service_id', 'departure_time']]
+        df = df.groupby(['route_id', 'service_id']).agg({'departure_time': ['count', 'min', 'max']})
         df.columns = ['count', 'min', 'max']
         df = df.reset_index()
-        df['period'] = df.apply(lambda row: self.get_period(row['route_id'], row['count'], routes_df), axis=1)
+        services = load_property_from_config_json('services')
+        df['period'] = df.apply(lambda row: self.get_period(row['route_id'], row['service_id'], row['count'],
+                                                            routes_df, services), axis=1)
         df = df.reset_index()
         df = df[['route_id', 'period']]
+        df = df.drop_duplicates('route_id')
         df = df.set_index('route_id')
         return df
 
-    def get_period(self, route_id, count, routes_df: pd.DataFrame):
+    def get_period(self, route_id: int, service_id: int, count: int, routes_df: pd.DataFrame, services: list):
+        service_count = 1
+        for service in services:
+            if service_id in service:
+                service_count = len(service)
+                break
+
         nightly = is_nightly(routes_df.at[route_id, 'route_name'], self.configuration.nightly_route_ranges)
         if nightly:
             running_hours = self.configuration.nightly_hours
@@ -230,7 +239,7 @@ class Extractor:
         else:
             running_hours = self.configuration.daily_hours
             multiplier = self.configuration.daily_period_multiplier
-        return int(running_hours * 3600 / count * self.configuration.number_of_services * multiplier)
+        return int(running_hours * 3600 / count * service_count * multiplier)
 
     def get_adjacent_stops_dict(self, stops_df: pd.DataFrame) -> dict:
         try:

@@ -18,7 +18,6 @@ DEFAULT_FLOYD_EXTRACTOR_CONFIGURATION = ExtractorConfiguration(
     daily_hours=19,  # from 5 to 24
     nightly_hours=5,  # from 24 to 5
     walking_route_id=WALKING_ROUTE_ID,
-    number_of_services=3,
     max_walking_time_in_minutes=10
 )
 
@@ -56,6 +55,9 @@ class FloydDataPaths(Enum):
     stops_df_by_name = FLOYD_DATA_DIR_PATH / "stops_df_by_name.pickle"
     api_walking_distances = FLOYD_DATA_DIR_PATH / "api_walking_distances.pickle"
     exception_days = FLOYD_DATA_DIR_PATH / "exception_days.pickle"
+    delays_dict = FLOYD_DATA_DIR_PATH / "delays_dict.pickle"
+    stops_times_df = FLOYD_DATA_DIR_PATH / "stops_times_df.pickle"
+    delays_df = FLOYD_DATA_DIR_PATH / "delays_df.pickle"
 
 
 class URL(Enum):

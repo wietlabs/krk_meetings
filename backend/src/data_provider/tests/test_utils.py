@@ -1,6 +1,6 @@
 import pytest
 
-from src.data_provider.utils import parse_time, parse_stop_id, parse_trip_id, parse_service_id, parse_route_id
+from src.data_provider.data_provider_utils import parse_time, parse_stop_id, parse_trip_id, parse_service_id, parse_route_id
 
 
 def test_parse_stop_id():

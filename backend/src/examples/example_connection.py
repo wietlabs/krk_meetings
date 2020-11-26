@@ -2,13 +2,13 @@ import json
 import time
 
 import requests
-
-from src.config import URL
+from datetime import datetime
+from src.config import URL, DATETIME_FORMAT
 from src.examples.sample_queries import ConnectionQuerySamples
 
 if __name__ == "__main__":
     query_json = ConnectionQuerySamples.jubilat_kostrze.value
-
+    query_json['start_datetime'] = datetime.now().strftime(DATETIME_FORMAT)
     execution_start = time.time()
     response = requests.post(URL.CONNECTION.value, json=query_json, timeout=1.0)
     query_id = response.json()["query_id"]

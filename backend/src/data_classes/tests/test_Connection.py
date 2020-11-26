@@ -6,17 +6,17 @@ from src.data_classes.Connection import Connection
 from src.data_classes.Transfer import Transfer
 
 connection1 = Connection([
-    Transfer('139', 'headsign', 'Czarnowiejska', 'Miasteczko Studenckie AGH', datetime(2019, 1, 1, 12, 34), datetime(2019, 1, 1, 12, 37), []),
+    Transfer('139', 'headsign', 'Czarnowiejska', 'Miasteczko Studenckie AGH', datetime(2019, 1, 1, 12, 34), datetime(2019, 1, 1, 12, 37), 0, []),
 ])
 
 connection2 = Connection([
-    Transfer('139', 'headsign', 'Czarnowiejska', 'Miasteczko Studenckie AGH', datetime(2019, 12, 31, 23, 59), datetime(2020, 1, 1, 0, 1), []),
+    Transfer('139', 'headsign', 'Czarnowiejska', 'Miasteczko Studenckie AGH', datetime(2019, 12, 31, 23, 59), datetime(2020, 1, 1, 0, 1), 0, []),
 ])
 
 connection3 = Connection([
-    Transfer('139', 'headsign', 'Czarnowiejska', 'Plac Inwalidów', datetime(2020, 6, 13, 13, 3), datetime(2020, 6, 13, 13, 6), []),
-    Transfer('179', 'headsign', 'Plac Inwalidów', 'Jubilat', datetime(2020, 6, 13, 13, 7), datetime(2020, 6, 13, 13, 12), []),
-    Transfer('252', 'headsign', 'Jubilat', 'Kraków Airport', datetime(2020, 6, 13, 13, 14), datetime(2020, 6, 13, 13, 40), []),
+    Transfer('139', 'headsign', 'Czarnowiejska', 'Plac Inwalidów', datetime(2020, 6, 13, 13, 3), datetime(2020, 6, 13, 13, 6), 0, []),
+    Transfer('179', 'headsign', 'Plac Inwalidów', 'Jubilat', datetime(2020, 6, 13, 13, 7), datetime(2020, 6, 13, 13, 12), 0, []),
+    Transfer('252', 'headsign', 'Jubilat', 'Kraków Airport', datetime(2020, 6, 13, 13, 14), datetime(2020, 6, 13, 13, 40), 0, []),
 ])
 
 
