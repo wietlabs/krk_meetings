@@ -1,6 +1,7 @@
 import * as React from "react";
 import { View, ScrollView, RefreshControl } from "react-native";
-import { ActivityIndicator, FAB, Chip, Card } from "react-native-paper";
+import { FAB, Chip, Card } from "react-native-paper";
+import Loading from "../../components/Loading";
 import Placeholder from "../../components/Placeholder";
 import { getMeetings } from "../../api/MeetingsApi";
 import { getNickname } from "../../UserManager";
@@ -52,11 +53,7 @@ export default function MeetingsScreen({ navigation, route }) {
   };
 
   if (loading) {
-    return (
-      <View style={{ flex: 1, justifyContent: "center" }}>
-        <ActivityIndicator size="large" animating={loading} />
-      </View>
-    );
+    return <Loading />;
   }
 
   return (

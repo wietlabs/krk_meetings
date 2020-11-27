@@ -7,7 +7,8 @@ import {
   Share,
   ToastAndroid,
 } from "react-native";
-import { ActivityIndicator, Button, Chip, List } from "react-native-paper";
+import { Button, Chip, List } from "react-native-paper";
+import Loading from "../../../components/Loading";
 import { getMeetingDetails, leaveMeeting } from "../../../api/MeetingsApi";
 import { createMeetingLink } from "../../../LinkManager";
 import { getNickname } from "../../../UserManager";
@@ -113,13 +114,7 @@ export default function MeetingDetailsScreen({ navigation, route }) {
   };
 
   if (loading) {
-    return (
-      <ActivityIndicator
-        size="large"
-        animating={loading}
-        style={{ marginTop: 32 }}
-      />
-    );
+    return <Loading />;
   }
 
   return (
