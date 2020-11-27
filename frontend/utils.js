@@ -7,7 +7,9 @@ export function formatDateTime(datetime) {
 }
 
 export function formatDateTimeForHumans(datetime) {
-  return formatDate(datetime) + " r., godz. " + formatTime(datetime);
+  const date = formatDate(datetime);
+  const time = formatTime(datetime);
+  return `${date} r., godz. ${time}`;
 }
 
 export function formatDate(date) {
@@ -15,7 +17,7 @@ export function formatDate(date) {
   return [
     date.getDate().toString().padStart(2, "0"),
     (date.getMonth() + 1).toString().padStart(2, "0"),
-    date.getYear() + 1900,
+    date.getFullYear(),
   ].join(".");
 }
 
@@ -29,7 +31,7 @@ export function addMinutes(date, minutes) {
 
 export const makeDateTime = (date, time) => {
   const dt = new Date(
-    date.getYear() + 1900,
+    date.getFullYear(),
     date.getMonth(),
     date.getDate(),
     time.getHours(),
