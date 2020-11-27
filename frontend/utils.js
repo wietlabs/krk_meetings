@@ -2,12 +2,25 @@ export function parseDateTime(datetime) {
   return new Date(Date.parse(datetime.replace(" ", "T")));
 }
 
-export function datetimeToHour(datetime) {
-  return parseDateTime(datetime).toLocaleTimeString().slice(0, 5);
+export function formatDateTime(datetime) {
+  return datetime.toISOString().slice(0, 19).replace("T", " ");
 }
 
-export function formatDateTime(datetime) {
-  return datetime.toISOString().substring(0, 19).replace("T", " ");
+export function formatDate(date) {
+  // return date.toISOString().slice(0, 10);
+  return [
+    date.getDate().toString().padStart(2, "0"),
+    date.getMonth().toString().padStart(2, "0"),
+    date.getYear() + 1900,
+  ].join(".");
+}
+
+export function formatTime(time) {
+  return time.toISOString().slice(11, 16);
+}
+
+export function addMinutes(date, minutes) {
+  return date.getTime() + minutes * 60 * 1000;
 }
 
 export const makeDateTime = (date, time) => {
@@ -16,8 +29,7 @@ export const makeDateTime = (date, time) => {
     date.getMonth(),
     date.getDate(),
     time.getHours(),
-    time.getMinutes(),
-    time.getSeconds()
+    time.getMinutes()
   );
 };
 

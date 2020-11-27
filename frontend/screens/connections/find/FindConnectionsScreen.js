@@ -3,7 +3,7 @@ import { Alert, Keyboard, View } from "react-native";
 import { Button, IconButton, TextInput, FAB } from "react-native-paper";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { findConnections } from "../../../api/ConnectionsApi";
-import { makeDateTime } from "../../../utils";
+import { makeDateTime, formatDate, formatTime } from "../../../utils";
 import NearestStopsMap from "../../../components/NearestStopsMap";
 
 const initialState = {
@@ -267,11 +267,7 @@ export default function HomeScreen({ navigation, route }) {
             borderColor: date === null ? "lightgray" : "black",
           }}
         >
-          {date === null
-            ? "Dzisiaj"
-            : [date.getDate(), date.getMonth(), date.getYear() + 1900].join(
-                "."
-              )}
+          {date === null ? "Dzisiaj" : formatDate(date)}
         </Button>
         <View style={{ width: 16 }}></View>
         <Button
@@ -284,7 +280,7 @@ export default function HomeScreen({ navigation, route }) {
             borderColor: time === null ? "lightgray" : "black",
           }}
         >
-          {time === null ? "Teraz" : time.toLocaleTimeString().slice(0, 5)}
+          {time === null ? "Teraz" : formatTime(time)}
         </Button>
       </View>
       <FAB
