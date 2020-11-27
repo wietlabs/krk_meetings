@@ -134,6 +134,7 @@ def get_meeting_details(user_uuid: str, meeting_uuid: str):
     return {
         'uuid': meeting.uuid,
         'name': meeting.name,
+        'datetime': meeting.datetime.isoformat() if meeting.datetime else None,
         'stop_name': meeting.stop_name,
         'members': [
             {
@@ -280,6 +281,14 @@ def edit_meeting(meeting_uuid: str):
     else:
         stop_name = None
 
+    if 'datetime' in request.json:
+        try:
+            dt = datetime.fromisoformat(request.json['datetime'])
+        except ValueError:
+            return {'error': 'Invalid datetime format'}, 400
+    else:
+        dt = None
+
     meeting = Meeting.query.get(meeting_uuid)
     if meeting is None:
         return {'error': 'Meeting not found'}, 404
@@ -293,6 +302,8 @@ def edit_meeting(meeting_uuid: str):
 
     if stop_name is not None:
         meeting.stop_name = stop_name
+    if dt is not None:
+        meeting.datetime = dt
 
     db.session.commit()
 

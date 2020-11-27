@@ -130,6 +130,7 @@ def test_create_meeting(client: FlaskClient) -> None:
         'uuid': expected_uuid,
         'name': 'My meeting',
         'stop_name': None,
+        'datetime': '2020-01-02T03:04:05',
         'members': [
             {
                 'nickname': 'Alice',
