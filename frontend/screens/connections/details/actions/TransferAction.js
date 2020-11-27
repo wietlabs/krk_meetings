@@ -1,21 +1,31 @@
 import * as React from "react";
 import { Text, List } from "react-native-paper";
-import { datetimeToHour } from "../../../../utils";
+import DelayText from "../../../../components/DelayText";
+import { parseDateTime, formatTime } from "../../../../utils";
 
 export default function TransferAction({ transfer }) {
-  const start_time = datetimeToHour(transfer.start_datetime);
-  const end_time = datetimeToHour(transfer.end_datetime);
+  const startDateTime = parseDateTime(transfer.start_datetime);
+  const endDateTime = parseDateTime(transfer.end_datetime);
 
-  const start_stop_name = transfer.start_stop_name;
-  const end_stop_name = transfer.end_stop_name;
+  const startStopName = transfer.start_stop_name;
+  const endStopName = transfer.end_stop_name;
+
+  const delay = transfer.delay;
 
   const title = (
     <Text>
       {transfer.route_name}&nbsp;&rarr;&nbsp;{transfer.headsign}
     </Text>
   );
-  const description =
-    start_time + " " + start_stop_name + "\n" + end_time + " " + end_stop_name;
+  const description = (
+    <React.Fragment>
+      {formatTime(startDateTime)}
+      <DelayText delay={delay} /> {startStopName}
+      {"\n"}
+      {formatTime(endDateTime)}
+      <DelayText delay={delay} /> {endStopName}
+    </React.Fragment>
+  );
 
   const icon = transfer.route_name.length == 3 ? "bus" : "tram";
 
