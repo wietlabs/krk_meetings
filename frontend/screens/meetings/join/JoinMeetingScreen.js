@@ -25,8 +25,16 @@ export default function JoinMeetingScreen({ navigation, route }) {
 
   const refreshMeeting = async () => {
     setRefreshing(true);
-    const meeting = await getMeetingJoinInfo(meetingUuid);
-    setMeeting(meeting);
+    try {
+      const meeting = await getMeetingJoinInfo(meetingUuid);
+      setMeeting(meeting);
+    } catch (e) {
+      if (e.response.status === 404) {
+        setMeeting(false);
+      } else {
+        throw e;
+      }
+    }
     setRefreshing(false);
   };
 
@@ -97,7 +105,7 @@ export default function JoinMeetingScreen({ navigation, route }) {
     });
   };
 
-  if (!validateUuid(meetingUuid)) {
+  if (!validateUuid(meetingUuid) || meeting === false) {
     return (
       <Placeholder icon="calendar-question" text="Nie znaleziono spotkania" />
     );
