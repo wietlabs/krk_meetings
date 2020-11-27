@@ -14,10 +14,10 @@ const initialRegion = {
 };
 
 const padding = {
-  top: 100,
-  bottom: 100,
-  left: 100,
-  right: 100,
+  top: 200,
+  bottom: 200,
+  left: 200,
+  right: 200,
 };
 
 const threshold = 1000; // in metres
@@ -44,7 +44,7 @@ export default function NearestStopsMap({ onSelect, onClose }) {
   const getNearestStops = async (origin) => {
     const stops = await getStops();
     // return stops.filter((stop) => getDistance(origin, stop) < threshold);
-    return orderByDistance(origin, stops).slice(0, 10);
+    return orderByDistance(origin, stops).slice(0, 6);
   };
 
   const showNearestStops = async () => {
