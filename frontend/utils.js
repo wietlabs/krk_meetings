@@ -6,11 +6,15 @@ export function formatDateTime(datetime) {
   return datetime.toISOString().slice(0, 19).replace("T", " ");
 }
 
+export function formatDateTimeForHumans(datetime) {
+  return formatDate(datetime) + " r., godz. " + formatTime(datetime);
+}
+
 export function formatDate(date) {
   // return date.toISOString().slice(0, 10);
   return [
     date.getDate().toString().padStart(2, "0"),
-    date.getMonth().toString().padStart(2, "0"),
+    (date.getMonth() + 1).toString().padStart(2, "0"),
     date.getYear() + 1900,
   ].join(".");
 }
@@ -24,13 +28,15 @@ export function addMinutes(date, minutes) {
 }
 
 export const makeDateTime = (date, time) => {
-  return new Date(
+  const dt = new Date(
     date.getYear() + 1900,
     date.getMonth(),
     date.getDate(),
     time.getHours(),
     time.getMinutes()
   );
+  return dt;
+  // return new Date(dt.getTime() - dt.getTimezoneOffset() * 60 * 1000);
 };
 
 export function censorUuid(uuid) {

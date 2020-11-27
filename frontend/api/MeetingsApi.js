@@ -1,3 +1,5 @@
+import { formatDateTime } from "../utils";
+
 const axios = require("axios");
 
 const baseUrl = "http://10.0.0.5:8000";
@@ -80,6 +82,16 @@ export const updateMeetingMemberStopName = async (
 ) => {
   const url = `${baseUrl}/api/v1/users/${userUuid}/meetings/${meetingUuid}`;
   const params = { stop_name: stopName };
+  await axios.patch(url, params);
+};
+
+export const updateMeetingDateTime = async (
+  meetingUuid,
+  userUuid,
+  datetime
+) => {
+  const url = `${baseUrl}/api/v1/meetings/${meetingUuid}`;
+  const params = { user_uuid: userUuid, datetime: formatDateTime(datetime) };
   await axios.patch(url, params);
 };
 

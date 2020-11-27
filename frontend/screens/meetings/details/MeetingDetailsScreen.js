@@ -8,10 +8,22 @@ import {
   ToastAndroid,
 } from "react-native";
 import { Button, Chip, List } from "react-native-paper";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import Loading from "../../../components/Loading";
-import { getMeetingDetails, leaveMeeting } from "../../../api/MeetingsApi";
+import {
+  getMeetingDetails,
+  leaveMeeting,
+  updateMeetingDateTime,
+} from "../../../api/MeetingsApi";
 import { createMeetingLink } from "../../../LinkManager";
 import { getNickname } from "../../../UserManager";
+import {
+  formatDate,
+  formatDateTimeForHumans,
+  formatTime,
+  makeDateTime,
+  parseDateTime,
+} from "../../../utils";
 
 export default function MeetingDetailsScreen({ navigation, route }) {
   const userUuid = route.params.userUuid;
@@ -21,6 +33,10 @@ export default function MeetingDetailsScreen({ navigation, route }) {
   const [nickname, setNickname] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
   const [refreshing, setRefreshing] = React.useState(false);
+  const [mode, setMode] = React.useState(null);
+
+  const date = React.useRef();
+  const time = React.useRef();
 
   const refresh = async () => {
     setRefreshing(true);
@@ -40,8 +56,8 @@ export default function MeetingDetailsScreen({ navigation, route }) {
   };
 
   React.useEffect(() => {
-    navigation.addListener("focus", () => {
-      refresh();
+    navigation.addListener("focus", async () => {
+      await refresh();
     });
   }, []);
 
@@ -63,6 +79,43 @@ export default function MeetingDetailsScreen({ navigation, route }) {
   const endStopName = meeting?.stop_name;
   const isMeetingOwner = meeting?.membership?.is_owner;
   const meetingUrl = createMeetingLink(meetingUuid);
+
+  const datetime = meeting?.datetime && parseDateTime(meeting.datetime);
+
+  const handlePickDateTime = () => {
+    if (!isMeetingOwner) {
+      Alert.alert(
+        "Wystąpił błąd",
+        "Tylko organizator może ustawić datę i godzinę spotkania."
+      );
+      return;
+    }
+    setMode("date");
+  };
+
+  const handlePick = async (event, value) => {
+    if (event.type === "dismissed") {
+      setMode(null);
+      return;
+    }
+    if (mode === "date") {
+      date.current = value;
+      setMode("time");
+      return;
+    }
+    if (mode === "time") {
+      time.current = value;
+      setMode(null);
+      await updateDateTime();
+      return;
+    }
+  };
+
+  const updateDateTime = async () => {
+    const datetime = makeDateTime(date.current, time.current);
+    await updateMeetingDateTime(meetingUuid, userUuid, datetime);
+    await refresh();
+  };
 
   const handleSelectStartStop = () => {
     navigation.navigate("SelectStartStop", { meetingUuid, userUuid });
@@ -117,6 +170,8 @@ export default function MeetingDetailsScreen({ navigation, route }) {
     return <Loading />;
   }
 
+  const now = new Date();
+
   return (
     <>
       <ScrollView
@@ -124,6 +179,21 @@ export default function MeetingDetailsScreen({ navigation, route }) {
           <RefreshControl refreshing={refreshing} onRefresh={refresh} />
         }
       >
+        <List.Subheader>Data i godzina spotkania</List.Subheader>
+        <List.Item
+          title={
+            datetime
+              ? formatDateTimeForHumans(datetime)
+              : "Wybierz czas spotkania..."
+          }
+          description={datetime && isMeetingOwner && "Kliknij, aby zmienić"}
+          left={(props) => (
+            <List.Icon {...props} icon="clock-outline" style={{ margin: 0 }} />
+          )}
+          onPress={handlePickDateTime}
+          style={{ backgroundColor: "white" }}
+          titleStyle={datetime || { color: "rgba(0, 0, 0, 0.5)" }}
+        />
         <List.Subheader>Twoja lokalizacja</List.Subheader>
         <List.Item
           title={startStopName || "Wybierz punkt początkowy..."}
@@ -229,6 +299,15 @@ export default function MeetingDetailsScreen({ navigation, route }) {
           style={{ backgroundColor: "white" }}
         />
       </ScrollView>
+      {mode && (
+        <DateTimePicker
+          mode={mode}
+          is24Hour={true}
+          minimumDate={now}
+          value={datetime || now}
+          onChange={handlePick}
+        />
+      )}
     </>
   );
 }
