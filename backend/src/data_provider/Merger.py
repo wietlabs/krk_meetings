@@ -62,7 +62,7 @@ class Merger:
         return calendar_df, service_id_offset
 
     def _merge_calendar_dates_dfs(self, calendar_dates_df_1: pd.DataFrame, calendar_dates_df_2: pd.DataFrame,
-                                  service_id_offset: int) -> Tuple[pd.DataFrame, int]:
+                                  service_id_offset: int) -> pd.DataFrame:
         calendar_dates_df_2.loc[:, 'service_id'] += service_id_offset
 
         calendar_dates_df = calendar_dates_df_1.append(calendar_dates_df_2)
