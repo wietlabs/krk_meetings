@@ -18,13 +18,13 @@ export default function TransferAction({ transfer }) {
     </Text>
   );
   const description = (
-    <Text>
+    <React.Fragment>
       {formatTime(startDateTime)}
       <DelayText delay={delay} /> {startStopName}
       {"\n"}
       {formatTime(endDateTime)}
       <DelayText delay={delay} /> {endStopName}
-    </Text>
+    </React.Fragment>
   );
 
   const icon = transfer.route_name.length == 3 ? "bus" : "tram";
