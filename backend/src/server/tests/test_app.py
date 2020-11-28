@@ -47,14 +47,14 @@ def test_create_meeting_missing_user_uuid(client: FlaskClient) -> None:
     response = client.post('/api/v1/meetings', json={})
 
     assert response.status_code == 400
-    assert response.json == {'error': 'Missing user_uuid'}
+    assert response.json == {'error': 'Missing user uuid'}
 
 
 def test_create_meeting_invalid_user_uuid(client: FlaskClient) -> None:
     response = client.post('/api/v1/meetings', json={'user_uuid': 'foobar'})
 
     assert response.status_code == 400
-    assert response.json == {'error': 'Invalid user_uuid'}
+    assert response.json == {'error': 'Invalid user uuid'}
 
 
 def test_create_meeting_nickname_too_long(client: FlaskClient) -> None:
