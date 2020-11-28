@@ -37,7 +37,7 @@ class Meeting(db.Model):
     created_at = db.Column(db.DateTime(), default=func.now(), nullable=False)
 
     owner = db.relationship('User')
-    users = db.relationship('Membership', back_populates='meeting', order_by='Membership.joined_at')
+    users = db.relationship('Membership', back_populates='meeting', order_by='Membership.joined_at', cascade="all, delete-orphan")
 
 
 class Membership(db.Model):
@@ -325,6 +325,22 @@ def edit_meeting(meeting_uuid: str):
         meeting.stop_name = stop_name
     if dt is not None:
         meeting.datetime = dt
+    db.session.commit()
+
+    return '', 204
+
+
+@app.route('/api/v1/meetings/<meeting_uuid>', methods=['DELETE'])
+def delete_meeting(meeting_uuid: str):
+    validate_meeting_uuid(meeting_uuid)
+    check_json_data()
+    user_uuid = get_user_uuid()
+
+    meeting = find_meeting(meeting_uuid)
+    user = find_user(user_uuid)
+    must_be_meeting_owner(user, meeting)
+
+    db.session.delete(meeting)
     db.session.commit()
 
     return '', 204
