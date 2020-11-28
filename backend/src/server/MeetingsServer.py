@@ -302,7 +302,6 @@ def get_meeting_join_info(meeting_uuid: str):
     meeting = find_meeting(meeting_uuid)
 
     return {
-        'uuid': meeting.uuid,
         'name': meeting.name,
         'members_count': len(meeting.users),
         'owner_nickname': get_meeting_owner_nickname(meeting)
