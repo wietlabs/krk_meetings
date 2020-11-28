@@ -15,6 +15,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
 db = SQLAlchemy(app)
 
 MEETING_NAME_MAX_LENGTH = 50
+MEETING_DESCRIPTION_MAX_LENGTH = 500
 NICKNAME_MAX_LENGTH = 50
 STOP_NAME_MAX_LENGTH = 100
 
@@ -31,6 +32,7 @@ class Meeting(db.Model):
     __tablename__ = 'meetings'
     uuid = db.Column(CHAR(36), default=lambda: str(uuid.uuid4()), primary_key=True)
     name = db.Column(db.String(MEETING_NAME_MAX_LENGTH), nullable=True)
+    description = db.Column(db.String(MEETING_DESCRIPTION_MAX_LENGTH), nullable=True)
     datetime = db.Column(db.DateTime(), nullable=True)
     stop_name = db.Column(db.String(STOP_NAME_MAX_LENGTH), nullable=True)
     owner_uuid = owner_uuid = db.Column(CHAR(36), db.ForeignKey('users.uuid'), nullable=False)
@@ -94,6 +96,11 @@ def validate_meeting_name(stop_name: str) -> None:
         raise ApiException('Meeting name too long', 400)
 
 
+def validate_meeting_description(description: str) -> None:
+    if len(description) > MEETING_DESCRIPTION_MAX_LENGTH:
+        raise ApiException('Meeting description too long', 400)
+
+
 def validate_stop_name(stop_name: str) -> None:
     if len(stop_name) > STOP_NAME_MAX_LENGTH:
         raise ApiException('Stop name too long', 400)
@@ -130,6 +137,14 @@ def get_meeting_name() -> Optional[str]:
         return None
     name = request.json['name']
     validate_meeting_name(name)
+    return name
+
+
+def get_meeting_description() -> Optional[str]:
+    if 'description' not in request.json:
+        return None
+    name = request.json['description']
+    validate_meeting_description(name)
     return name
 
 
@@ -241,6 +256,7 @@ def get_meeting_details(user_uuid: str, meeting_uuid: str):
     return {
         'uuid': meeting.uuid,
         'name': meeting.name,
+        'description': meeting.description,
         'datetime': format_datetime(meeting.datetime),
         'stop_name': meeting.stop_name,
         'members': [
@@ -278,12 +294,13 @@ def create_meeting():
     check_json_data()
     user_uuid = get_user_uuid()
     nickname = get_nickname()
-    meeting_name = get_meeting_name()
+    name = get_meeting_name()
+    description = get_meeting_description()
     dt = get_datetime()
 
     user = find_user(user_uuid)
 
-    meeting = Meeting(name=meeting_name, datetime=dt, owner=user)
+    meeting = Meeting(name=name, description=description, datetime=dt, owner=user)
     membership = Membership(meeting=meeting, user=user, nickname=nickname)
     db.session.add(membership)
     db.session.commit()
@@ -313,6 +330,7 @@ def edit_meeting(meeting_uuid: str):
     validate_meeting_uuid(meeting_uuid)
     check_json_data()
     user_uuid = get_user_uuid()
+    description = get_meeting_description()
     stop_name = get_stop_name()
     dt = get_datetime()
 
@@ -320,6 +338,8 @@ def edit_meeting(meeting_uuid: str):
     user = find_user(user_uuid)
     must_be_meeting_owner(user, meeting)
 
+    if description is not None:
+        meeting.description = description
     if stop_name is not None:
         meeting.stop_name = stop_name
     if dt is not None:

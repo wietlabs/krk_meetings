@@ -106,6 +106,7 @@ def test_create_meeting(client: FlaskClient) -> None:
             'user_uuid': owner_uuid,
             'nickname': 'Alice',
             'name': 'My meeting',
+            'description': 'Best meeting ever',
             'datetime': '2020-01-02T03:04:05',
         })
 
@@ -117,7 +118,6 @@ def test_create_meeting(client: FlaskClient) -> None:
 
     assert response.status_code == 200
     assert response.json == {
-        'uuid': expected_uuid,
         'name': 'My meeting',
         'members_count': 1,
         'owner_nickname': 'Alice',
@@ -129,6 +129,7 @@ def test_create_meeting(client: FlaskClient) -> None:
     assert response.json == {
         'uuid': expected_uuid,
         'name': 'My meeting',
+        'description': 'Best meeting ever',
         'stop_name': None,
         'datetime': '2020-01-02T03:04:05',
         'members': [
@@ -157,6 +158,7 @@ def test_leave_meeting(client: FlaskClient) -> None:
         'user_uuid': owner_uuid,
         'nickname': 'Alice',
         'name': 'My meeting',
+        'description': 'Best meeting ever',
         'datetime': '2020-01-02T03:04:05',
     })
     meeting_uuid = response.json['uuid']
