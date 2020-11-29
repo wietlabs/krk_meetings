@@ -25,30 +25,30 @@ export default function ConnectionResultItem({ connection, onPress }) {
   const actions = connection.actions;
   const transfers = filterTransfers(actions);
 
-  let start_datetime,
-    end_datetime,
-    start_delay,
-    end_delay,
-    start_stop_name,
-    end_stop_name;
+  let startDateTime,
+    endDateTime,
+    startDelay,
+    endDelay,
+    startStopName,
+    endStopName;
 
   if (connection.walking_only) {
     const action = actions[0];
-    start_datetime = new Date();
-    end_datetime = addMinutes(start_datetime, action.duration_in_minutes);
-    start_delay = null;
-    end_delay = null;
-    start_stop_name = action.start_stop_name;
-    end_stop_name = action.end_stop_name;
+    startDateTime = new Date();
+    endDateTime = addMinutes(startDateTime, action.duration_in_minutes);
+    startDelay = null;
+    endDelay = null;
+    startStopName = action.start_stop_name;
+    endStopName = action.end_stop_name;
   } else {
     const first_transfer = transfers[0];
     const last_transfer = transfers[transfers.length - 1];
-    start_datetime = parseDateTime(first_transfer.start_datetime);
-    end_datetime = parseDateTime(last_transfer.end_datetime);
-    start_delay = first_transfer.delay;
-    end_delay = first_transfer.delay;
-    start_stop_name = first_transfer.start_stop_name;
-    end_stop_name = last_transfer.end_stop_name;
+    startDateTime = parseDateTime(first_transfer.start_datetime);
+    endDateTime = parseDateTime(last_transfer.end_datetime);
+    startDelay = first_transfer.delay;
+    endDelay = first_transfer.delay;
+    startStopName = first_transfer.start_stop_name;
+    endStopName = last_transfer.end_stop_name;
   }
 
   return (
@@ -76,15 +76,11 @@ export default function ConnectionResultItem({ connection, onPress }) {
       </Card.Content>
       <Card.Content>
         <HourDelayStop
-          time={start_datetime}
-          delay={start_delay}
-          stop={start_stop_name}
+          time={startDateTime}
+          delay={startDelay}
+          stop={startStopName}
         />
-        <HourDelayStop
-          time={end_datetime}
-          delay={end_delay}
-          stop={end_stop_name}
-        />
+        <HourDelayStop time={endDateTime} delay={endDelay} stop={endStopName} />
       </Card.Content>
     </Card>
   );
