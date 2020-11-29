@@ -4,10 +4,17 @@ import pytest
 from flask.testing import FlaskClient
 from sqlalchemy.testing import mock
 
-from src.server.MeetingsServer import app, db, User
+from src.server.MeetingsServer import app, db, User, Meeting, Membership
 
 
-@pytest.fixture
+uuid1 = '11111111-1111-1111-1111-111111111111'
+uuid2 = '22222222-2222-2222-2222-222222222222'
+uuid3 = '33333333-3333-3333-3333-333333333333'
+uuid4 = '44444444-4444-4444-4444-444444444444'
+uuid5 = '55555555-5555-5555-5555-555555555555'
+
+
+@pytest.fixture(scope='function')
 def client() -> FlaskClient:
     app.config['TESTING'] = True
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'  # in-memory database (:memory:)
@@ -19,160 +26,277 @@ def client() -> FlaskClient:
     db.drop_all()
 
 
-expected_uuid = '12345678-1234-5678-1234-567812345678'
-expected_created_at = datetime(2020, 10, 21, 20, 30, 40)
-
-
-@mock.patch('uuid.uuid4', lambda: expected_uuid)
 def test_create_user(client: FlaskClient) -> None:
-    response = client.post('/api/v1/users')
-
-    user = User.query.get(expected_uuid)
-    assert user is not None
-    assert user.uuid == expected_uuid
-
+    with mock.patch('uuid.uuid4', lambda: uuid1):
+        response = client.post('/api/v1/users')
     assert response.status_code == 201
-    assert response.json == {'uuid': expected_uuid}
-    assert response.headers['Location'].endswith(f'/api/v1/users/{expected_uuid}')
+    assert response.json == {'uuid': uuid1}
+    assert response.headers['Location'].endswith(f'/api/v1/users/{uuid1}')
+
+    user = User.query.get(uuid1)
+    assert user is not None
+    assert user.uuid == uuid1
 
 
-def test_create_meeting_missing_json_data(client: FlaskClient) -> None:
-    response = client.post('/api/v1/meetings')
+def test_check_if_user_exists_true(client: FlaskClient) -> None:
+    user = User(uuid=uuid1)
+    db.session.add(user)
+    db.session.commit()
 
-    assert response.status_code == 400
-    assert response.json == {'error': 'Missing JSON data'}
-
-
-def test_create_meeting_missing_user_uuid(client: FlaskClient) -> None:
-    response = client.post('/api/v1/meetings', json={})
-
-    assert response.status_code == 400
-    assert response.json == {'error': 'Missing user uuid'}
+    response = client.get(f'/api/v1/users/{uuid1}')
+    assert response.status_code == 204
+    assert response.data == b''
 
 
-def test_create_meeting_invalid_user_uuid(client: FlaskClient) -> None:
-    response = client.post('/api/v1/meetings', json={'user_uuid': 'foobar'})
-
-    assert response.status_code == 400
-    assert response.json == {'error': 'Invalid user uuid'}
-
-
-def test_create_meeting_nickname_too_long(client: FlaskClient) -> None:
-    response = client.post('/api/v1/meetings', json={
-        'user_uuid': '12345678-1234-5678-1234-567812345678',
-        'nickname': 'a' * 51,
-    })
-
-    assert response.status_code == 400
-    assert response.json == {'error': 'Nickname too long'}
-
-
-def test_create_meeting_name_too_long(client: FlaskClient) -> None:
-    response = client.post('/api/v1/meetings', json={
-        'user_uuid': '12345678-1234-5678-1234-567812345678',
-        'name': 'a' * 51,
-    })
-
-    assert response.status_code == 400
-    assert response.json == {'error': 'Meeting name too long'}
-
-
-def test_create_meeting_invalid_datetime(client: FlaskClient) -> None:
-    response = client.post('/api/v1/meetings', json={
-        'user_uuid': '12345678-1234-5678-1234-567812345678',
-        'datetime': 'abcdef',
-    })
-
-    assert response.status_code == 400
-    assert response.json == {'error': 'Invalid meeting datetime'}
-
-
-def test_create_meeting_user_not_found(client: FlaskClient) -> None:
-    response = client.post('/api/v1/meetings', json={
-        'user_uuid': '12345678-1234-5678-1234-567812345678',
-        'nickname': 'nickname',
-    })
-
+def test_check_if_user_exists_false(client: FlaskClient) -> None:
+    response = client.get(f'/api/v1/users/{uuid1}')
     assert response.status_code == 404
     assert response.json == {'error': 'User not found'}
 
 
-def test_create_meeting(client: FlaskClient) -> None:
-    response = client.post('/api/v1/users')
-    owner_uuid = response.json['uuid']
+def test_get_user_meetings(client: FlaskClient) -> None:
+    user1 = User(uuid=uuid1)
+    user2 = User(uuid=uuid2)
+    user3 = User(uuid=uuid3)
+    meeting1 = Meeting(uuid=uuid4, owner=user1, name='Lorem ipsum')
+    meeting2 = Meeting(uuid=uuid5, owner=user2, datetime=datetime(2020, 1, 2, 3, 4, 5))
+    membership1 = Membership(meeting=meeting1, user=user1, nickname='Alice')
+    membership2 = Membership(meeting=meeting1, user=user3, nickname='Charlie')
+    membership3 = Membership(meeting=meeting2, user=user1, nickname='Ala')
+    membership4 = Membership(meeting=meeting2, user=user2, nickname='Bob')
+    membership5 = Membership(meeting=meeting2, user=user3, nickname='Charlie')
+    db.session.add(membership1)
+    db.session.add(membership2)
+    db.session.add(membership3)
+    db.session.add(membership4)
+    db.session.add(membership5)
+    db.session.commit()
 
-    with mock.patch('uuid.uuid4', lambda: expected_uuid):
-        response = client.post('/api/v1/meetings', json={
-            'user_uuid': owner_uuid,
-            'nickname': 'Alice',
-            'name': 'My meeting',
-            'description': 'Best meeting ever',
-            'datetime': '2020-01-02T03:04:05',
-        })
-
-    assert response.status_code == 201
-    assert response.json == {'uuid': expected_uuid}
-    assert response.headers['Location'].endswith(f'/api/v1/meetings/{expected_uuid}')
-
-    response = client.get(f'/api/v1/meetings/{expected_uuid}')
-
+    response = client.get(f'/api/v1/users/{user1.uuid}/meetings')
     assert response.status_code == 200
     assert response.json == {
-        'name': 'My meeting',
-        'members_count': 1,
+        'meetings': [
+            {
+                'uuid': meeting1.uuid,
+                'name': 'Lorem ipsum',
+                'nickname': 'Alice',
+                'datetime': None,
+                'members_count': 2,
+            },
+            {
+                'uuid': meeting2.uuid,
+                'name': None,
+                'nickname': 'Ala',
+                'datetime': '2020-01-02T03:04:05',
+                'members_count': 3,
+            },
+        ]
+    }
+
+
+def test_create_meeting(client: FlaskClient) -> None:
+    user = User(uuid=uuid1)
+    db.session.add(user)
+    db.session.commit()
+
+    with mock.patch('uuid.uuid4', lambda: uuid2):
+        response = client.post('/api/v1/meetings', json={
+            'owner_uuid': user.uuid,
+            'name': 'Lorem ipsum',
+            'description': 'Lorem ipsum sit dolor amet.',
+            'datetime': '2020-01-02T03:04:05',
+            'nickname': 'Alice',
+        })
+    assert response.status_code == 201
+    assert response.json == {'uuid': uuid2}
+    assert response.headers['Location'].endswith(f'/api/v1/meetings/{uuid2}')
+
+    meeting = Meeting.query.get(uuid2)
+    assert meeting is not None
+    assert meeting.uuid == uuid2
+    assert meeting.name == 'Lorem ipsum'
+    assert meeting.description == 'Lorem ipsum sit dolor amet.'
+    assert meeting.datetime == datetime(2020, 1, 2, 3, 4, 5)
+
+    membership = Membership.query.get((uuid2, uuid1))
+    assert membership is not None
+    assert membership.nickname == 'Alice'
+    assert membership.stop_name is None
+
+
+def test_get_meeting_join_info(client: FlaskClient) -> None:
+    user1 = User(uuid=uuid1)
+    user2 = User(uuid=uuid2)
+    user3 = User(uuid=uuid3)
+    meeting = Meeting(uuid=uuid4, owner=user1, name='Lorem ipsum',
+                      description='Lorem ipsum sit dolor amet.',
+                      datetime=datetime(2020, 1, 2, 3, 4, 5))
+    membership1 = Membership(meeting=meeting, user=user1, nickname='Alice')
+    membership2 = Membership(meeting=meeting, user=user2, nickname='Bob')
+    membership3 = Membership(meeting=meeting, user=user3, nickname='Charlie')
+    db.session.add(membership1)
+    db.session.add(membership2)
+    db.session.add(membership3)
+    db.session.commit()
+
+    response = client.get(f'/api/v1/meetings/{meeting.uuid}')
+    assert response.status_code == 200
+    assert response.json == {
+        'name': 'Lorem ipsum',
+        'datetime': '2020-01-02T03:04:05',
+        'members_count': 3,
         'owner_nickname': 'Alice',
     }
 
-    response = client.get(f'/api/v1/users/{owner_uuid}/meetings/{expected_uuid}')
 
+def test_edit_meeting(client: FlaskClient) -> None:
+    owner = User(uuid=uuid1)
+    meeting = Meeting(uuid=uuid2, owner=owner)
+    db.session.add(meeting)
+    db.session.commit()
+
+    response = client.patch(f'/api/v1/meetings/{meeting.uuid}', json={
+        'owner_uuid': owner.uuid,
+        'name': 'Lorem ipsum',
+        'description': 'Lorem ipsum sit dolor amet.',
+        'datetime': '2020-01-02T03:04:05',
+        'stop_name': 'Czarnowiejska',
+    })
+    assert response.status_code == 204
+
+    meeting = Meeting.query.get(meeting.uuid)
+    assert meeting.name == 'Lorem ipsum'
+    assert meeting.description == 'Lorem ipsum sit dolor amet.'
+    assert meeting.datetime == datetime(2020, 1, 2, 3, 4, 5)
+    assert meeting.stop_name == 'Czarnowiejska'
+
+
+def test_delete_meeting(client: FlaskClient) -> None:
+    owner = User(uuid=uuid1)
+    user = User(uuid=uuid2)
+    meeting = Meeting(uuid=uuid3, owner=owner)
+    membership1 = Membership(meeting=meeting, user=owner, nickname='Alice')
+    membership2 = Membership(meeting=meeting, user=user, nickname='Bob')
+    db.session.add(membership1)
+    db.session.add(membership2)
+    db.session.commit()
+
+    response = client.delete(f'/api/v1/meetings/{meeting.uuid}', json={'owner_uuid': owner.uuid})
+    assert response.status_code == 204
+    assert response.data == b''
+
+    assert Meeting.query.get(meeting.uuid) is None
+    assert Membership.query.get((meeting.uuid, owner.uuid)) is None
+    assert Membership.query.get((meeting.uuid, user.uuid)) is None
+
+
+def test_join_meeting(client: FlaskClient) -> None:
+    owner = User(uuid=uuid1)
+    user = User(uuid=uuid2)
+    meeting = Meeting(uuid=uuid3, owner=owner)
+    db.session.add(meeting)
+    db.session.add(user)
+    db.session.commit()
+
+    response = client.put(f'/api/v1/memberships/{meeting.uuid}/{user.uuid}', json={'nickname': 'Bob'})
+    assert response.status_code == 204
+    assert response.data == b''
+
+    membership = Membership.query.get((meeting.uuid, user.uuid))
+    assert membership is not None
+    assert membership.nickname == 'Bob'
+    assert membership.stop_name is None
+
+
+def test_join_meeting_already_a_member(client: FlaskClient) -> None:
+    owner = User(uuid=uuid1)
+    user = User(uuid=uuid2)
+    meeting = Meeting(uuid=uuid3, owner=owner)
+    membership = Membership(meeting=meeting, user=user, nickname='Bob')
+    db.session.add(membership)
+    db.session.commit()
+
+    response = client.put(f'/api/v1/memberships/{meeting.uuid}/{user.uuid}', json={'nickname': 'Bobby'})
+    assert response.status_code == 400
+    assert response.json == {'error': 'Already a member'}
+
+
+def test_get_membership_details(client: FlaskClient) -> None:
+    user1 = User(uuid=uuid1)
+    user2 = User(uuid=uuid2)
+    meeting = Meeting(name='Lorem ipsum', description='Lorem ipsum sit dolor amet.',
+                      datetime=datetime(2020, 1, 2, 3, 4, 5), stop_name='Czarnowiejska', uuid=uuid3, owner=user1)
+    membership1 = Membership(meeting=meeting, user=user1, nickname='Alice', stop_name='Kawiory')
+    membership2 = Membership(meeting=meeting, user=user2, nickname='Bob', stop_name='Muzeum Narodowe')
+    db.session.add(membership1)
+    db.session.add(membership2)
+    db.session.commit()
+
+    response = client.get(f'/api/v1/memberships/{meeting.uuid}/{user2.uuid}')
     assert response.status_code == 200
     assert response.json == {
-        'uuid': expected_uuid,
-        'name': 'My meeting',
-        'description': 'Best meeting ever',
-        'stop_name': None,
+        'uuid': meeting.uuid,
+        'name': 'Lorem ipsum',
+        'description': 'Lorem ipsum sit dolor amet.',
         'datetime': '2020-01-02T03:04:05',
+        'stop_name': 'Czarnowiejska',
         'members': [
             {
                 'nickname': 'Alice',
                 'is_owner': True,
+                'is_you': False,
+                'stop_name': 'Kawiory',
+            },
+            {
+                'nickname': 'Bob',
+                'is_owner': False,
                 'is_you': True,
-                'stop_name': None,
-            }
+                'stop_name': 'Muzeum Narodowe',
+            },
         ],
         'membership': {
-            'is_owner': True,
-            'stop_name': None,
-        },
+            'is_owner': False,
+            'stop_name': 'Muzeum Narodowe',
+        }
     }
 
 
-def test_leave_meeting(client: FlaskClient) -> None:
-    response = client.post('/api/v1/users')
-    owner_uuid = response.json['uuid']
+def test_edit_membership_details(client: FlaskClient) -> None:
+    user = User(uuid=uuid1)
+    meeting = Meeting(uuid=uuid2, owner=user)
+    membership = Membership(meeting=meeting, user=user)
+    db.session.add(membership)
+    db.session.commit()
 
-    response = client.post('/api/v1/users')
-    member_uuid = response.json['uuid']
-
-    response = client.post('/api/v1/meetings', json={
-        'user_uuid': owner_uuid,
-        'nickname': 'Alice',
-        'name': 'My meeting',
-        'description': 'Best meeting ever',
-        'datetime': '2020-01-02T03:04:05',
-    })
-    meeting_uuid = response.json['uuid']
-
-    client.post(f'/api/v1/meetings/{meeting_uuid}/members', json={
-        'user_uuid': member_uuid,
-        'nickname': 'Bob',
-    })
-
-    response = client.get(f'/api/v1/meetings/{meeting_uuid}')
-    assert response.json['members_count'] == 2
-
-    response = client.delete(f'/api/v1/meetings/{meeting_uuid}/members/{member_uuid}')
+    response = client.patch(f'/api/v1/memberships/{meeting.uuid}/{user.uuid}', json={'stop_name': 'Chopina'})
     assert response.status_code == 204
+    assert response.data == b''
 
-    response = client.get(f'/api/v1/meetings/{meeting_uuid}')
-    assert response.json['members_count'] == 1
+    membership = Membership.query.get((meeting.uuid, user.uuid))
+    assert membership.stop_name == 'Chopina'
+
+
+def test_leave_meeting(client: FlaskClient) -> None:
+    user = User(uuid=uuid1)
+    meeting = Meeting(uuid=uuid2, owner_uuid=uuid3)
+    membership = Membership(meeting=meeting, user=user)
+    db.session.add(membership)
+    db.session.commit()
+
+    response = client.delete(f'/api/v1/memberships/{meeting.uuid}/{user.uuid}')
+    assert response.status_code == 204
+    assert response.data == b''
+
+    assert Membership.query.get((meeting.uuid, user.uuid)) is None
+
+
+def test_leave_meeting_owner(client: FlaskClient) -> None:
+    owner = User(uuid=uuid1)
+    meeting = Meeting(uuid=uuid2, owner_uuid=uuid1)
+    membership = Membership(meeting=meeting, user=owner)
+    db.session.add(membership)
+    db.session.commit()
+
+    response = client.delete(f'/api/v1/memberships/{meeting.uuid}/{owner.uuid}')
+    assert response.status_code == 403
+    assert response.json == {'error': 'Meeting owner cannot leave meeting'}

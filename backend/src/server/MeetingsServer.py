@@ -6,6 +6,7 @@ from flask import Flask, request, make_response
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import CHAR, func
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm.exc import FlushError
 
 app = Flask(__name__)
 
@@ -39,7 +40,8 @@ class Meeting(db.Model):
     created_at = db.Column(db.DateTime(), default=func.now(), nullable=False)
 
     owner = db.relationship('User')
-    users = db.relationship('Membership', back_populates='meeting', order_by='Membership.joined_at', cascade="all, delete-orphan")
+    users = db.relationship('Membership', back_populates='meeting',
+                            order_by='Membership.joined_at', cascade='all, delete-orphan')
 
 
 class Membership(db.Model):
@@ -116,12 +118,12 @@ def check_json_data() -> None:
         raise ApiException('Missing JSON data', 400)
 
 
-def get_user_uuid() -> str:
-    if 'user_uuid' not in request.json:
-        raise ApiException('Missing user uuid', 400)
-    user_uuid = request.json['user_uuid']
-    validate_user_uuid(user_uuid)
-    return user_uuid
+def get_owner_uuid() -> str:
+    if 'owner_uuid' not in request.json:
+        raise ApiException('Missing owner uuid', 400)
+    owner_uuid = request.json['owner_uuid']
+    validate_user_uuid(owner_uuid)
+    return owner_uuid
 
 
 def get_nickname() -> Optional[str]:
@@ -219,15 +221,18 @@ def create_user():
 
 
 @app.route('/api/v1/users/<user_uuid>', methods=['GET'])
-def get_user(user_uuid: str):
+def check_if_user_exists(user_uuid: str):
     validate_user_uuid(user_uuid)
+
     find_user(user_uuid)
+
     return '', 204
 
 
 @app.route('/api/v1/users/<user_uuid>/meetings', methods=['GET'])
 def get_user_meetings(user_uuid: str):
     validate_user_uuid(user_uuid)
+
     user = find_user(user_uuid)
 
     return {
@@ -244,13 +249,116 @@ def get_user_meetings(user_uuid: str):
     }, 200
 
 
-@app.route('/api/v1/users/<user_uuid>/meetings/<meeting_uuid>', methods=['GET'])
-def get_meeting_details(user_uuid: str, meeting_uuid: str):
-    validate_user_uuid(user_uuid)
+@app.route('/api/v1/meetings', methods=['POST'])
+def create_meeting():
+    check_json_data()
+    owner_uuid = get_owner_uuid()
+    name = get_meeting_name()
+    description = get_meeting_description()
+    dt = get_datetime()
+    nickname = get_nickname()
+
+    owner = find_user(owner_uuid)
+
+    meeting = Meeting(name=name, description=description, datetime=dt, owner=owner)
+    membership = Membership(meeting=meeting, user=owner, nickname=nickname)
+    db.session.add(membership)
+    db.session.commit()
+
+    return make_response({
+        'uuid': meeting.uuid,
+    }, 201, {
+        'Location': f'/api/v1/meetings/{meeting.uuid}'
+    })
+
+
+@app.route('/api/v1/meetings/<meeting_uuid>', methods=['GET'])
+def get_meeting_join_info(meeting_uuid: str):
     validate_meeting_uuid(meeting_uuid)
 
-    user = find_user(user_uuid)
     meeting = find_meeting(meeting_uuid)
+
+    return {
+        'name': meeting.name,
+        'datetime': format_datetime(meeting.datetime),
+        'members_count': len(meeting.users),
+        'owner_nickname': get_meeting_owner_nickname(meeting)
+    }, 200
+
+
+@app.route('/api/v1/meetings/<meeting_uuid>', methods=['PATCH'])
+def edit_meeting(meeting_uuid: str):
+    validate_meeting_uuid(meeting_uuid)
+
+    check_json_data()
+    owner_uuid = get_owner_uuid()
+    name = get_meeting_name()
+    description = get_meeting_description()
+    stop_name = get_stop_name()
+    dt = get_datetime()
+
+    meeting = find_meeting(meeting_uuid)
+    user = find_user(owner_uuid)
+    must_be_meeting_owner(user, meeting)
+
+    if name is not None:
+        meeting.name = name
+    if description is not None:
+        meeting.description = description
+    if dt is not None:
+        meeting.datetime = dt
+    if stop_name is not None:
+        meeting.stop_name = stop_name
+    db.session.commit()
+
+    return '', 204
+
+
+@app.route('/api/v1/meetings/<meeting_uuid>', methods=['DELETE'])
+def delete_meeting(meeting_uuid: str):
+    validate_meeting_uuid(meeting_uuid)
+
+    check_json_data()
+    owner_uuid = get_owner_uuid()
+
+    meeting = find_meeting(meeting_uuid)
+    user = find_user(owner_uuid)
+    must_be_meeting_owner(user, meeting)
+
+    db.session.delete(meeting)
+    db.session.commit()
+
+    return '', 204
+
+
+@app.route('/api/v1/memberships/<meeting_uuid>/<user_uuid>', methods=['PUT'])
+def join_meeting(meeting_uuid: str, user_uuid: str):
+    validate_meeting_uuid(meeting_uuid)
+    validate_user_uuid(user_uuid)
+
+    check_json_data()
+    nickname = get_nickname()
+
+    meeting = find_meeting(meeting_uuid)
+    user = find_user(user_uuid)
+
+    membership = Membership(user=user, meeting=meeting, nickname=nickname)
+    db.session.add(membership)
+    try:
+        db.session.commit()
+    except (IntegrityError, FlushError):
+        raise ApiException('Already a member', 400)
+
+    return '', 204
+
+
+@app.route('/api/v1/memberships/<meeting_uuid>/<user_uuid>', methods=['GET'])
+def get_membership_details(meeting_uuid: str, user_uuid: str):
+    validate_meeting_uuid(meeting_uuid)
+    validate_user_uuid(user_uuid)
+
+    meeting = find_meeting(meeting_uuid)
+    user = find_user(user_uuid)
     membership = find_membership(meeting_uuid, user_uuid)
 
     return {
@@ -275,10 +383,11 @@ def get_meeting_details(user_uuid: str, meeting_uuid: str):
     }, 200
 
 
-@app.route('/api/v1/users/<user_uuid>/meetings/<meeting_uuid>', methods=['PATCH'])
-def update_meeting_member_details(user_uuid: str, meeting_uuid: str):
-    validate_user_uuid(user_uuid)
+@app.route('/api/v1/memberships/<meeting_uuid>/<user_uuid>', methods=['PATCH'])
+def edit_membership_details(meeting_uuid: str, user_uuid: str):
     validate_meeting_uuid(meeting_uuid)
+    validate_user_uuid(user_uuid)
+
     check_json_data()
     stop_name = get_stop_name()
 
@@ -289,109 +398,13 @@ def update_meeting_member_details(user_uuid: str, meeting_uuid: str):
     return '', 204
 
 
-@app.route('/api/v1/meetings', methods=['POST'])
-def create_meeting():
-    check_json_data()
-    user_uuid = get_user_uuid()
-    nickname = get_nickname()
-    name = get_meeting_name()
-    description = get_meeting_description()
-    dt = get_datetime()
-
-    user = find_user(user_uuid)
-
-    meeting = Meeting(name=name, description=description, datetime=dt, owner=user)
-    membership = Membership(meeting=meeting, user=user, nickname=nickname)
-    db.session.add(membership)
-    db.session.commit()
-
-    return make_response({
-        'uuid': meeting.uuid,
-    }, 201, {
-        'Location': f'/api/v1/meetings/{meeting.uuid}'
-    })
-
-
-@app.route('/api/v1/meetings/<meeting_uuid>', methods=['GET'])
-def get_meeting_join_info(meeting_uuid: str):
-    validate_meeting_uuid(meeting_uuid)
-
-    meeting = find_meeting(meeting_uuid)
-
-    return {
-        'name': meeting.name,
-        'members_count': len(meeting.users),
-        'owner_nickname': get_meeting_owner_nickname(meeting)
-    }, 200
-
-
-@app.route('/api/v1/meetings/<meeting_uuid>', methods=['PATCH'])
-def edit_meeting(meeting_uuid: str):
-    validate_meeting_uuid(meeting_uuid)
-    check_json_data()
-    user_uuid = get_user_uuid()
-    description = get_meeting_description()
-    stop_name = get_stop_name()
-    dt = get_datetime()
-
-    meeting = find_meeting(meeting_uuid)
-    user = find_user(user_uuid)
-    must_be_meeting_owner(user, meeting)
-
-    if description is not None:
-        meeting.description = description
-    if stop_name is not None:
-        meeting.stop_name = stop_name
-    if dt is not None:
-        meeting.datetime = dt
-    db.session.commit()
-
-    return '', 204
-
-
-@app.route('/api/v1/meetings/<meeting_uuid>', methods=['DELETE'])
-def delete_meeting(meeting_uuid: str):
-    validate_meeting_uuid(meeting_uuid)
-    check_json_data()
-    user_uuid = get_user_uuid()
-
-    meeting = find_meeting(meeting_uuid)
-    user = find_user(user_uuid)
-    must_be_meeting_owner(user, meeting)
-
-    db.session.delete(meeting)
-    db.session.commit()
-
-    return '', 204
-
-
-@app.route('/api/v1/meetings/<meeting_uuid>/members', methods=['POST'])
-def join_meeting(meeting_uuid: str):
-    validate_meeting_uuid(meeting_uuid)
-    check_json_data()
-    user_uuid = get_user_uuid()
-    nickname = get_nickname()
-
-    user = find_user(user_uuid)
-    meeting = find_meeting(meeting_uuid)
-
-    membership = Membership(user=user, meeting=meeting, nickname=nickname)
-    db.session.add(membership)
-    try:
-        db.session.commit()
-    except IntegrityError:
-        raise ApiException('Already a member', 400)
-
-    return '', 204
-
-
-@app.route('/api/v1/meetings/<meeting_uuid>/members/<user_uuid>', methods=['DELETE'])
-def leave_meeting(meeting_uuid: str, user_uuid: str):
-    validate_meeting_uuid(meeting_uuid)
+@app.route('/api/v1/memberships/<meeting_uuid>/<user_uuid>', methods=['DELETE'])
+def leave_meeting(user_uuid: str, meeting_uuid: str):
     validate_user_uuid(user_uuid)
+    validate_meeting_uuid(meeting_uuid)
 
-    user = find_user(user_uuid)
     meeting = find_meeting(meeting_uuid)
+    user = find_user(user_uuid)
 
     if is_owner(user, meeting):
         raise ApiException('Meeting owner cannot leave meeting', 403)
