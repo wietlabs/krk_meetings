@@ -4,6 +4,13 @@ const axios = require("axios");
 
 const baseUrl = "http://10.0.0.5:8000";
 
+export const createUser = async () => {
+  const url = `${baseUrl}/api/v1/users`;
+  const response = await axios.post(url);
+  const uuid = response.data["uuid"];
+  return { uuid };
+};
+
 export const checkIfUserExists = async (uuid) => {
   const url = `${baseUrl}/api/v1/users/${uuid}`;
   try {
@@ -15,34 +22,16 @@ export const checkIfUserExists = async (uuid) => {
   }
 };
 
-export const createUser = async () => {
-  const url = `${baseUrl}/api/v1/users`;
-  const response = await axios.post(url);
-  const uuid = response.data["uuid"];
-  return { uuid: uuid };
-};
-
-export const getMeetings = async ({ userUuid }) => {
+export const getUserMeetings = async (userUuid) => {
   const url = `${baseUrl}/api/v1/users/${userUuid}/meetings`;
   const response = await axios.get(url);
   const meetings = response.data["meetings"];
   return meetings;
 };
 
-export const getMeetingJoinInfo = async (meetingUuid) => {
-  const url = `${baseUrl}/api/v1/meetings/${meetingUuid}`;
-  const response = await axios.get(url);
-  const meeting = response.data;
-  return meeting;
-};
-
 export const createMeeting = async ({ userUuid, nickname, name }) => {
   const url = `${baseUrl}/api/v1/meetings`;
-  const params = {
-    owner_uuid: userUuid,
-    nickname: nickname,
-    name: name,
-  };
+  const params = { owner_uuid: userUuid, nickname, name };
   const response = await axios.post(url, params);
   const uuid = response.data["uuid"];
   return { uuid };
@@ -59,50 +48,57 @@ export const checkIfMeetingExists = async (meetingUuid) => {
   }
 };
 
+export const getMeetingJoinInfo = async (meetingUuid) => {
+  const url = `${baseUrl}/api/v1/meetings/${meetingUuid}`;
+  const response = await axios.get(url);
+  const meeting = response.data;
+  return meeting;
+};
+
+export const updateMeetingDateTime = async ({
+  meetingUuid,
+  userUuid,
+  datetime,
+}) => {
+  const url = `${baseUrl}/api/v1/meetings/${meetingUuid}`;
+  const params = { owner_uuid: userUuid, datetime: formatDateTime(datetime) };
+  await axios.patch(url, params);
+};
+
+export const updateMeetingStopName = async ({
+  meetingUuid,
+  userUuid,
+  stopName,
+}) => {
+  const url = `${baseUrl}/api/v1/meetings/${meetingUuid}`;
+  const params = { owner_uuid: userUuid, stop_name: stopName };
+  await axios.patch(url, params);
+};
+
 export const joinMeeting = async ({ meetingUuid, userUuid, nickname }) => {
   const url = `${baseUrl}/api/v1/memberships/${meetingUuid}/${userUuid}`;
   const params = { nickname };
   await axios.put(url, params);
 };
 
-export const getMeetingDetails = async (meetingUuid, userUuid) => {
+export const getMembershipDetails = async ({ meetingUuid, userUuid }) => {
   const url = `${baseUrl}/api/v1/memberships/${meetingUuid}/${userUuid}`;
   const response = await axios.get(url);
   const meeting = response.data;
   return meeting;
 };
 
-export const updateMeetingMemberStopName = async (
+export const updateMembershipStopName = async ({
   meetingUuid,
   userUuid,
-  stopName
-) => {
+  stopName,
+}) => {
   const url = `${baseUrl}/api/v1/memberships/${meetingUuid}/${userUuid}`;
   const params = { stop_name: stopName };
   await axios.patch(url, params);
 };
 
-export const updateMeetingDateTime = async (
-  meetingUuid,
-  userUuid,
-  datetime
-) => {
-  const url = `${baseUrl}/api/v1/meetings/${meetingUuid}`;
-  const params = { owner_uuid: userUuid, datetime: formatDateTime(datetime) };
-  await axios.patch(url, params);
-};
-
-export const updateMeetingStopName = async (
-  meetingUuid,
-  userUuid,
-  stopName
-) => {
-  const url = `${baseUrl}/api/v1/meetings/${meetingUuid}`;
-  const params = { owner_uuid: userUuid, stop_name: stopName };
-  await axios.patch(url, params);
-};
-
-export const leaveMeeting = async (meetingUuid, userUuid) => {
+export const leaveMeeting = async ({ meetingUuid, userUuid }) => {
   const url = `${baseUrl}/api/v1/memberships/${meetingUuid}/${userUuid}`;
   await axios.delete(url);
 };

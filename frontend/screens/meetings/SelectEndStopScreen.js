@@ -4,7 +4,7 @@ import MapView, { Marker, Polyline } from "react-native-maps";
 import { Button, Divider, FAB, List, ProgressBar } from "react-native-paper";
 import { getStops, findMeetingPoints } from "../../api/ConnectionsApi";
 import {
-  getMeetingDetails,
+  getMembershipDetails,
   updateMeetingStopName,
 } from "../../api/MeetingsApi";
 import { getMeetingMembersStopNames, getStopsByNames } from "../../utils";
@@ -59,7 +59,7 @@ export default function SelectEndStopScreen({ navigation, route }) {
 
     const stops = await getStops();
 
-    const meeting = await getMeetingDetails(meetingUuid, userUuid);
+    const meeting = await getMembershipDetails({ meetingUuid, userUuid });
 
     const stopNames = getMeetingMembersStopNames(meeting);
 
@@ -97,7 +97,11 @@ export default function SelectEndStopScreen({ navigation, route }) {
 
   const handleSubmit = async () => {
     if (!selected) return;
-    await updateMeetingStopName(meetingUuid, userUuid, selected.name);
+    await updateMeetingStopName({
+      meetingUuid,
+      userUuid,
+      stopName: selected.name,
+    });
     navigation.pop();
   };
 

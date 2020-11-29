@@ -3,7 +3,7 @@ import { View, ScrollView, RefreshControl } from "react-native";
 import { FAB, Chip, Card } from "react-native-paper";
 import Loading from "../../components/Loading";
 import Placeholder from "../../components/Placeholder";
-import { getMeetings } from "../../api/MeetingsApi";
+import { getUserMeetings } from "../../api/MeetingsApi";
 import { getNickname } from "../../UserManager";
 
 export default function MeetingsScreen({ navigation, route }) {
@@ -28,7 +28,7 @@ export default function MeetingsScreen({ navigation, route }) {
   };
 
   const loadMeetings = async () => {
-    const meetings = await getMeetings({ userUuid });
+    const meetings = await getUserMeetings(userUuid);
     setMeetings(meetings);
   };
 
