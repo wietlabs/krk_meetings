@@ -11,9 +11,9 @@ import { Button, Chip, List } from "react-native-paper";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import Loading from "../../../components/Loading";
 import {
-  getMeetingDetails,
-  leaveMeeting,
+  getMembershipDetails,
   updateMeetingDateTime,
+  leaveMeeting,
 } from "../../../api/MeetingsApi";
 import { createMeetingLink } from "../../../LinkManager";
 import { getNickname } from "../../../UserManager";
@@ -51,7 +51,7 @@ export default function MeetingDetailsScreen({ navigation, route }) {
   };
 
   const loadMeeting = async () => {
-    const meeting = await getMeetingDetails(meetingUuid, userUuid);
+    const meeting = await getMembershipDetails({ meetingUuid, userUuid });
     setMeeting(meeting);
   };
 
@@ -113,7 +113,7 @@ export default function MeetingDetailsScreen({ navigation, route }) {
 
   const updateDateTime = async () => {
     const datetime = makeDateTime(date.current, time.current);
-    await updateMeetingDateTime(meetingUuid, userUuid, datetime);
+    await updateMeetingDateTime({ meetingUuid, userUuid, datetime });
     await refresh();
   };
 
@@ -134,7 +134,7 @@ export default function MeetingDetailsScreen({ navigation, route }) {
   };
 
   const handleLeave = () => {
-    leaveMeeting(meetingUuid, userUuid);
+    leaveMeeting({ meetingUuid, userUuid });
     navigation.pop();
   };
 
