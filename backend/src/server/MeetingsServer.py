@@ -1,10 +1,12 @@
 import uuid
 from datetime import datetime
+from typing import Optional
 
 from flask import Flask, request, make_response
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import CHAR, func
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm.exc import FlushError
 
 app = Flask(__name__)
 
@@ -14,6 +16,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
 db = SQLAlchemy(app)
 
 MEETING_NAME_MAX_LENGTH = 50
+MEETING_DESCRIPTION_MAX_LENGTH = 500
 NICKNAME_MAX_LENGTH = 50
 STOP_NAME_MAX_LENGTH = 100
 
@@ -30,13 +33,15 @@ class Meeting(db.Model):
     __tablename__ = 'meetings'
     uuid = db.Column(CHAR(36), default=lambda: str(uuid.uuid4()), primary_key=True)
     name = db.Column(db.String(MEETING_NAME_MAX_LENGTH), nullable=True)
+    description = db.Column(db.String(MEETING_DESCRIPTION_MAX_LENGTH), nullable=True)
     datetime = db.Column(db.DateTime(), nullable=True)
     stop_name = db.Column(db.String(STOP_NAME_MAX_LENGTH), nullable=True)
     owner_uuid = owner_uuid = db.Column(CHAR(36), db.ForeignKey('users.uuid'), nullable=False)
     created_at = db.Column(db.DateTime(), default=func.now(), nullable=False)
 
     owner = db.relationship('User')
-    users = db.relationship('Membership', back_populates='meeting', order_by='Membership.joined_at')
+    users = db.relationship('Membership', back_populates='meeting',
+                            order_by='Membership.joined_at', cascade='all, delete-orphan')
 
 
 class Membership(db.Model):
@@ -49,6 +54,157 @@ class Membership(db.Model):
 
     user = db.relationship('User', back_populates='meetings')
     meeting = db.relationship('Meeting', back_populates='users')
+
+
+class ApiException(Exception):
+    def __init__(self, message, status_code):
+        super().__init__(message)
+        self.status_code = status_code
+
+
+def is_uuid_valid(string: str) -> bool:
+    try:
+        uuid.UUID(string, version=4)
+    except ValueError:
+        return False
+    return True
+
+
+def parse_datetime(string: str) -> datetime:
+    try:
+        return datetime.fromisoformat(string)
+    except ValueError:
+        raise ApiException('Invalid meeting datetime', 400)
+
+
+def format_datetime(dt: datetime) -> Optional[str]:
+    if dt is None:
+        return None
+    return dt.isoformat()
+
+
+def validate_user_uuid(user_uuid: str) -> None:
+    if not is_uuid_valid(user_uuid):
+        raise ApiException('Invalid user uuid', 400)
+
+
+def validate_meeting_uuid(meeting_uuid: str) -> None:
+    if not is_uuid_valid(meeting_uuid):
+        raise ApiException('Invalid meeting uuid', 400)
+
+
+def validate_meeting_name(stop_name: str) -> None:
+    if len(stop_name) > MEETING_NAME_MAX_LENGTH:
+        raise ApiException('Meeting name too long', 400)
+
+
+def validate_meeting_description(description: str) -> None:
+    if len(description) > MEETING_DESCRIPTION_MAX_LENGTH:
+        raise ApiException('Meeting description too long', 400)
+
+
+def validate_stop_name(stop_name: str) -> None:
+    if len(stop_name) > STOP_NAME_MAX_LENGTH:
+        raise ApiException('Stop name too long', 400)
+
+
+def validate_nickname(nickname: str) -> None:
+    if len(nickname) > NICKNAME_MAX_LENGTH:
+        raise ApiException('Nickname too long', 400)
+
+
+def check_json_data() -> None:
+    if request.json is None:
+        raise ApiException('Missing JSON data', 400)
+
+
+def get_owner_uuid() -> str:
+    if 'owner_uuid' not in request.json:
+        raise ApiException('Missing owner uuid', 400)
+    owner_uuid = request.json['owner_uuid']
+    validate_user_uuid(owner_uuid)
+    return owner_uuid
+
+
+def get_nickname() -> Optional[str]:
+    if 'nickname' not in request.json:
+        return None
+    nickname = request.json['nickname']
+    validate_nickname(nickname)
+    return nickname
+
+
+def get_meeting_name() -> Optional[str]:
+    if 'name' not in request.json:
+        return None
+    name = request.json['name']
+    validate_meeting_name(name)
+    return name
+
+
+def get_meeting_description() -> Optional[str]:
+    if 'description' not in request.json:
+        return None
+    name = request.json['description']
+    validate_meeting_description(name)
+    return name
+
+
+def get_stop_name() -> Optional[str]:
+    if 'stop_name' not in request.json:
+        return None
+    stop_name = request.json['stop_name']
+    validate_stop_name(stop_name)
+    return stop_name
+
+
+def get_datetime() -> Optional[datetime]:
+    if 'datetime' not in request.json:
+        return None
+    return parse_datetime(request.json['datetime'])
+
+
+def find_user(user_uuid: str) -> User:
+    user = User.query.get(user_uuid)
+    if user is None:
+        raise ApiException('User not found', 404)
+    return user
+
+
+def find_meeting(meeting_uuid: str) -> Meeting:
+    meeting = Meeting.query.get(meeting_uuid)
+    if meeting is None:
+        raise ApiException('Meeting not found', 404)
+    return meeting
+
+
+def find_membership(meeting_uuid: str, user_uuid: str) -> Membership:
+    membership = Membership.query.get((meeting_uuid, user_uuid))
+    if membership is None:
+        raise ApiException('Membership not found', 404)
+    return membership
+
+
+def is_owner(user: User, meeting: Meeting) -> bool:
+    return user == meeting.owner
+
+
+def must_be_meeting_owner(user: User, meeting: Meeting) -> None:
+    if not is_owner(user, meeting):
+        raise ApiException('You are not a meeting owner', 403)
+
+
+def get_meeting_owner_nickname(meeting: Meeting) -> str:
+    return next(
+        membership.nickname
+        for membership in meeting.users
+        if is_owner(membership.user, meeting)
+    )
+
+
+@app.errorhandler(ApiException)
+def handle_api_exception(e):
+    return {'error': str(e)}, e.status_code
 
 
 @app.route('/api/v1/users', methods=['POST'])
@@ -65,29 +221,19 @@ def create_user():
 
 
 @app.route('/api/v1/users/<user_uuid>', methods=['GET'])
-def get_user(user_uuid: str):
-    try:
-        uuid.UUID(user_uuid, version=4)
-    except ValueError:
-        return {'error': 'Invalid user_uuid'}, 400
+def check_if_user_exists(user_uuid: str):
+    validate_user_uuid(user_uuid)
 
-    user = User.query.get(user_uuid)
-    if not user:
-        return {'error': 'User not found'}, 404
+    find_user(user_uuid)
 
-    return {}, 200
+    return '', 204
 
 
 @app.route('/api/v1/users/<user_uuid>/meetings', methods=['GET'])
 def get_user_meetings(user_uuid: str):
-    try:
-        uuid.UUID(user_uuid, version=4)
-    except ValueError:
-        return {'error': 'Invalid user_uuid'}, 400
+    validate_user_uuid(user_uuid)
 
-    user = User.query.get(user_uuid)
-    if not user:
-        return {'error': 'User not found'}, 404
+    user = find_user(user_uuid)
 
     return {
         'meetings': [
@@ -95,7 +241,7 @@ def get_user_meetings(user_uuid: str):
                 'uuid': membership.meeting.uuid,
                 'name': membership.meeting.name,
                 'nickname': membership.nickname,
-                # 'datetime': membership.meeting.datetime.isoformat() if membership.meeting.datetime else None,
+                'datetime': format_datetime(membership.meeting.datetime),
                 'members_count': len(membership.meeting.users),  # TODO: use COUNT()
             }
             for membership in user.meetings
@@ -103,130 +249,19 @@ def get_user_meetings(user_uuid: str):
     }, 200
 
 
-@app.route('/api/v1/users/<user_uuid>/meetings/<meeting_uuid>', methods=['GET'])
-def get_meeting_details(user_uuid: str, meeting_uuid: str):
-    try:
-        uuid.UUID(user_uuid, version=4)
-    except ValueError:
-        return {'error': 'Invalid user_uuid'}, 400
-
-    try:
-        uuid.UUID(meeting_uuid, version=4)
-    except ValueError:
-        return {'error': 'Invalid meeting_uuid'}, 400
-
-    user = User.query.get(user_uuid)
-    if not user:
-        return {'error': 'User not found'}, 404
-
-    meeting = Meeting.query.get(meeting_uuid)
-    if not meeting:
-        return {'error': 'Meeting not found'}, 404
-
-    memberships = meeting.users
-
-    members = (membership.user for membership in memberships)
-    if user not in members:
-        return {'error': 'Not a member'}, 403
-
-    membership = next(membership for membership in memberships if membership.user == user)
-
-    return {
-        'uuid': meeting.uuid,
-        'name': meeting.name,
-        'datetime': meeting.datetime.isoformat() if meeting.datetime else None,
-        'stop_name': meeting.stop_name,
-        'members': [
-            {
-                'nickname': membership.nickname,
-                'is_owner': membership.user == meeting.owner,
-                'is_you': membership.user == user,
-                'stop_name': membership.stop_name,
-            }
-            for membership in memberships
-        ],
-        'membership': {
-            'is_owner': membership.user == meeting.owner,
-            'stop_name': membership.stop_name,
-        }
-    }, 200
-
-
-@app.route('/api/v1/users/<user_uuid>/meetings/<meeting_uuid>', methods=['PATCH'])
-def update_meeting_member_details(user_uuid: str, meeting_uuid: str):
-    try:
-        uuid.UUID(user_uuid, version=4)
-    except ValueError:
-        return {'error': 'Invalid user_uuid'}, 400
-
-    try:
-        uuid.UUID(meeting_uuid, version=4)
-    except ValueError:
-        return {'error': 'Invalid meeting_uuid'}, 400
-
-    if 'stop_name' in request.json:
-        stop_name = request.json['stop_name']
-        if len(stop_name) > STOP_NAME_MAX_LENGTH:
-            return {'error': 'Stop name too long'}, 400
-    else:
-        stop_name = None
-
-    membership = Membership.query.get((meeting_uuid, user_uuid))
-    if not membership:
-        return {'error': 'Membership not found'}, 404
-
-    if stop_name is not None:
-        membership.stop_name = stop_name
-
-    db.session.commit()
-
-    return {}, 200
-
-
 @app.route('/api/v1/meetings', methods=['POST'])
 def create_meeting():
-    if request.json is None:
-        return {'error': 'Missing JSON data'}, 400
+    check_json_data()
+    owner_uuid = get_owner_uuid()
+    name = get_meeting_name()
+    description = get_meeting_description()
+    dt = get_datetime()
+    nickname = get_nickname()
 
-    if 'user_uuid' not in request.json:
-        return {'error': 'Missing user_uuid'}, 400
-    user_uuid = request.json['user_uuid']
+    owner = find_user(owner_uuid)
 
-    try:
-        uuid.UUID(user_uuid, version=4)
-    except ValueError:
-        return {'error': 'Invalid user_uuid'}, 400
-
-    if 'nickname' in request.json:
-        nickname = request.json['nickname']
-        if len(nickname) > NICKNAME_MAX_LENGTH:
-            return {'error': 'Nickname too long'}, 400
-    else:
-        nickname = None
-
-    if 'name' in request.json:
-        name = request.json['name']
-        if len(name) > MEETING_NAME_MAX_LENGTH:
-            return {'error': 'Meeting name too long'}, 400
-    else:
-        name = None
-
-    if 'datetime' in request.json:
-        dt = request.json['datetime']
-        try:
-            dt = datetime.fromisoformat(dt)
-        except ValueError:
-            return {'error': 'Invalid meeting datetime'}, 400
-    else:
-        dt = None
-
-    user = User.query.get(user_uuid)
-    if not user:
-        return {'error': 'User not found'}, 404
-
-    meeting = Meeting(name=name, datetime=dt, owner=user)
-    membership = Membership(meeting=meeting, user=user, nickname=nickname)
-
+    meeting = Meeting(name=name, description=description, datetime=dt, owner=owner)
+    membership = Membership(meeting=meeting, user=owner, nickname=nickname)
     db.session.add(membership)
     db.session.commit()
 
@@ -239,154 +274,142 @@ def create_meeting():
 
 @app.route('/api/v1/meetings/<meeting_uuid>', methods=['GET'])
 def get_meeting_join_info(meeting_uuid: str):
-    try:
-        uuid.UUID(meeting_uuid, version=4)
-    except ValueError:
-        return {'error': 'Invalid meeting_uuid'}, 400
+    validate_meeting_uuid(meeting_uuid)
 
-    meeting = Meeting.query.get(meeting_uuid)
-    if meeting is None:
-        return {'error': 'Meeting not found'}, 404
-
-    memberships = meeting.users
+    meeting = find_meeting(meeting_uuid)
 
     return {
-        'uuid': meeting.uuid,
         'name': meeting.name,
+        'datetime': format_datetime(meeting.datetime),
         'members_count': len(meeting.users),
-        'owner_nickname': next(membership.nickname for membership in memberships if membership.user == meeting.owner)
+        'owner_nickname': get_meeting_owner_nickname(meeting)
     }, 200
 
 
 @app.route('/api/v1/meetings/<meeting_uuid>', methods=['PATCH'])
 def edit_meeting(meeting_uuid: str):
-    try:
-        uuid.UUID(meeting_uuid, version=4)
-    except ValueError:
-        return {'error': 'Invalid meeting_uuid'}, 400
+    validate_meeting_uuid(meeting_uuid)
 
-    if 'user_uuid' not in request.json:
-        return {'error': 'Missing user_uuid'}, 400
-    user_uuid = request.json['user_uuid']
+    check_json_data()
+    owner_uuid = get_owner_uuid()
+    name = get_meeting_name()
+    description = get_meeting_description()
+    stop_name = get_stop_name()
+    dt = get_datetime()
 
-    try:
-        uuid.UUID(user_uuid, version=4)
-    except ValueError:
-        return {'error': 'Invalid user_uuid'}, 400
+    meeting = find_meeting(meeting_uuid)
+    user = find_user(owner_uuid)
+    must_be_meeting_owner(user, meeting)
 
-    if 'stop_name' in request.json:
-        stop_name = request.json['stop_name']
-        if len(stop_name) > STOP_NAME_MAX_LENGTH:
-            return {'error': 'Stop name too long'}, 400
-    else:
-        stop_name = None
-
-    if 'datetime' in request.json:
-        try:
-            dt = datetime.fromisoformat(request.json['datetime'])
-        except ValueError:
-            return {'error': 'Invalid datetime format'}, 400
-    else:
-        dt = None
-
-    meeting = Meeting.query.get(meeting_uuid)
-    if meeting is None:
-        return {'error': 'Meeting not found'}, 404
-
-    user = User.query.get(user_uuid)
-    if not user:
-        return {'error': 'User not found'}, 404
-
-    if user != meeting.owner:
-        return {'error': 'You are not a meeting owner'}, 403
-
-    if stop_name is not None:
-        meeting.stop_name = stop_name
+    if name is not None:
+        meeting.name = name
+    if description is not None:
+        meeting.description = description
     if dt is not None:
         meeting.datetime = dt
-
+    if stop_name is not None:
+        meeting.stop_name = stop_name
     db.session.commit()
 
     return '', 204
 
 
-@app.route('/api/v1/meetings/<meeting_uuid>/members', methods=['POST'])
-def join_meeting(meeting_uuid: str):
-    try:
-        uuid.UUID(meeting_uuid, version=4)
-    except ValueError:
-        return {'error': 'Invalid meeting_uuid'}, 400
+@app.route('/api/v1/meetings/<meeting_uuid>', methods=['DELETE'])
+def delete_meeting(meeting_uuid: str):
+    validate_meeting_uuid(meeting_uuid)
 
-    if 'user_uuid' not in request.json:
-        return {'error': 'Missing user_uuid'}, 400
-    user_uuid = request.json['user_uuid']
+    check_json_data()
+    owner_uuid = get_owner_uuid()
 
-    try:
-        uuid.UUID(user_uuid, version=4)
-    except ValueError:
-        return {'error': 'Invalid user_uuid'}, 400
+    meeting = find_meeting(meeting_uuid)
+    user = find_user(owner_uuid)
+    must_be_meeting_owner(user, meeting)
 
-    if 'nickname' not in request.json:
-        return {'error': 'Missing nickname'}, 400
-    nickname = request.json['nickname']
+    db.session.delete(meeting)
+    db.session.commit()
 
-    if len(nickname) > NICKNAME_MAX_LENGTH:
-        return {'error': 'Nickname too long'}, 400
+    return '', 204
 
-    user = User.query.get(user_uuid)
-    if not user:
-        return {'error': 'User not found'}, 404
 
-    meeting = Meeting.query.get(meeting_uuid)
-    if meeting is None:
-        return {'error': 'Meeting not found'}, 404
+@app.route('/api/v1/memberships/<meeting_uuid>/<user_uuid>', methods=['PUT'])
+def join_meeting(meeting_uuid: str, user_uuid: str):
+    validate_meeting_uuid(meeting_uuid)
+    validate_user_uuid(user_uuid)
 
-    user = User.query.get(user_uuid)
-    if user is None:
-        return {'error': 'User not found'}, 404
+    check_json_data()
+    nickname = get_nickname()
+
+    meeting = find_meeting(meeting_uuid)
+    user = find_user(user_uuid)
 
     membership = Membership(user=user, meeting=meeting, nickname=nickname)
-
     db.session.add(membership)
     try:
         db.session.commit()
-    except IntegrityError:
-        return {'error': 'Already a member'}, 400
+    except (IntegrityError, FlushError):
+        raise ApiException('Already a member', 400)
 
-    return {}, 201
+    return '', 204
 
 
-@app.route('/api/v1/meetings/<meeting_uuid>/members/<user_uuid>', methods=['DELETE'])
-def leave_meeting(meeting_uuid: str, user_uuid: str):
-    try:
-        uuid.UUID(meeting_uuid, version=4)
-    except ValueError:
-        return {'error': 'Invalid meeting_uuid'}, 400
+@app.route('/api/v1/memberships/<meeting_uuid>/<user_uuid>', methods=['GET'])
+def get_membership_details(meeting_uuid: str, user_uuid: str):
+    validate_meeting_uuid(meeting_uuid)
+    validate_user_uuid(user_uuid)
 
-    try:
-        uuid.UUID(user_uuid, version=4)
-    except ValueError:
-        return {'error': 'Invalid user_uuid'}, 400
+    meeting = find_meeting(meeting_uuid)
+    user = find_user(user_uuid)
+    membership = find_membership(meeting_uuid, user_uuid)
 
-    user = User.query.get(user_uuid)
-    if not user:
-        return {'error': 'User not found'}, 404
+    return {
+        'uuid': meeting.uuid,
+        'name': meeting.name,
+        'description': meeting.description,
+        'datetime': format_datetime(meeting.datetime),
+        'stop_name': meeting.stop_name,
+        'members': [
+            {
+                'nickname': membership.nickname,
+                'is_owner': is_owner(membership.user, meeting),
+                'is_you': membership.user == user,
+                'stop_name': membership.stop_name,
+            }
+            for membership in meeting.users
+        ],
+        'membership': {
+            'is_owner': is_owner(user, meeting),
+            'stop_name': membership.stop_name,
+        }
+    }, 200
 
-    meeting = Meeting.query.get(meeting_uuid)
-    if meeting is None:
-        return {'error': 'Meeting not found'}, 404
 
-    user = User.query.get(user_uuid)
-    if user is None:
-        return {'error': 'User not found'}, 404
+@app.route('/api/v1/memberships/<meeting_uuid>/<user_uuid>', methods=['PATCH'])
+def edit_membership_details(meeting_uuid: str, user_uuid: str):
+    validate_meeting_uuid(meeting_uuid)
+    validate_user_uuid(user_uuid)
 
-    if meeting.owner == user:
-        return {'error': 'Meeting owner cannot leave meeting'}, 403
+    check_json_data()
+    stop_name = get_stop_name()
 
-    membership = Membership.query.get((meeting_uuid, user_uuid))
-    if not membership:
-        return {'error': 'Membership not found'}, 404
+    membership = find_membership(meeting_uuid, user_uuid)
+    membership.stop_name = stop_name
+    db.session.commit()
 
+    return '', 204
+
+
+@app.route('/api/v1/memberships/<meeting_uuid>/<user_uuid>', methods=['DELETE'])
+def leave_meeting(user_uuid: str, meeting_uuid: str):
+    validate_user_uuid(user_uuid)
+    validate_meeting_uuid(meeting_uuid)
+
+    meeting = find_meeting(meeting_uuid)
+    user = find_user(user_uuid)
+
+    if is_owner(user, meeting):
+        raise ApiException('Meeting owner cannot leave meeting', 403)
+
+    membership = find_membership(meeting_uuid, user_uuid)
     db.session.delete(membership)
     db.session.commit()
 

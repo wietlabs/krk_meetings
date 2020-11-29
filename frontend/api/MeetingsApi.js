@@ -39,7 +39,7 @@ export const getMeetingJoinInfo = async (meetingUuid) => {
 export const createMeeting = async ({ userUuid, nickname, name }) => {
   const url = `${baseUrl}/api/v1/meetings`;
   const params = {
-    user_uuid: userUuid,
+    owner_uuid: userUuid,
     nickname: nickname,
     name: name,
   };
@@ -60,16 +60,13 @@ export const checkIfMeetingExists = async (meetingUuid) => {
 };
 
 export const joinMeeting = async ({ meetingUuid, userUuid, nickname }) => {
-  const url = `${baseUrl}/api/v1/meetings/${meetingUuid}/members`;
-  const params = {
-    user_uuid: userUuid,
-    nickname: nickname,
-  };
-  await axios.post(url, params);
+  const url = `${baseUrl}/api/v1/memberships/${meetingUuid}/${userUuid}`;
+  const params = { nickname };
+  await axios.put(url, params);
 };
 
 export const getMeetingDetails = async (meetingUuid, userUuid) => {
-  const url = `${baseUrl}/api/v1/users/${userUuid}/meetings/${meetingUuid}`;
+  const url = `${baseUrl}/api/v1/memberships/${meetingUuid}/${userUuid}`;
   const response = await axios.get(url);
   const meeting = response.data;
   return meeting;
@@ -80,7 +77,7 @@ export const updateMeetingMemberStopName = async (
   userUuid,
   stopName
 ) => {
-  const url = `${baseUrl}/api/v1/users/${userUuid}/meetings/${meetingUuid}`;
+  const url = `${baseUrl}/api/v1/memberships/${meetingUuid}/${userUuid}`;
   const params = { stop_name: stopName };
   await axios.patch(url, params);
 };
@@ -91,7 +88,7 @@ export const updateMeetingDateTime = async (
   datetime
 ) => {
   const url = `${baseUrl}/api/v1/meetings/${meetingUuid}`;
-  const params = { user_uuid: userUuid, datetime: formatDateTime(datetime) };
+  const params = { owner_uuid: userUuid, datetime: formatDateTime(datetime) };
   await axios.patch(url, params);
 };
 
@@ -101,11 +98,11 @@ export const updateMeetingStopName = async (
   stopName
 ) => {
   const url = `${baseUrl}/api/v1/meetings/${meetingUuid}`;
-  const params = { user_uuid: userUuid, stop_name: stopName };
+  const params = { owner_uuid: userUuid, stop_name: stopName };
   await axios.patch(url, params);
 };
 
 export const leaveMeeting = async (meetingUuid, userUuid) => {
-  const url = `${baseUrl}/api/v1/meetings/${meetingUuid}/members/${userUuid}`;
+  const url = `${baseUrl}/api/v1/memberships/${meetingUuid}/${userUuid}`;
   await axios.delete(url);
 };

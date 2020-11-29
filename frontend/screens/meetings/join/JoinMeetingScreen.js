@@ -122,7 +122,7 @@ export default function JoinMeetingScreen({ navigation, route }) {
           <Card style={{ marginBottom: 8 }}>
             <Card.Title
               title={meeting.name}
-              subtitle={meeting.uuid}
+              subtitle={meetingUuid}
               subtitleStyle={{ fontSize: 14, letterSpacing: 0 }}
             />
             <Card.Content style={{ flexDirection: "row" }}>
