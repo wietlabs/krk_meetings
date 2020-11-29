@@ -6,12 +6,11 @@ from sqlalchemy.testing import mock
 
 from src.server.MeetingsServer import app, db, User, Meeting, Membership
 
-
-uuid1 = '11111111-1111-1111-1111-111111111111'
-uuid2 = '22222222-2222-2222-2222-222222222222'
-uuid3 = '33333333-3333-3333-3333-333333333333'
-uuid4 = '44444444-4444-4444-4444-444444444444'
-uuid5 = '55555555-5555-5555-5555-555555555555'
+example_uuid1 = '11111111-1111-1111-1111-111111111111'
+example_uuid2 = '22222222-2222-2222-2222-222222222222'
+example_uuid3 = '33333333-3333-3333-3333-333333333333'
+example_uuid4 = '44444444-4444-4444-4444-444444444444'
+example_uuid5 = '55555555-5555-5555-5555-555555555555'
 
 
 @pytest.fixture(scope='function')
@@ -27,39 +26,39 @@ def client() -> FlaskClient:
 
 
 def test_create_user(client: FlaskClient) -> None:
-    with mock.patch('uuid.uuid4', lambda: uuid1):
+    with mock.patch('uuid.uuid4', lambda: example_uuid1):
         response = client.post('/api/v1/users')
     assert response.status_code == 201
-    assert response.json == {'uuid': uuid1}
-    assert response.headers['Location'].endswith(f'/api/v1/users/{uuid1}')
+    assert response.json == {'uuid': example_uuid1}
+    assert response.headers['Location'].endswith(f'/api/v1/users/{example_uuid1}')
 
-    user = User.query.get(uuid1)
+    user = User.query.get(example_uuid1)
     assert user is not None
-    assert user.uuid == uuid1
+    assert user.uuid == example_uuid1
 
 
 def test_check_if_user_exists_true(client: FlaskClient) -> None:
-    user = User(uuid=uuid1)
+    user = User(uuid=example_uuid1)
     db.session.add(user)
     db.session.commit()
 
-    response = client.get(f'/api/v1/users/{uuid1}')
+    response = client.get(f'/api/v1/users/{example_uuid1}')
     assert response.status_code == 204
     assert response.data == b''
 
 
 def test_check_if_user_exists_false(client: FlaskClient) -> None:
-    response = client.get(f'/api/v1/users/{uuid1}')
+    response = client.get(f'/api/v1/users/{example_uuid1}')
     assert response.status_code == 404
     assert response.json == {'error': 'User not found'}
 
 
 def test_get_user_meetings(client: FlaskClient) -> None:
-    user1 = User(uuid=uuid1)
-    user2 = User(uuid=uuid2)
-    user3 = User(uuid=uuid3)
-    meeting1 = Meeting(uuid=uuid4, owner=user1, name='Lorem ipsum')
-    meeting2 = Meeting(uuid=uuid5, owner=user2, datetime=datetime(2020, 1, 2, 3, 4, 5))
+    user1 = User(uuid=example_uuid1)
+    user2 = User(uuid=example_uuid2)
+    user3 = User(uuid=example_uuid3)
+    meeting1 = Meeting(uuid=example_uuid4, owner=user1, name='Lorem ipsum')
+    meeting2 = Meeting(uuid=example_uuid5, owner=user2, datetime=datetime(2020, 1, 2, 3, 4, 5))
     membership1 = Membership(meeting=meeting1, user=user1, nickname='Alice')
     membership2 = Membership(meeting=meeting1, user=user3, nickname='Charlie')
     membership3 = Membership(meeting=meeting2, user=user1, nickname='Ala')
@@ -95,11 +94,11 @@ def test_get_user_meetings(client: FlaskClient) -> None:
 
 
 def test_create_meeting(client: FlaskClient) -> None:
-    user = User(uuid=uuid1)
+    user = User(uuid=example_uuid1)
     db.session.add(user)
     db.session.commit()
 
-    with mock.patch('uuid.uuid4', lambda: uuid2):
+    with mock.patch('uuid.uuid4', lambda: example_uuid2):
         response = client.post('/api/v1/meetings', json={
             'owner_uuid': user.uuid,
             'name': 'Lorem ipsum',
@@ -108,28 +107,28 @@ def test_create_meeting(client: FlaskClient) -> None:
             'nickname': 'Alice',
         })
     assert response.status_code == 201
-    assert response.json == {'uuid': uuid2}
-    assert response.headers['Location'].endswith(f'/api/v1/meetings/{uuid2}')
+    assert response.json == {'uuid': example_uuid2}
+    assert response.headers['Location'].endswith(f'/api/v1/meetings/{example_uuid2}')
 
-    meeting = Meeting.query.get(uuid2)
+    meeting = Meeting.query.get(example_uuid2)
     assert meeting is not None
-    assert meeting.uuid == uuid2
+    assert meeting.uuid == example_uuid2
     assert meeting.name == 'Lorem ipsum'
     assert meeting.description == 'Lorem ipsum sit dolor amet.'
     assert meeting.datetime == datetime(2020, 1, 2, 3, 4, 5)
 
-    membership = Membership.query.get((uuid2, uuid1))
+    membership = Membership.query.get((meeting.uuid, user.uuid))
     assert membership is not None
     assert membership.nickname == 'Alice'
     assert membership.stop_name is None
 
 
 def test_get_meeting_join_info(client: FlaskClient) -> None:
-    user1 = User(uuid=uuid1)
-    user2 = User(uuid=uuid2)
-    user3 = User(uuid=uuid3)
-    meeting = Meeting(uuid=uuid4, owner=user1, name='Lorem ipsum',
-                      description='Lorem ipsum sit dolor amet.',
+    user1 = User(uuid=example_uuid1)
+    user2 = User(uuid=example_uuid2)
+    user3 = User(uuid=example_uuid3)
+    meeting = Meeting(uuid=example_uuid4, owner=user1,
+                      name='Lorem ipsum', description='Lorem ipsum sit dolor amet.',
                       datetime=datetime(2020, 1, 2, 3, 4, 5))
     membership1 = Membership(meeting=meeting, user=user1, nickname='Alice')
     membership2 = Membership(meeting=meeting, user=user2, nickname='Bob')
@@ -150,8 +149,8 @@ def test_get_meeting_join_info(client: FlaskClient) -> None:
 
 
 def test_edit_meeting(client: FlaskClient) -> None:
-    owner = User(uuid=uuid1)
-    meeting = Meeting(uuid=uuid2, owner=owner)
+    owner = User(uuid=example_uuid1)
+    meeting = Meeting(uuid=example_uuid2, owner=owner)
     db.session.add(meeting)
     db.session.commit()
 
@@ -172,9 +171,9 @@ def test_edit_meeting(client: FlaskClient) -> None:
 
 
 def test_delete_meeting(client: FlaskClient) -> None:
-    owner = User(uuid=uuid1)
-    user = User(uuid=uuid2)
-    meeting = Meeting(uuid=uuid3, owner=owner)
+    owner = User(uuid=example_uuid1)
+    user = User(uuid=example_uuid2)
+    meeting = Meeting(uuid=example_uuid3, owner=owner)
     membership1 = Membership(meeting=meeting, user=owner, nickname='Alice')
     membership2 = Membership(meeting=meeting, user=user, nickname='Bob')
     db.session.add(membership1)
@@ -191,9 +190,9 @@ def test_delete_meeting(client: FlaskClient) -> None:
 
 
 def test_join_meeting(client: FlaskClient) -> None:
-    owner = User(uuid=uuid1)
-    user = User(uuid=uuid2)
-    meeting = Meeting(uuid=uuid3, owner=owner)
+    owner = User(uuid=example_uuid1)
+    user = User(uuid=example_uuid2)
+    meeting = Meeting(uuid=example_uuid3, owner=owner)
     db.session.add(meeting)
     db.session.add(user)
     db.session.commit()
@@ -209,9 +208,9 @@ def test_join_meeting(client: FlaskClient) -> None:
 
 
 def test_join_meeting_already_a_member(client: FlaskClient) -> None:
-    owner = User(uuid=uuid1)
-    user = User(uuid=uuid2)
-    meeting = Meeting(uuid=uuid3, owner=owner)
+    owner = User(uuid=example_uuid1)
+    user = User(uuid=example_uuid2)
+    meeting = Meeting(uuid=example_uuid3, owner=owner)
     membership = Membership(meeting=meeting, user=user, nickname='Bob')
     db.session.add(membership)
     db.session.commit()
@@ -222,10 +221,11 @@ def test_join_meeting_already_a_member(client: FlaskClient) -> None:
 
 
 def test_get_membership_details(client: FlaskClient) -> None:
-    user1 = User(uuid=uuid1)
-    user2 = User(uuid=uuid2)
-    meeting = Meeting(name='Lorem ipsum', description='Lorem ipsum sit dolor amet.',
-                      datetime=datetime(2020, 1, 2, 3, 4, 5), stop_name='Czarnowiejska', uuid=uuid3, owner=user1)
+    user1 = User(uuid=example_uuid1)
+    user2 = User(uuid=example_uuid2)
+    meeting = Meeting(uuid=example_uuid3, owner=user1,
+                      name='Lorem ipsum', description='Lorem ipsum sit dolor amet.',
+                      datetime=datetime(2020, 1, 2, 3, 4, 5), stop_name='Czarnowiejska')
     membership1 = Membership(meeting=meeting, user=user1, nickname='Alice', stop_name='Kawiory')
     membership2 = Membership(meeting=meeting, user=user2, nickname='Bob', stop_name='Muzeum Narodowe')
     db.session.add(membership1)
@@ -262,8 +262,8 @@ def test_get_membership_details(client: FlaskClient) -> None:
 
 
 def test_edit_membership_details(client: FlaskClient) -> None:
-    user = User(uuid=uuid1)
-    meeting = Meeting(uuid=uuid2, owner=user)
+    user = User(uuid=example_uuid1)
+    meeting = Meeting(uuid=example_uuid2, owner=user)
     membership = Membership(meeting=meeting, user=user)
     db.session.add(membership)
     db.session.commit()
@@ -277,10 +277,13 @@ def test_edit_membership_details(client: FlaskClient) -> None:
 
 
 def test_leave_meeting(client: FlaskClient) -> None:
-    user = User(uuid=uuid1)
-    meeting = Meeting(uuid=uuid2, owner_uuid=uuid3)
-    membership = Membership(meeting=meeting, user=user)
-    db.session.add(membership)
+    owner = User(uuid=example_uuid1)
+    user = User(uuid=example_uuid2)
+    meeting = Meeting(uuid=example_uuid3, owner=owner)
+    membership1 = Membership(meeting=meeting, user=owner)
+    membership2 = Membership(meeting=meeting, user=user)
+    db.session.add(membership1)
+    db.session.add(membership2)
     db.session.commit()
 
     response = client.delete(f'/api/v1/memberships/{meeting.uuid}/{user.uuid}')
@@ -291,8 +294,8 @@ def test_leave_meeting(client: FlaskClient) -> None:
 
 
 def test_leave_meeting_owner(client: FlaskClient) -> None:
-    owner = User(uuid=uuid1)
-    meeting = Meeting(uuid=uuid2, owner_uuid=uuid1)
+    owner = User(uuid=example_uuid1)
+    meeting = Meeting(uuid=example_uuid2, owner=owner)
     membership = Membership(meeting=meeting, user=owner)
     db.session.add(membership)
     db.session.commit()
