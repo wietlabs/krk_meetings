@@ -35,7 +35,7 @@ export default function ConnectionResultItem({ connection, onPress }) {
   if (connection.walking_only) {
     const action = actions[0];
     start_datetime = new Date();
-    end_datetime = addMinutes(start_datetime, connection.duration_in_minutes);
+    end_datetime = addMinutes(start_datetime, action.duration_in_minutes);
     start_delay = null;
     end_delay = null;
     start_stop_name = action.start_stop_name;
