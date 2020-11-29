@@ -26,7 +26,7 @@ export function formatTime(time) {
 }
 
 export function addMinutes(date, minutes) {
-  return date.getTime() + minutes * 60 * 1000;
+  return new Date(date.getTime() + minutes * 60 * 1000);
 }
 
 export const makeDateTime = (date, time) => {
