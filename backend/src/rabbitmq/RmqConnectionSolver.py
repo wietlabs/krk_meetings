@@ -1,3 +1,4 @@
+from src.config import ErrorCodes
 from src.data_classes.ConnectionResults import ConnectionResults
 from src.exchanges import EXCHANGES
 from src.data_classes.ConnectionQuery import ConnectionQuery
@@ -28,8 +29,12 @@ class RmqConnectionSolver:
         self.connection_solver.data_manager.stop()
 
     def consume_query(self, query: ConnectionQuery):
-        connection_results = self.connection_solver.find_connections(query)
-        self.results_producer.send_msg(connection_results)
+        try:
+            connection_results = self.connection_solver.find_connections(query)
+            self.results_producer.send_msg(connection_results)
+        except:
+            self.results_producer.send_msg(
+                ConnectionResults(query.query_id, ErrorCodes.INTERNAL_SERVER_ERROR.value, []))
 
 
 if __name__ == "__main__":

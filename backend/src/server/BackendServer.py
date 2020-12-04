@@ -90,6 +90,8 @@ class BackendServer:
             return jsonify(ErrorCodes.BAD_QUERY_ID_VALUE.value), 400
 
         if result["result"]["is_done"] and result["error"] != ErrorCodes.OK.value:
+            if result["error"] == ErrorCodes.INTERNAL_SERVER_ERROR:
+                return jsonify(result["error"]), 500
             return jsonify(result["error"]), 400
         return jsonify(result["result"]), 202
 
