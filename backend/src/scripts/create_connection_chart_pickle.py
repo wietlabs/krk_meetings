@@ -27,6 +27,7 @@ def create_chart_pickle():
     all_start_time = time.time()
     counter = 0
     while counter < 1000:
+        print(counter)
         stop_1 = stops[random.randint(0, len_stops-1)]
         stop_2 = stops[random.randint(0, len_stops-1)]
         start_time = time.time()
@@ -35,17 +36,17 @@ def create_chart_pickle():
             if not connections.connections:
                 continue
             counter += 1
+            execution_time = time.time() - start_time
+            start_stops.append(stop_1)
+            end_stops.append(stop_2)
+            times.append(execution_time)
+            # key = int(execution_time * 10)/10 if execution_time <= 10.0 else 10.0
+            # if key in connection_result_dict:
+            #     connection_result_dict[key] += 0.1
+            # else:
+            #     connection_result_dict[key] = 0.1
         except:
             pass
-        execution_time = time.time() - start_time
-        start_stops.append(stop_1)
-        end_stops.append(stop_2)
-        times.append(execution_time)
-        # key = int(execution_time * 10)/10 if execution_time <= 10.0 else 10.0
-        # if key in connection_result_dict:
-        #     connection_result_dict[key] += 0.1
-        # else:
-        #     connection_result_dict[key] = 0.1
 
     # print(connection_result_dict)
     # print(time.time() - all_start_time)
@@ -55,8 +56,9 @@ def create_chart_pickle():
     # data = {'time': time_list, 'count(%)': count_list}
     data = {'execution_time': times, 'start_stop_name': start_stops, 'end_stop_name': end_stops}
     result_df = pd.DataFrame.from_dict(data)
-    pd.to_pickle(result_df, "ConnectionSolverPerformance2.pickle")
+    pd.to_pickle(result_df, "ConnectionSolverPerformance_max_3.pickle")
     print(result_df)
+    print(time.time() - all_start_time)
 
 
 if __name__ == "__main__":
