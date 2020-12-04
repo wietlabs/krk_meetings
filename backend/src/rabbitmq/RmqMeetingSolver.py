@@ -1,3 +1,5 @@
+from src.config import ErrorCodes
+from src.data_classes.MeetingResults import MeetingResults
 from src.exchanges import EXCHANGES
 from src.data_classes.MeetingQuery import MeetingQuery
 from src.rabbitmq.RmqConsumer import RmqConsumer
@@ -27,8 +29,12 @@ class RmqMeetingSolver:
         self.meeting_solver.data_manager.stop()
 
     def consume_query(self, query: MeetingQuery):
-        meeting = self.meeting_solver.find_meeting_points(query)
-        self.results_producer.send_msg(meeting)
+        try:
+            meeting = self.meeting_solver.find_meeting_points(query)
+            self.results_producer.send_msg(meeting)
+        except:
+            self.results_producer.send_msg(
+            MeetingResults(query.query_id, ErrorCodes.INTERNAL_SERVER_ERROR.value, []))
 
 
 if __name__ == "__main__":

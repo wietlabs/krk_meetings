@@ -7,7 +7,7 @@ from src.config import URL, DATETIME_FORMAT
 from src.examples.sample_queries import ConnectionQuerySamples
 
 if __name__ == "__main__":
-    query_json = ConnectionQuerySamples.jubilat_kostrze.value
+    query_json = ConnectionQuerySamples.maki_czarnowiejska.value
     query_json['start_datetime'] = datetime.now().strftime(DATETIME_FORMAT)
     execution_start = time.time()
     response = requests.post(URL.CONNECTION.value, json=query_json, timeout=1.0)
@@ -25,4 +25,5 @@ if __name__ == "__main__":
 
     print(len(result["connections"]))
     print(json.dumps(result, ensure_ascii=False))
+    print([[action["delay"] if "delay" in action else 0 for action in connection["actions"]] for connection in result["connections"]])
     print(time.time() - execution_start)
