@@ -295,7 +295,7 @@ class ConnectionSolver(IConnectionSolver):
 
         last_hubs = []
         if end_node_id not in self.kernelized_graph.nodes:
-            for neighbor_id in self.graph.neighbors(end_node_id):
+            for neighbor_id in self.graph.predecessors(end_node_id):
                 if neighbor_id in self.kernelized_graph.nodes:
                     last_hubs.append(neighbor_id)
 

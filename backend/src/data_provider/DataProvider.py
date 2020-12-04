@@ -94,7 +94,7 @@ class DataProvider:
         extended_graph = extractor.extend_graph(graph, stops_df)
         adjacent_stops = extractor.get_adjacent_stops_dict(stops_df)
         floyd_transfers_df = extractor.create_floyd_transfers_df(extended_graph, adjacent_stops)
-        stops_df = extractor.extend_stops_df(floyd_transfers_df, stops_df)
+        stops_df = extractor.extend_stops_df(transfers_df, adjacent_stops, stops_df)
         floyd_graph = extractor.create_floyd_graph(floyd_transfers_df, stops_df)
         kernelized_floyd_graph = extractor.create_kernelized_floyd_graph(floyd_graph, stops_df)
         distances = extractor.get_distances(floyd_graph)

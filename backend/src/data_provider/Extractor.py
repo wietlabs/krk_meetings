@@ -344,14 +344,16 @@ class Extractor:
         return stops_df
 
     @staticmethod
-    def extend_stops_df(transfer_df: pd.DataFrame, stops_df: pd.DataFrame) -> pd.DataFrame:
+    def extend_stops_df(transfer_df: pd.DataFrame, adjacent_stops: pd.DataFrame, stops_df: pd.DataFrame) -> pd.DataFrame:
         hubs_df = transfer_df[['start_stop_id', 'end_stop_id']]
+        adjacent_stops_df = pd.DataFrame.from_dict(data={'start_stop_id': [key[0] for key in adjacent_stops],
+                                                         'end_stop_id': [key[1] for key in adjacent_stops]})
+        hubs_df = pd.concat([hubs_df, adjacent_stops_df])
         hubs_df = hubs_df.drop_duplicates(subset=['start_stop_id', 'end_stop_id'])
         hubs_df = hubs_df.groupby('start_stop_id').count()
         hubs_df = stops_df.reset_index().merge(hubs_df, left_on='stop_id', right_on='start_stop_id', how="outer")
         hubs_df.fillna(0, inplace=True)
         hubs_df = hubs_df[['stop_id', 'end_stop_id']].set_index('stop_id')
-
         def is_hub(row):
             if row['is_first'] and row['is_last']:
                 return hubs_df.at[(row['stop_id'], 'end_stop_id')] > 1
