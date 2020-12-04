@@ -20,7 +20,10 @@ def create_chart_pickle():
     solver.data_manager.update_delays_df()
     solver.update_delays_df()
 
-    connection_result_dict = {}
+    # connection_result_dict = {}
+    start_stops = []
+    end_stops = []
+    times = []
     all_start_time = time.time()
     for _ in range(1000):
         stop_1 = stops[random.randint(0, len_stops-1)]
@@ -31,20 +34,24 @@ def create_chart_pickle():
         except:
             pass
         execution_time = time.time() - start_time
-        key = int(execution_time * 10)/10 if execution_time <= 10.0 else 10.0
-        if key in connection_result_dict:
-            connection_result_dict[key] += 0.1
-        else:
-            connection_result_dict[key] = 0.1
+        start_stops.append(stop_1)
+        end_stops.append(stop_2)
+        times.append(execution_time)
+        # key = int(execution_time * 10)/10 if execution_time <= 10.0 else 10.0
+        # if key in connection_result_dict:
+        #     connection_result_dict[key] += 0.1
+        # else:
+        #     connection_result_dict[key] = 0.1
 
-    print(connection_result_dict)
-    print(time.time() - all_start_time)
+    # print(connection_result_dict)
+    # print(time.time() - all_start_time)
 
-    time_list = [key for key in connection_result_dict.keys()]
-    count_list = [connection_result_dict[key] for key in connection_result_dict.keys()]
-    data = {'time': time_list, 'count(%)': count_list}
+    # time_list = [key for key in connection_result_dict.keys()]
+    # count_list = [connection_result_dict[key] for key in connection_result_dict.keys()]
+    # data = {'time': time_list, 'count(%)': count_list}
+    data = {'time': times, 'start_stop': start_stops, 'end_stop': end_stops}
     result_df = pd.DataFrame.from_dict(data)
-    pd.to_pickle(result_df, "ConnectionSolverPerformance.pickle")
+    pd.to_pickle(result_df, "ConnectionSolverPerformance2.pickle")
     print(result_df)
 
 
