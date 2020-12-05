@@ -1,47 +1,47 @@
-import time
-from src.config import FloydDataPaths
 import random
+import time
+
 import pandas as pd
 
+from src.config import FloydDataPaths
 from src.data_classes.MeetingQuery import MeetingQuery
 from src.solver.MeetingSolver import MeetingSolver
 from src.utils import load_pickle
 
 
+def set_priority():
+    import win32api, win32con, win32process
+    pid = win32api.GetCurrentProcessId()
+    handle = win32api.OpenProcess(win32con.PROCESS_ALL_ACCESS, True, pid)
+    win32process.SetPriorityClass(handle, win32process.REALTIME_PRIORITY_CLASS)
+
+
 def create_chart_pickle():
     stops_df = load_pickle(FloydDataPaths.stops_df.value)
-    stops = [{"name": stop[1], "latitude": stop[2], "longitude": stop[3]} for stop in stops_df.itertuples()]
-    stops = [s['name'] for s in stops]
-    len_stops = len(stops)
+    stops = list(stops_df['stop_name'])
+
     solver = MeetingSolver()
     solver.data_manager.update_data()
     solver.update_data()
 
-    participants_list = []
-    time_list = []
-    for participants in range(1, 31):
-        # start_time = time.time()
-        for _ in range(100):
-            start_time = time.time()
-            try:
-                meeting_points = solver.find_meeting_points(MeetingQuery(0, [stops[random.randint(0, len_stops-1)]
-                                                                             for _ in range(participants)], "square"))
-            except:
-                pass
-            execution_time = time.time() - start_time
-            participants_list.append(participants)
-            time_list.append(execution_time)
-        # execution_time = time.time() - start_time
-        # participants_list.append(participants)
-        # time_list.append(execution_time/100)
+    def gen(samples=10000, max_participants_count=20, metric='square'):
+        for _ in range(samples):
+            participants_count = random.randint(1, max_participants_count)
+            start_stops = random.sample(stops, participants_count)
+            query = MeetingQuery(0, start_stops, metric)
 
-    data = {'participants': participants_list, 'time': time_list}
-    result_df = pd.DataFrame.from_dict(data)
-    pd.to_pickle(result_df, "MeetingSolverRawPerformance.pickle")
-    print(participants_list)
-    print(time_list)
-    print(result_df)
+            start_time = time.perf_counter_ns()
+            result = solver.find_meeting_points(query)
+            end_time = time.perf_counter_ns()
+
+            execution_time = (end_time - start_time) * 1e-9
+            yield participants_count, execution_time
+            time.sleep(0.001)
+
+    df = pd.DataFrame(gen(), columns=['participants_count', 'execution_time'])
+    pd.to_pickle(df, 'data/MeetingSolverPerformance.pickle')
 
 
 if __name__ == "__main__":
+    set_priority()
     create_chart_pickle()
