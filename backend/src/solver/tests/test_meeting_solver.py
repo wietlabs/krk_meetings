@@ -17,7 +17,7 @@ class MeetingSolverTests(unittest.TestCase):
         cls.meeting_solver.data_manager.update_data()
 
     @data(
-        ({"start_stop_names": ["Kampus UJ", "AGH / UR", "Prokocim Szpital"], "metric": "square"}, "Rondo Matecznego"),
+        ({"start_stop_names": ["Kampus UJ", "AGH / UR", "Prokocim Szpital"], "metric": "square"}, "Teatr Bagatela"),
         ({"start_stop_names": ["Czerwone Maki P+R", "Skotniki Szkoła", "Chmieleniec"], "metric": "square"}, "Czerwone Maki P+R"),
     )
     @unpack
