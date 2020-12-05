@@ -331,7 +331,7 @@ class ConnectionSolver(IConnectionSolver):
                         max_priority = get_max_priority(priority_distance)
                         max_queue_priority = get_max_queue_priority(priority_distance)
                         priority_distance = priority
-                    continue
+                continue
             if node_id in last_hubs:
                 resolve_neighbor(node_id, end_node_id, weight, path, routes, self.graph)
             for neighbor_id in self.kernelized_graph.neighbors(node_id):
