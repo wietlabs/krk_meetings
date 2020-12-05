@@ -1,20 +1,18 @@
 import copy
-import json
 import socket
 import time
-from datetime import datetime
 
 import networkx as nx
 
 from src.data_classes.ParsedData import ParsedData
 from src.data_provider.Downloader import Downloader
 from src.data_provider.Extractor import Extractor
-from src.data_provider.Merger import Merger
-from src.data_provider.Parser import Parser
+from src.data_provider.gtfs_static.Merger import Merger
+from src.data_provider.gtfs_static.Parser import Parser
 from src.data_provider.data_provider_utils import save_property_to_config_json, load_property_from_config_json
 from src.rabbitmq.RmqProducer import RmqProducer
 from src.exchanges import EXCHANGES, MESSAGES
-from src.config import FloydDataPaths, CONFIG_JSON_PATH
+from src.config import FloydDataPaths
 from src.utils import save_pickle
 
 

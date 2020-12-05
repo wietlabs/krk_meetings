@@ -7,7 +7,7 @@ import pytest
 from pandas.testing import assert_frame_equal
 
 from src.data_classes.ParsedData import ParsedData
-from src.data_provider.Parser import Parser
+from src.data_provider.gtfs_static.Parser import Parser
 from src.data_provider.data_provider_utils import parse_time
 
 gtfs_zip_path = Path(__file__).parent / 'resources' / 'GTFS_TEST.zip'

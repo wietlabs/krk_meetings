@@ -3,10 +3,6 @@ from ftplib import FTP
 from io import BytesIO
 from typing import Tuple
 
-from src.data_classes.ParsedData import ParsedData
-from src.data_provider.Merger import Merger
-from src.data_provider.Parser import Parser
-
 
 class Downloader:
     def get_last_update_time(self) -> datetime:

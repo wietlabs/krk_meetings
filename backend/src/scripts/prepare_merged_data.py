@@ -1,8 +1,8 @@
 from pathlib import Path
 
-from src.data_provider.Merger import Merger
-from src.data_provider.Parser import Parser
-from src.data_provider.Selector import Selector
+from src.data_provider.gtfs_static.Merger import Merger
+from src.data_provider.gtfs_static.Parser import Parser
+from src.data_provider.gtfs_static.Selector import Selector
 
 if __name__ == '__main__':
     data_dir = Path(__file__).parent.parent / 'data_provider' / 'data'

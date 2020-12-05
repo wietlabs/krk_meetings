@@ -5,8 +5,8 @@ from pathlib import Path
 from src.alternative_solvers.BfsConnectionSolver import BfsConnectionSolver
 from src.alternative_solvers.BfsSolverExtractor import BfsSolverExtractor
 from src.data_classes.ConnectionQuery import ConnectionQuery
-from src.data_provider.Merger import Merger
-from src.data_provider.Parser import Parser
+from src.data_provider.gtfs_static.Merger import Merger
+from src.data_provider.gtfs_static.Parser import Parser
 
 if __name__ == '__main__':
     data_dir = Path(__file__).parent.parent / 'data_provider' / 'data'
