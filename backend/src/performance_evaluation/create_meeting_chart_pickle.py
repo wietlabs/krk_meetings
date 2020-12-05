@@ -20,20 +20,24 @@ def create_chart_pickle():
     participants_list = []
     time_list = []
     for participants in range(1, 31):
-        start_time = time.time()
+        # start_time = time.time()
         for _ in range(100):
+            start_time = time.time()
             try:
                 meeting_points = solver.find_meeting_points(MeetingQuery(0, [stops[random.randint(0, len_stops-1)]
                                                                              for _ in range(participants)], "square"))
             except:
                 pass
-        execution_time = time.time() - start_time
-        participants_list.append(participants)
-        time_list.append(execution_time/100)
+            execution_time = time.time() - start_time
+            participants_list.append(participants)
+            time_list.append(execution_time)
+        # execution_time = time.time() - start_time
+        # participants_list.append(participants)
+        # time_list.append(execution_time/100)
 
     data = {'participants': participants_list, 'time': time_list}
     result_df = pd.DataFrame.from_dict(data)
-    pd.to_pickle(result_df, "MeetingSolverPerformance.pickle")
+    pd.to_pickle(result_df, "MeetingSolverRawPerformance.pickle")
     print(participants_list)
     print(time_list)
     print(result_df)

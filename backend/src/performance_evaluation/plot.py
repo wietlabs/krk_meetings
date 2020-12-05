@@ -67,7 +67,7 @@ def plot_connection_solver_execution_time_vs_distance(performance_df: pd.DataFra
 
 def plot_meeting_solver_execution_time_by_participants_count(performance_df: pd.DataFrame) -> plt.Figure:
     fig, ax = plt.subplots(figsize=(7, 4))
-    sns.scatterplot(data=performance_df, x='participants', y='time', ax=ax)
+    sns.boxplot(data=performance_df, x='participants_count', y='execution_time', ax=ax)
     ax.set(xlabel='Liczba uczestników',
            ylabel='Czas wyszukiwania [s]')
     # ax.grid()
