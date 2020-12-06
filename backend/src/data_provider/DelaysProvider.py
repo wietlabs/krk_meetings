@@ -18,12 +18,13 @@ def start_delays_provider():
 
 
 class DelaysProvider:
-    def __init__(self):
+    def __init__(self, data_path=FloydDataPaths):
         self.delays_producer = RmqProducer(EXCHANGES.DELAYS_PROVIDER.value)
         self.downloader = Downloader()
         self.parser = VehiclePositionsParser()
         self.merger = VehiclePositionsMerger()
         self.extractor = DelaysExtractor()
+        self.data_path = data_path
 
     def start(self):
         self.delays_producer.start()
@@ -39,7 +40,7 @@ class DelaysProvider:
 
                 delays_df = self.extractor.extract(vehicle_positions_df)
 
-                delays_df.to_pickle(FloydDataPaths.delays_df.value)
+                delays_df.to_pickle(self.data_path.delays_df.value)
                 self.delays_producer.send_msg(MESSAGES.DELAYS_UPDATED.value, lost_stream_msg="Solvers are down.")
                 print("DelaysProvider: delays updated")
                 time.sleep(120)
