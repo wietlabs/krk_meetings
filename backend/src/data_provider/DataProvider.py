@@ -1,7 +1,7 @@
 import socket
 import time
 
-from src.config import FloydDataPaths
+from src.config import FloydDataPaths, DEFAULT_EXTRACTOR_CONFIGURATION
 from src.data_provider.Downloader import Downloader
 from src.data_provider.Extractor import Extractor
 from src.data_provider.gtfs_static.Corrector import Corrector
@@ -18,13 +18,13 @@ def start_data_provider():
 
 
 class DataProvider:
-    def __init__(self, data_path=FloydDataPaths):
+    def __init__(self, data_path=FloydDataPaths, configuration=DEFAULT_EXTRACTOR_CONFIGURATION):
         self.floyd_data_producer = RmqProducer(EXCHANGES.DATA_PROVIDER.value)
         self.downloader = Downloader()
         self.parser = Parser()
         self.merger = Merger()
         self.corrector = Corrector()
-        self.extractor = Extractor()
+        self.extractor = Extractor(configuration)
         self.data_path = data_path
         self.alive = False
 

@@ -6,12 +6,12 @@ import networkx as nx
 from src.data_classes.ExtractedData import ExtractedData
 from src.data_classes.ParsedData import ParsedData
 from src.data_provider.data_provider_utils import is_nightly, get_walking_time, load_property_from_config_json
-from src.config import DEFAULT_FLOYD_EXTRACTOR_CONFIGURATION, FloydDataPaths
+from src.config import DEFAULT_EXTRACTOR_CONFIGURATION, FloydDataPaths
 from src.utils import load_pickle
 
 
 class Extractor:
-    def __init__(self, configuration=DEFAULT_FLOYD_EXTRACTOR_CONFIGURATION):
+    def __init__(self, configuration=DEFAULT_EXTRACTOR_CONFIGURATION):
         super().__init__()
         self.configuration = configuration
 
