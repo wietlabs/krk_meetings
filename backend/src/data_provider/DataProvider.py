@@ -1,6 +1,7 @@
 import socket
 import time
 
+from src.config import FloydDataPaths
 from src.data_provider.Downloader import Downloader
 from src.data_provider.Extractor import Extractor
 from src.data_provider.gtfs_static.Corrector import Corrector
@@ -17,13 +18,14 @@ def start_data_provider():
 
 
 class DataProvider:
-    def __init__(self):
+    def __init__(self, data_path=FloydDataPaths):
         self.floyd_data_producer = RmqProducer(EXCHANGES.DATA_PROVIDER.value)
         self.downloader = Downloader()
         self.parser = Parser()
         self.merger = Merger()
         self.corrector = Corrector()
         self.extractor = Extractor()
+        self.data_path = data_path
         self.alive = False
 
     def start(self):
@@ -69,7 +71,7 @@ class DataProvider:
         save_property_to_config_json("services", [[index for index in parsed_data_T.calendar_df.index],
                                                   [index for index in
                                                    parsed_data_A.calendar_df.index + service_id_offset]])
-        extracted_data.save()
+        extracted_data.save(self.data_path)
         print("DataProvider: data saved")
 
 
