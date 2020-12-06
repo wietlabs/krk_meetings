@@ -5,6 +5,7 @@ from pathlib import Path
 from src.alternative_solvers.BfsConnectionSolver import BfsConnectionSolver
 from src.alternative_solvers.BfsSolverExtractor import BfsSolverExtractor
 from src.data_classes.ConnectionQuery import ConnectionQuery
+from src.data_provider.gtfs_static.Corrector import Corrector
 from src.data_provider.gtfs_static.Merger import Merger
 from src.data_provider.gtfs_static.Parser import Parser
 
@@ -17,6 +18,9 @@ if __name__ == '__main__':
 
     merger = Merger()
     merged_data, service_id_offset = merger.merge(parsed_data_A, parsed_data_T)
+
+    corrector = Corrector()
+    corrected_data = corrector.correct(merged_data)
 
     extractor = BfsSolverExtractor()
     bfs_solver_data = extractor.extract(merged_data)
