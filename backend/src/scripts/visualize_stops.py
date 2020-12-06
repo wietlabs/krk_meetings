@@ -5,6 +5,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 import networkx as nx
 
+from src.data_provider.gtfs_static.Corrector import Corrector
 from src.data_provider.gtfs_static.Merger import Merger
 from src.data_provider.gtfs_static.Parser import Parser
 
@@ -17,6 +18,9 @@ if __name__ == '__main__':
 
     merger = Merger()
     merged_data, _ = merger.merge(parsed_data_A, parsed_data_T)
+
+    corrector = Corrector()
+    corrected_data = corrector.correct(merged_data)
 
     with open(data_dir / 'border.pickle', 'rb') as f:
         border = pickle.load(f)
