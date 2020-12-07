@@ -76,7 +76,7 @@ def plot_meeting_solver_execution_time_by_participants_count(performance_df: pd.
 
 def plot_sequence_solver_execution_time_by_stops_to_visit(performance_df: pd.DataFrame) -> plt.Figure:
     fig, ax = plt.subplots(figsize=(7, 4))
-    sns.scatterplot(data=performance_df, x='stops_to_visit', y='time', ax=ax)
+    sns.scatterplot(data=performance_df, x='stops_count', y='execution_time', ax=ax)
     ax.set(xlabel='Liczba przystanków',
            ylabel='Czas wyszukiwania [s]',
            yscale='log')
@@ -85,14 +85,10 @@ def plot_sequence_solver_execution_time_by_stops_to_visit(performance_df: pd.Dat
 
 
 def generate_connection_solver_plots():
-    pickle_path = Path(__file__).parent / 'data' / 'ConnectionSolverPerformance.pickle'
+    pickle_path = Path(__file__).parent / 'data' / 'connection_solver_performance.pickle'
     performance_df = pd.read_pickle(pickle_path)
-    stops_df_by_name = pd.read_pickle(FloydDataPaths.stops_df_by_name.value)
 
     execution_time = performance_df['execution_time']
-    get_distance_for_row = lambda row: calculate_distance_km(row['start_stop_name'], row['end_stop_name'],
-                                                             stops_df_by_name)
-    performance_df['distance_km'] = performance_df.apply(get_distance_for_row, axis=1)
 
     plot_connection_solver_execution_time_pdf(execution_time) \
         .savefig(f'output/connection_solver_execution_time_pdf.{format}')
@@ -103,7 +99,7 @@ def generate_connection_solver_plots():
 
 
 def generate_meeting_solver_plots():
-    pickle_path = Path(__file__).parent / 'data' / 'MeetingSolverPerformance.pickle'
+    pickle_path = Path(__file__).parent / 'data' / 'meeting_solver_performance.pickle'
     performance_df = pd.read_pickle(pickle_path)
 
     plot_meeting_solver_execution_time_by_participants_count(performance_df) \
@@ -111,7 +107,7 @@ def generate_meeting_solver_plots():
 
 
 def generate_sequence_solver_plots():
-    pickle_path = Path(__file__).parent / 'data' / 'SequenceSolverPerformance.pickle'
+    pickle_path = Path(__file__).parent / 'data' / 'sequence_solver_performance.pickle'
     performance_df = pd.read_pickle(pickle_path)
 
     plot_sequence_solver_execution_time_by_stops_to_visit(performance_df) \
