@@ -6,7 +6,6 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
-from src.config import FloydDataPaths
 from src.data_provider.data_provider_utils import get_walking_distance
 from src.solver.solver_utils import get_stop_id_by_name
 
@@ -76,7 +75,7 @@ def plot_meeting_solver_execution_time_by_participants_count(performance_df: pd.
 
 def plot_sequence_solver_execution_time_by_stops_to_visit(performance_df: pd.DataFrame) -> plt.Figure:
     fig, ax = plt.subplots(figsize=(7, 4))
-    sns.scatterplot(data=performance_df, x='stops_count', y='execution_time', ax=ax)
+    sns.boxplot(data=performance_df, x='stops_count', y='execution_time', ax=ax)
     ax.set(xlabel='Liczba przystanków',
            ylabel='Czas wyszukiwania [s]',
            yscale='log')
@@ -91,11 +90,11 @@ def generate_connection_solver_plots():
     execution_time = performance_df['execution_time']
 
     plot_connection_solver_execution_time_pdf(execution_time) \
-        .savefig(f'output/connection_solver_execution_time_pdf.{format}')
+        .savefig(f'plots/connection_solver_execution_time_pdf.{format}')
     plot_connection_solver_execution_time_cdf(execution_time) \
-        .savefig(f'output/connection_solver_execution_time_cdf.{format}')
+        .savefig(f'plots/connection_solver_execution_time_cdf.{format}')
     plot_connection_solver_execution_time_vs_distance(performance_df) \
-        .savefig(f'output/connection_solver_execution_time_vs_distance.{format}')
+        .savefig(f'plots/connection_solver_execution_time_vs_distance.{format}')
 
 
 def generate_meeting_solver_plots():
@@ -103,7 +102,7 @@ def generate_meeting_solver_plots():
     performance_df = pd.read_pickle(pickle_path)
 
     plot_meeting_solver_execution_time_by_participants_count(performance_df) \
-        .savefig(f'output/meeting_solver_execution_time_by_participants_count.{format}')
+        .savefig(f'plots/meeting_solver_execution_time_by_participants_count.{format}')
 
 
 def generate_sequence_solver_plots():
@@ -111,10 +110,11 @@ def generate_sequence_solver_plots():
     performance_df = pd.read_pickle(pickle_path)
 
     plot_sequence_solver_execution_time_by_stops_to_visit(performance_df) \
-        .savefig(f'output/sequence_solver_execution_time_by_stops_to_visit.{format}')
+        .savefig(f'plots/sequence_solver_execution_time_by_stops_to_visit.{format}')
 
 
 if __name__ == '__main__':
+    Path('plots').mkdir(parents=True, exist_ok=True)
     generate_connection_solver_plots()
     generate_meeting_solver_plots()
     generate_sequence_solver_plots()
