@@ -1,4 +1,4 @@
-from src.data_provider.DelayProvider import start_delays_provider
+from src.data_provider.DelaysProvider import start_delays_provider
 from src.data_provider.DataProvider import start_data_provider
 from src.server.BackendServer import start_flask_server
 from src.rabbitmq.RmqConnectionSolver import start_connection_solver
@@ -19,8 +19,8 @@ def run(connection_solver_instances=1, meeting_solver_instances=1, sequence_solv
     flask_server_process = multiprocessing.Process(target=start_flask_server)
 
     flask_server_process.start()
-    # delays_provider_process.start()
-    # data_provider_process.start()
+    delays_provider_process.start()
+    data_provider_process.start()
     for process in connection_solver_processes:
         process.start()
     for process in meeting_solver_processes:

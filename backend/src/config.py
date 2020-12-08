@@ -10,7 +10,7 @@ WALKING_SPEED: float = 1.0
 WALKING_ROUTE_ID: int = -1
 DATETIME_FORMAT: str = "%Y-%m-%d %H:%M:%S"
 
-DEFAULT_FLOYD_EXTRACTOR_CONFIGURATION = ExtractorConfiguration(
+DEFAULT_EXTRACTOR_CONFIGURATION = ExtractorConfiguration(
     daily_period_multiplier=0.8,
     nightly_period_multiplier=0.4,
     change_penalty=1800,

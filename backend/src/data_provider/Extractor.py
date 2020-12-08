@@ -1,15 +1,84 @@
+import copy
 from functools import reduce
 import pandas as pd
 import networkx as nx
+
+from src.data_classes.ExtractedData import ExtractedData
+from src.data_classes.ParsedData import ParsedData
 from src.data_provider.data_provider_utils import is_nightly, get_walking_time, load_property_from_config_json
-from src.config import DEFAULT_FLOYD_EXTRACTOR_CONFIGURATION, FloydDataPaths
+from src.config import DEFAULT_EXTRACTOR_CONFIGURATION, FloydDataPaths
 from src.utils import load_pickle
 
 
 class Extractor:
-    def __init__(self, configuration=DEFAULT_FLOYD_EXTRACTOR_CONFIGURATION):
+    def __init__(self, configuration=DEFAULT_EXTRACTOR_CONFIGURATION):
         super().__init__()
         self.configuration = configuration
+
+    def extract(self, merged_data: ParsedData) -> ExtractedData:
+        stops_df = merged_data.stops_df
+        transfers_df = merged_data.transfers_df
+        stop_times_df = merged_data.stop_times_df
+        trips_df = merged_data.trips_df
+        routes_df = merged_data.routes_df
+        calendar_df = merged_data.calendar_df
+        calendar_dates_df = merged_data.calendar_dates_df
+
+        # Basic extraction
+        route_ids_df = self.create_route_ids_df(stop_times_df)
+        stops_df = self.set_first_and_last_stop(stop_times_df, route_ids_df, stops_df)
+        stops_df_by_name = stops_df.reset_index().set_index('stop_name')
+        transfers_df = self.create_transfers_trips_df(transfers_df, route_ids_df)
+        current_stop_times_df = self.create_stop_times_trips_df_for_service_id(stop_times_df, route_ids_df)
+        day_to_services_dict = self.get_day_to_services_dict(calendar_df)
+        routes_df = self.create_routes_trips_df(trips_df, routes_df, route_ids_df)
+        services_list = self.get_services_list(calendar_df)
+        routes_to_stops_dict = self.create_route_to_stops_dict(stop_times_df, route_ids_df)
+        exception_days = self.create_exception_days_dict(calendar_dates_df)
+        period_df = self.create_period_df(stop_times_df, route_ids_df, routes_df)
+
+        # Floyd extraction
+        current_stop_times_df['service'] = current_stop_times_df.index.get_level_values('service_id')
+        current_stop_times_df = current_stop_times_df.reset_index('stop_sequence')
+        graph = self.extract_graph(stops_df, transfers_df, period_df)
+        extended_graph = self.extend_graph(graph, stops_df)
+        adjacent_stops = self.get_adjacent_stops_dict(stops_df)
+        floyd_transfers_df = self.create_floyd_transfers_df(extended_graph, adjacent_stops)
+        stops_df = self.extend_stops_df(transfers_df, adjacent_stops, stops_df)
+        floyd_graph = self.create_floyd_graph(floyd_transfers_df, stops_df)
+        kernelized_floyd_graph = self.create_kernelized_floyd_graph(floyd_graph, stops_df)
+        distances = self.get_distances(floyd_graph)
+
+        previous_stop_times_df = copy.deepcopy(current_stop_times_df)
+        previous_stop_times_df['departure_time'] = previous_stop_times_df['departure_time'].apply(
+            lambda t: t - 24 * 3600)
+        previous_stop_times_df = previous_stop_times_df[previous_stop_times_df['departure_time'] >= 0]
+
+        next_stop_times_df = copy.deepcopy(current_stop_times_df)
+        next_stop_times_df['departure_time'] = next_stop_times_df['departure_time'].apply(lambda t: t + 24 * 3600)
+        next_stop_times_df = next_stop_times_df[next_stop_times_df['departure_time'] <= 36 * 3600]
+
+        current_stop_times_dict = self.transform_stop_times_df_to_dict(stops_df, current_stop_times_df,
+                                                                            services_list)
+        previous_stop_times_dict = self.transform_stop_times_df_to_dict(stops_df, previous_stop_times_df,
+                                                                             services_list)
+        next_stop_times_dict = self.transform_stop_times_df_to_dict(stops_df, next_stop_times_df, services_list)
+
+        return ExtractedData(floyd_graph=floyd_graph,
+                             kernelized_floyd_graph=kernelized_floyd_graph,
+                             distances=distances,
+                             day_to_services_dict=day_to_services_dict,
+                             current_stop_times_dict=current_stop_times_dict,
+                             previous_stop_times_dict=previous_stop_times_dict,
+                             next_stop_times_dict=next_stop_times_dict,
+                             routes_to_stops_dict=routes_to_stops_dict,
+                             adjacent_stops=adjacent_stops,
+                             exception_days=exception_days,
+                             stops_df=stops_df,
+                             routes_df=routes_df,
+                             stops_df_by_name=stops_df_by_name,
+                             stop_times_df=stop_times_df)
+
 
     @staticmethod
     def create_kernelized_floyd_graph(graph: nx.DiGraph, stops_df: pd.DataFrame) -> nx.DiGraph:
@@ -344,7 +413,7 @@ class Extractor:
         return stops_df
 
     @staticmethod
-    def extend_stops_df(transfer_df: pd.DataFrame, adjacent_stops: pd.DataFrame, stops_df: pd.DataFrame) -> pd.DataFrame:
+    def extend_stops_df(transfer_df: pd.DataFrame, adjacent_stops: dict, stops_df: pd.DataFrame) -> pd.DataFrame:
         hubs_df = transfer_df[['start_stop_id', 'end_stop_id']]
         adjacent_stops_df = pd.DataFrame.from_dict(data={'start_stop_id': [key[0] for key in adjacent_stops],
                                                          'end_stop_id': [key[1] for key in adjacent_stops]})
