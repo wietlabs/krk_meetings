@@ -3,12 +3,15 @@ from datetime import datetime
 from typing import Optional
 
 from flask import Flask, request, make_response
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import CHAR, func
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import FlushError
 
 app = Flask(__name__)
+limiter = Limiter(app, key_func=get_remote_address, default_limits=["100 per minute"])
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite'
@@ -208,6 +211,7 @@ def handle_api_exception(e):
 
 
 @app.route('/api/v1/users', methods=['POST'])
+@limiter.limit('10 per day')
 def create_user():
     user = User()
     db.session.add(user)
@@ -250,6 +254,7 @@ def get_user_meetings(user_uuid: str):
 
 
 @app.route('/api/v1/meetings', methods=['POST'])
+@limiter.limit('10 per hour')
 def create_meeting():
     check_json_data()
     owner_uuid = get_owner_uuid()

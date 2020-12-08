@@ -1,20 +1,19 @@
 import copy
-import json
 import socket
 import time
-from datetime import datetime
 
 import networkx as nx
 
 from src.data_classes.ParsedData import ParsedData
 from src.data_provider.Downloader import Downloader
 from src.data_provider.Extractor import Extractor
-from src.data_provider.Merger import Merger
-from src.data_provider.Parser import Parser
+from src.data_provider.gtfs_static.Corrector import Corrector
+from src.data_provider.gtfs_static.Merger import Merger
+from src.data_provider.gtfs_static.Parser import Parser
 from src.data_provider.data_provider_utils import save_property_to_config_json, load_property_from_config_json
 from src.rabbitmq.RmqProducer import RmqProducer
 from src.exchanges import EXCHANGES, MESSAGES
-from src.config import FloydDataPaths, CONFIG_JSON_PATH
+from src.config import FloydDataPaths
 from src.utils import save_pickle
 
 
@@ -49,7 +48,10 @@ class DataProvider:
                     merger = Merger()
                     merged_data, service_id_offset = merger.merge(parsed_data_T, parsed_data_A)
 
-                    self.extract_floyd_data(merged_data)
+                    corrector = Corrector()
+                    corrected_data = corrector.correct(merged_data)
+
+                    self.extract_floyd_data(corrected_data)
                     self.save_update_date(new_update_date)
                     self.floyd_data_producer.send_msg(MESSAGES.DATA_UPDATED.value, lost_stream_msg="Solvers are down.")
                     print("FloydDataProvider: data updated")
@@ -149,10 +151,13 @@ class DataProvider:
         merger = Merger()
         merged_data, service_id_offset = merger.merge(parsed_data_T, parsed_data_A)
 
+        corrector = Corrector()
+        corrected_data = corrector.correct(merged_data)
+
         save_property_to_config_json("services", [[index for index in parsed_data_T.calendar_df.index],
                                                   [index for index in parsed_data_A.calendar_df.index + service_id_offset]])
 
-        self.extract_floyd_data(merged_data)
+        self.extract_floyd_data(corrected_data)
         self.save_update_date(new_update_date)
 
 

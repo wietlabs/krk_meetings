@@ -1,7 +1,7 @@
 import pandas as pd
 from pandas.testing import assert_frame_equal, assert_series_equal
 
-from src.data_provider.Merger import Merger
+from src.data_provider.gtfs_static.Merger import Merger
 
 
 def test_merge_stops_df() -> None:
