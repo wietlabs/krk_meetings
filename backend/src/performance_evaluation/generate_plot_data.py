@@ -97,39 +97,39 @@ def create_chart_pickle(samples, random_query, create_pickle, solver_function):
     create_pickle(gen)
 
 
-def generate_meetings_pickle():
+def generate_meetings_pickle(samples):
     solver = MeetingSolver()
     solver.data_manager.update_data()
     solver.update_data()
-    create_chart_pickle(100, random_meeting_query, create_meeting_pickle, solver.find_meeting_points)
+    create_chart_pickle(samples, random_meeting_query, create_meeting_pickle, solver.find_meeting_points)
 
 
-def generate_sequence_pickle():
+def generate_sequence_pickle(samples):
     solver = SequenceSolver()
     solver.data_manager.update_data()
     solver.update_data()
-    create_chart_pickle(100, random_sequence_query, create_sequence_pickle, solver.find_best_sequence)
+    create_chart_pickle(samples, random_sequence_query, create_sequence_pickle, solver.find_best_sequence)
 
 
-def generate_connection_pickle():
+def generate_connection_pickle(samples):
     solver = ConnectionSolver()
     solver.data_manager.update_data()
     solver.update_data()
-    create_chart_pickle(1, random_connection_query, create_connection_pickle, solver.find_connections)
+    create_chart_pickle(samples, random_connection_query, create_connection_pickle, solver.find_connections)
 
 
-def generate_connection_path_pickle():
+def generate_connection_path_pickle(samples):
     solver = ConnectionSolver()
     solver.data_manager.update_data()
     solver.update_data()
     calculate_paths = lambda query: solver.calculate_paths(query[0], query[1])
-    create_chart_pickle(1, random_connection_path_query, create_connection_path_pickle, calculate_paths)
+    create_chart_pickle(samples, random_connection_path_query, create_connection_path_pickle, calculate_paths)
 
 
 if __name__ == "__main__":
     Path('data').mkdir(parents=True, exist_ok=True)
     set_priority()
-    generate_meetings_pickle()
-    generate_sequence_pickle()
-    generate_connection_path_pickle()
-    generate_connection_pickle()
+    generate_meetings_pickle(1000)
+    generate_sequence_pickle(1000)
+    generate_connection_path_pickle(1000)
+    generate_connection_pickle(1000)
