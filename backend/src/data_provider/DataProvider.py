@@ -68,9 +68,8 @@ class DataProvider:
         extracted_data = self.extractor.extract(corrected_data)
         print("DataProvider: data extracted")
 
-        save_property_to_config_json("services", [[index for index in parsed_data_T.calendar_df.index],
-                                                  [index for index in
-                                                   parsed_data_A.calendar_df.index + service_id_offset]])
+        save_property_to_config_json("services", [list(parsed_data_T.calendar_df.index),
+                                                  list(parsed_data_A.calendar_df.index + service_id_offset)])
         extracted_data.save(self.data_path)
         print("DataProvider: data saved")
 

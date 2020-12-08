@@ -1,16 +1,15 @@
-import pandas as pd
 from dataclasses import dataclass
 
-from src.config import FloydDataPaths
-from src.data_classes.Data import Data
 import networkx as nx
 import pandas as pd
 
+from src.config import FloydDataPaths
+from src.data_classes.Data import Data
 from src.utils import save_pickle
 
 
 @dataclass
-class ExtractedData(Data):  # server has reference to its instance
+class ExtractedData(Data):
     floyd_graph: nx.DiGraph
     kernelized_floyd_graph: nx.DiGraph
     distances: dict
@@ -26,7 +25,7 @@ class ExtractedData(Data):  # server has reference to its instance
     stops_df_by_name: pd.DataFrame
     stop_times_df: pd.DataFrame
 
-    def save(self, data_paths= FloydDataPaths):
+    def save(self, data_paths=FloydDataPaths):
         nx.write_gpickle(self.floyd_graph, data_paths.floyd_graph.value)
         nx.write_gpickle(self.kernelized_floyd_graph, data_paths.kernelized_floyd_graph.value)
         save_pickle(self.distances, data_paths.distances.value)

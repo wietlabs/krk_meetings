@@ -3,9 +3,8 @@ import pandas as pd
 
 
 class DelaysExtractor:
-    def extract(self, vehicle_positions_df: pd.DataFrame, data_path=FloydDataPaths) -> pd.DataFrame:
+    def extract(self, vehicle_positions_df: pd.DataFrame, stop_times_df: pd.DataFrame) -> pd.DataFrame:
         vehicle_positions_df.set_index(['service_id', 'block_id', 'trip_num', 'stop_sequence'], inplace=True)
-        stop_times_df = pd.read_pickle(data_path.stops_times_df.value)
         delays_df = vehicle_positions_df.join(stop_times_df)
         delays_df = delays_df.dropna()
         delays_df['delay'] = delays_df.apply(

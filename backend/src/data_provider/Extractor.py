@@ -64,10 +64,20 @@ class Extractor:
                                                                              services_list)
         next_stop_times_dict = self.transform_stop_times_df_to_dict(stops_df, next_stop_times_df, services_list)
 
-        return ExtractedData(floyd_graph, kernelized_floyd_graph, distances, day_to_services_dict,
-                             current_stop_times_dict, previous_stop_times_dict, next_stop_times_dict,
-                             routes_to_stops_dict, adjacent_stops, exception_days, stops_df, routes_df,
-                             stops_df_by_name, stop_times_df)
+        return ExtractedData(floyd_graph=floyd_graph,
+                             kernelized_floyd_graph=kernelized_floyd_graph,
+                             distances=distances,
+                             day_to_services_dict=day_to_services_dict,
+                             current_stop_times_dict=current_stop_times_dict,
+                             previous_stop_times_dict=previous_stop_times_dict,
+                             next_stop_times_dict=next_stop_times_dict,
+                             routes_to_stops_dict=routes_to_stops_dict,
+                             adjacent_stops=adjacent_stops,
+                             exception_days=exception_days,
+                             stops_df=stops_df,
+                             routes_df=routes_df,
+                             stops_df_by_name=stops_df_by_name,
+                             stop_times_df=stop_times_df)
 
 
     @staticmethod

@@ -38,7 +38,8 @@ class DelaysProvider:
                 services_id_offset = len(load_property_from_config_json("services")[0])
                 vehicle_positions_df = self.merger.merge(vehicle_positions_df_T, vehicle_positions_df_A, services_id_offset)
 
-                delays_df = self.extractor.extract(vehicle_positions_df)
+                stop_times_df = pd.read_pickle(self.data_path.stops_times_df.value)
+                delays_df = self.extractor.extract(vehicle_positions_df, stop_times_df)
 
                 delays_df.to_pickle(self.data_path.delays_df.value)
                 self.delays_producer.send_msg(MESSAGES.DELAYS_UPDATED.value, lost_stream_msg="Solvers are down.")
