@@ -1,6 +1,7 @@
 import random
 import time
 from datetime import datetime
+from pathlib import Path
 
 import pandas as pd
 
@@ -126,6 +127,7 @@ def generate_connection_path_pickle():
 
 
 if __name__ == "__main__":
+    Path('data').mkdir(parents=True, exist_ok=True)
     set_priority()
     generate_meetings_pickle()
     generate_sequence_pickle()
