@@ -22,12 +22,13 @@ class RmqHelper:
         self.alive = False
 
     def send_msg(self, message, lost_stream_msg="Rabbitmq error: Stream connection lost"):
+        self.lock.acquire()
         try:
-            self.lock.acquire()
             self.channel.basic_publish(exchange=self.exchange_name, routing_key=self.routing_key, body=self.to_json(message))
-            self.lock.release()
         except pika.exceptions.StreamLostError:
             print(f"{lost_stream_msg} {self.routing_key}")
+        finally:
+            self.lock.release()
 
     def send_heartbeat(self, lost_stream_msg="Rabbitmq error: Stream connection lost on"):
         try:

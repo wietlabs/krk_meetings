@@ -108,6 +108,7 @@ class ConnectionSolver(IConnectionSolver):
             if len(connection_task.connections) >= self.configuration.number_of_connections_returned:
                 break
             first_partition = False
+        print(f"ConnectionSolver {id(self)}: connections found.")
         return ConnectionResults(query.query_id, ErrorCodes.OK.value,
                                  connection_task.connections[0: self.configuration.number_of_connections_returned])
 
