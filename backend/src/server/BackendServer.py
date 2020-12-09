@@ -2,6 +2,9 @@ from threading import Thread
 from flask import Flask, request, Response, jsonify
 from multiprocessing import Value
 
+from flask_limiter import Limiter
+from flask_limiter.util import get_remote_address
+
 from src.data_managers.FlaskDataManager import FlaskDataManager
 from src.exchanges import EXCHANGES
 from src.rabbitmq.RmqConsumer import RmqConsumer
@@ -42,6 +45,9 @@ class BackendServer:
         self.data_manager = FlaskDataManager()
         self.stops = None
         self.last_update_date = None
+        self.limiter = Limiter(self.app, key_func=get_remote_address, default_limits=["100 per hour"])
+        self.limiter.exempt(self.handle_get_query)
+        self.limiter.exempt(self.handle_get_stops)
 
     def update_data(self):
         data = self.data_manager.get_updated_data()
