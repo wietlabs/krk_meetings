@@ -4,7 +4,7 @@ import pytest
 from flask.testing import FlaskClient
 from sqlalchemy.testing import mock
 
-from src.broker.MeetingsBroker import app, db, User, Meeting, Membership
+from src.broker.MeetingsServer import app, db, User, Meeting, Membership
 
 example_uuid1 = '11111111-1111-1111-1111-111111111111'
 example_uuid2 = '22222222-2222-2222-2222-222222222222'
