@@ -23,7 +23,7 @@ const edgePadding = {
   right: 100,
 };
 
-const availableMetrics = [
+const availableNorms = [
   {
     name: "max",
     label: "Szybko",
@@ -44,7 +44,7 @@ export default function SelectEndStopScreen({ navigation, route }) {
 
   const mapRef = React.useRef();
 
-  const [metric, setMetric] = React.useState("square");
+  const [norm, setNorm] = React.useState("square");
   const [locations, setLocations] = React.useState([]);
   const [points, setPoints] = React.useState([]);
   const [selected, setSelected] = React.useState(null);
@@ -66,7 +66,7 @@ export default function SelectEndStopScreen({ navigation, route }) {
     const locations = getStopsByNames(stopNames, stops);
     setLocations(locations);
 
-    const query = { startStopNames: stopNames, metric };
+    const query = { startStopNames: stopNames, norm };
     const points = await findMeetingPoints(query);
     setPoints(points);
     setSelected(points[0]);
@@ -76,7 +76,7 @@ export default function SelectEndStopScreen({ navigation, route }) {
 
   React.useEffect(() => {
     refresh();
-  }, [metric]);
+  }, [norm]);
 
   React.useEffect(() => {
     if (!points.length) return;
@@ -105,17 +105,17 @@ export default function SelectEndStopScreen({ navigation, route }) {
     navigation.pop();
   };
 
-  const maxMetricValue = Math.max(...points.map((point) => point.metric));
+  const maxNormValue = Math.max(...points.map((point) => point.norm));
 
   return (
     <View style={{ height: "100%" }}>
       <View style={{ flexDirection: "row" }}>
-        {availableMetrics.map(({ name, label }) => (
+        {availableNorms.map(({ name, label }) => (
           <View key={name} style={{ flex: 1 }}>
             <Button
-              onPress={() => setMetric(name)}
+              onPress={() => setNorm(name)}
               mode="contained"
-              color={name === metric ? "lightgray" : "white"}
+              color={name === norm ? "lightgray" : "white"}
               style={{ borderRadius: 0 }}
             >
               {label}
@@ -180,11 +180,11 @@ export default function SelectEndStopScreen({ navigation, route }) {
                 title={point.name}
                 // description={() => (
                 //   <ProgressBar
-                //     progress={point.metric / maxMetricValue}
+                //     progress={point.norm / maxNormValue}
                 //     style={{ marginTop: 2 }}
                 //   />
                 // )}
-                // description={point.metric}
+                // description={point.norm}
                 left={(props) => (
                   <List.Icon
                     {...props}

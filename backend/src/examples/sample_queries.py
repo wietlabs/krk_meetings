@@ -21,8 +21,8 @@ class ConnectionQuerySamples(Enum):
 
 
 class MeetingQuerySamples(Enum):
-    square_3_stops = {"start_stop_names": ["Azory", "Kawiory", "Rondo Mogilskie"], "metric": "square"}
-    bad_names = {"start_stop_names": ["AAAAA", "BBBBB", "Rondo Mogilskie"], "metric": "square"}
+    square_3_stops = {"start_stop_names": ["Azory", "Kawiory", "Rondo Mogilskie"], "norm": "square"}
+    bad_names = {"start_stop_names": ["AAAAA", "BBBBB", "Rondo Mogilskie"], "norm": "square"}
 
 
 class SequenceQuerySamples(Enum):

@@ -17,8 +17,8 @@ class MeetingSolverTests(unittest.TestCase):
         cls.meeting_solver.data_manager.update_data()
 
     @data(
-        ({"start_stop_names": ["Kampus UJ", "AGH / UR", "Prokocim Szpital"], "metric": "square"}, "Teatr Bagatela"),
-        ({"start_stop_names": ["Czerwone Maki P+R", "Skotniki Szkoła", "Chmieleniec"], "metric": "square"}, "Czerwone Maki P+R"),
+        ({"start_stop_names": ["Kampus UJ", "AGH / UR", "Prokocim Szpital"], "norm": "square"}, "Teatr Bagatela"),
+        ({"start_stop_names": ["Czerwone Maki P+R", "Skotniki Szkoła", "Chmieleniec"], "norm": "square"}, "Czerwone Maki P+R"),
     )
     @unpack
     def test_meeting_place(self, query, meeting_point):
@@ -31,9 +31,9 @@ class MeetingSolverTests(unittest.TestCase):
         self.fail()
 
     def test_metrics(self):
-        sum_query = MeetingQuery.from_dict({"start_stop_names": ["Kampus UJ", "AGH / UR", "Prokocim Szpital"], "metric": "sum"})
-        square_query = MeetingQuery.from_dict({"start_stop_names": ["Kampus UJ", "AGH / UR", "Prokocim Szpital"], "metric": "square"})
-        max_query = MeetingQuery.from_dict({"start_stop_names": ["Kampus UJ", "AGH / UR", "Prokocim Szpital"], "metric": "max"})
+        sum_query = MeetingQuery.from_dict({"start_stop_names": ["Kampus UJ", "AGH / UR", "Prokocim Szpital"], "norm": "sum"})
+        square_query = MeetingQuery.from_dict({"start_stop_names": ["Kampus UJ", "AGH / UR", "Prokocim Szpital"], "norm": "square"})
+        max_query = MeetingQuery.from_dict({"start_stop_names": ["Kampus UJ", "AGH / UR", "Prokocim Szpital"], "norm": "max"})
         sum_results: MeetingResults = self.meeting_solver.find_meeting_points(sum_query)
         square_results: MeetingResults = self.meeting_solver.find_meeting_points(square_query)
         max_results: MeetingResults = self.meeting_solver.find_meeting_points(max_query)

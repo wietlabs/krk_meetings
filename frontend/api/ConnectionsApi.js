@@ -37,13 +37,13 @@ export const findConnections = async (
 };
 
 export const findMeetingPoints = async (
-  { startStopNames, metric },
+  { startStopNames, norm },
   first_interval = 500,
   next_interval = 500,
   retries = 20
 ) => {
   const url = `${baseUrl}/meeting`;
-  const params = { start_stop_names: startStopNames, metric };
+  const params = { start_stop_names: startStopNames, norm };
   const response = await axios.post(url, params);
   const queryId = response.data.query_id;
 

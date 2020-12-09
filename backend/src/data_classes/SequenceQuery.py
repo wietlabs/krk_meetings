@@ -28,3 +28,12 @@ class SequenceQuery:
             json_dict["stops_to_visit"]
         )
 
+    @staticmethod
+    def validate(posted_json):
+        try:
+            query = SequenceQuery.from_dict(posted_json)
+            if len(query.stops_to_visit) > 8:
+                return False
+            return True
+        except (KeyError, ValueError):
+            return False
