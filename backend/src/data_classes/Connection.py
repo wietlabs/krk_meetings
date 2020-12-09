@@ -39,25 +39,25 @@ class Connection:
     @property
     def start_stop_name(self) -> Optional[str]:
         if self.walk_only:
-            return None
+            return self.actions[0].start_stop_name
         return self.first_transfer.start_stop_name
 
     @property
     def end_stop_name(self) -> Optional[str]:
         if self.walk_only:
-            return None
+            return self.actions[0].end_stop_name
         return self.last_transfer.end_stop_name
 
     @property
     def start_datetime(self) -> Optional[datetime]:
         if self.walk_only:
-            return None
+            return self.actions[0].start_datetime
         return self.first_transfer.start_datetime
 
     @property
     def end_datetime(self) -> Optional[datetime]:
         if self.walk_only:
-            return None
+            return self.actions[0].end_datetime
         return self.last_transfer.end_datetime
 
     def __str__(self) -> str:
@@ -83,10 +83,10 @@ class Connection:
         walk_only = connection.walk_only
         return {
             "walking_only": walk_only,
-            "start_stop_name": None if walk_only else connection.start_stop_name,
-            "end_stop_name": None if walk_only else connection.end_stop_name,
-            "start_datetime": None if walk_only else connection.start_datetime.strftime(DATETIME_FORMAT),
-            "end_datetime": None if walk_only else connection.end_datetime.strftime(DATETIME_FORMAT),
+            "start_stop_name": connection.start_stop_name,
+            "end_stop_name": connection.end_stop_name,
+            "start_datetime": connection.start_datetime.strftime(DATETIME_FORMAT),
+            "end_datetime": connection.end_datetime.strftime(DATETIME_FORMAT),
             "transfers_count": connection.transfers_count,
             "actions": [action.to_serializable() for action in connection.actions],
         }
