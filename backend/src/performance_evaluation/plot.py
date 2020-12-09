@@ -81,6 +81,21 @@ def generate_connection_solver_plots():
         .savefig(f'plots/connection_solver_execution_time_vs_distance.{format}')
 
 
+def generate_connection_solver_path_sum_plots():
+    def plot_connection_solver_execution_time_vs_distance(performance_df: pd.DataFrame) -> plt.Figure:
+        fig, ax = plt.subplots(figsize=(7, 4))
+        sns.boxplot(data=performance_df, x='transfer_count', y='execution_time', ax=ax)
+        ax.set(xlabel='Średnia liczba przesiadek',
+               ylabel='Czas wyszukiwania [s]')
+        return fig
+
+    pickle_path = Path(__file__).parent / 'data' / 'connection_solver_path_sum_performance.pickle'
+    performance_df = pd.read_pickle(pickle_path)
+
+    plot_connection_solver_execution_time_vs_distance(performance_df) \
+        .savefig(f'plots/connection_solver_execution_time_path_sum.{format}')
+
+
 def generate_meeting_solver_plots():
     pickle_path = Path(__file__).parent / 'data' / 'meeting_solver_performance.pickle'
     performance_df = pd.read_pickle(pickle_path)
@@ -99,6 +114,7 @@ def generate_sequence_solver_plots():
 
 if __name__ == '__main__':
     Path('plots').mkdir(parents=True, exist_ok=True)
-    generate_connection_solver_plots()
-    generate_meeting_solver_plots()
-    generate_sequence_solver_plots()
+    # generate_connection_solver_plots()
+    # generate_meeting_solver_plots()
+    # generate_sequence_solver_plots()
+    generate_connection_solver_path_sum_plots()

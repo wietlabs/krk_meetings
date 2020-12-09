@@ -1,6 +1,7 @@
 import random
 import time
 from datetime import datetime
+from functools import reduce
 from pathlib import Path
 
 import pandas as pd
@@ -13,6 +14,7 @@ from src.data_provider.data_provider_utils import get_walking_distance
 from src.solver.ConnectionSolver import ConnectionSolver
 from src.solver.MeetingSolver import MeetingSolver
 from src.solver.SequenceSolver import SequenceSolver
+from src.solver.solver_utils import get_stop_name_by_id
 from src.utils import load_pickle
 
 
@@ -61,27 +63,7 @@ def random_connection_path_query(stops_df):
     return distance/1000, query
 
 
-def create_connection_pickle(gen):
-    df = pd.DataFrame(gen(), columns=['distance_km', 'execution_time'])
-    pd.to_pickle(df, 'data/connection_solver_performance.pickle')
-
-
-def create_connection_path_pickle(gen):
-    df = pd.DataFrame(gen(), columns=['distance_km', 'execution_time'])
-    pd.to_pickle(df, 'data/connection_solver_path_performance.pickle')
-
-
-def create_meeting_pickle(gen):
-    df = pd.DataFrame(gen(), columns=['participants_count', 'execution_time'])
-    pd.to_pickle(df, 'data/meeting_solver_performance.pickle')
-
-
-def create_sequence_pickle(gen):
-    df = pd.DataFrame(gen(), columns=['stops_count', 'execution_time'])
-    pd.to_pickle(df, 'data/sequence_solver_performance.pickle')
-
-
-def create_chart_pickle(samples, random_query, create_pickle, solver_function):
+def create_data_generator(samples, random_query, solver_function):
     stops_df = load_pickle(FloydDataPaths.stops_df.value)
 
     def gen():
@@ -94,28 +76,34 @@ def create_chart_pickle(samples, random_query, create_pickle, solver_function):
             yield index, execution_time
             time.sleep(0.001)
 
-    create_pickle(gen)
+    return gen()
 
 
 def generate_meetings_pickle(samples):
     solver = MeetingSolver()
     solver.data_manager.update_data()
     solver.update_data()
-    create_chart_pickle(samples, random_meeting_query, create_meeting_pickle, solver.find_meeting_points)
+    generator = create_data_generator(samples, random_meeting_query, solver.find_meeting_points)
+    df = pd.DataFrame(generator, columns=['participants_count', 'execution_time'])
+    pd.to_pickle(df, 'data/meeting_solver_performance.pickle')
 
 
 def generate_sequence_pickle(samples):
     solver = SequenceSolver()
     solver.data_manager.update_data()
     solver.update_data()
-    create_chart_pickle(samples, random_sequence_query, create_sequence_pickle, solver.find_best_sequence)
+    generator = create_data_generator(samples, random_sequence_query, solver.find_best_sequence)
+    df = pd.DataFrame(generator, columns=['stops_count', 'execution_time'])
+    pd.to_pickle(df, 'data/sequence_solver_performance.pickle')
 
 
 def generate_connection_pickle(samples):
     solver = ConnectionSolver()
     solver.data_manager.update_data()
     solver.update_data()
-    create_chart_pickle(samples, random_connection_query, create_connection_pickle, solver.find_connections)
+    generator = create_data_generator(samples, random_connection_query, solver.find_connections)
+    df = pd.DataFrame(generator, columns=['distance_km', 'execution_time'])
+    pd.to_pickle(df, 'data/connection_solver_performance.pickle')
 
 
 def generate_connection_path_pickle(samples):
@@ -123,13 +111,45 @@ def generate_connection_path_pickle(samples):
     solver.data_manager.update_data()
     solver.update_data()
     calculate_paths = lambda query: solver.calculate_paths(query[0], query[1])
-    create_chart_pickle(samples, random_connection_path_query, create_connection_path_pickle, calculate_paths)
+    generator = create_data_generator(samples, random_connection_path_query, calculate_paths)
+    df = pd.DataFrame(generator, columns=['distance_km', 'execution_time'])
+    pd.to_pickle(df, 'data/connection_solver_path_performance.pickle')
+
+
+def generate_connection_path_sum_pickle(samples):
+    solver = ConnectionSolver()
+    solver.data_manager.update_data()
+    solver.update_data()
+    stops_df = load_pickle(FloydDataPaths.stops_df.value)
+
+    def gen():
+        for _ in range(samples):
+            sample = stops_df.sample(2)
+            start_stop_id, end_stop_id = list(sample.index)
+            start_stop_name = get_stop_name_by_id(start_stop_id, stops_df)
+            end_stop_name = get_stop_name_by_id(end_stop_id, stops_df)
+            connection_query = ConnectionQuery(0, datetime.strptime("2020-05-24 12:00:00", DATETIME_FORMAT), start_stop_name,
+                            end_stop_name)
+
+            start_time = time.perf_counter_ns()
+            result = solver.find_connections(connection_query)
+            end_time = time.perf_counter_ns()
+
+            paths = solver.get_paths(start_stop_id, end_stop_id)
+            transfer_count = reduce(lambda x, y: x+len(y)-1, paths, 0)
+            execution_time = (end_time - start_time) * 1e-9
+            yield transfer_count, execution_time
+
+            time.sleep(0.001)
+    df = pd.DataFrame(gen(), columns=['transfer_count', 'execution_time'])
+    pd.to_pickle(df, 'data/connection_solver_path_sum_performance.pickle')
 
 
 if __name__ == "__main__":
     Path('data').mkdir(parents=True, exist_ok=True)
     set_priority()
-    generate_meetings_pickle(1000)
-    generate_sequence_pickle(1000)
-    generate_connection_path_pickle(1000)
-    generate_connection_pickle(1000)
+    # generate_meetings_pickle(10)
+    # generate_sequence_pickle(10)
+    # generate_connection_path_pickle(10)
+    # generate_connection_pickle(10)
+    generate_connection_path_sum_pickle(1000)
