@@ -9,7 +9,7 @@ from src.data_managers.FlaskDataManager import FlaskDataManager
 from src.exchanges import EXCHANGES
 from src.rabbitmq.RmqConsumer import RmqConsumer
 from src.rabbitmq.RmqProducer import RmqProducer
-from src.server.CacheDict import CacheDict
+from src.broker.CacheDict import CacheDict
 from src.data_classes.ConnectionQuery import ConnectionQuery
 from src.config import ErrorCodes
 from src.data_classes.MeetingQuery import MeetingQuery
@@ -17,11 +17,11 @@ from src.data_classes.SequenceQuery import SequenceQuery
 
 
 def start_flask_server():
-    flask_server = BackendServer('FlaskServer')
+    flask_server = SolverBroker('SolverBroker')
     flask_server.start()
 
 
-class BackendServer:
+class SolverBroker:
     app = None
 
     def __init__(self, name):
@@ -125,9 +125,7 @@ class BackendServer:
         return result
 
     def handle_query_post(self, producer, request_json, query_class, parsing_error_message):
-        try:
-            query_class.from_dict(request_json)
-        except TypeError:
+        if not query_class.validate(request_json):
             return jsonify(parsing_error_message), 400
         with self.query_id.get_lock():
             self.query_id.value += 1

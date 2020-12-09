@@ -35,19 +35,19 @@ class MeetingSolver(IMeetingSolver):
         if None in start_stop_ids:
             return MeetingResults(query.query_id, ErrorCodes.BAD_STOP_NAMES_IN_SEQUENCE.value, [])
 
-        if query.metric == 'square':
-            metric = lambda l: sum(map(lambda i: i * i, l))
-        elif query.metric == 'sum':
-            metric = lambda l: sum(l)
-        elif query.metric == 'max':
-            metric = lambda l: max(l)
+        if query.norm == 'square':
+            norm = lambda l: sum(map(lambda i: i * i, l))
+        elif query.norm == 'sum':
+            norm = lambda l: sum(l)
+        elif query.norm == 'max':
+            norm = lambda l: max(l)
         else:
             return None
 
-        meeting_metrics = []
+        meeting_norms = []
         for end_stop_id in self.distances:
             distances_to_destination = [self.distances[stop_id][end_stop_id] for stop_id in start_stop_ids]
-            meeting_metrics.append((end_stop_id, metric(distances_to_destination)))
-        meeting_metrics.sort(key=lambda x: x[1])
-        meeting_points = [meeting_stop_data(metric, self.stops_df) for metric in meeting_metrics[0:10]]
+            meeting_norms.append((end_stop_id, norm(distances_to_destination)))
+        meeting_norms.sort(key=lambda x: x[1])
+        meeting_points = [meeting_stop_data(norm, self.stops_df) for norm in meeting_norms[0:10]]
         return MeetingResults(query.query_id, ErrorCodes.OK.value, meeting_points)

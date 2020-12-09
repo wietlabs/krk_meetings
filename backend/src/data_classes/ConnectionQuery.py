@@ -28,3 +28,11 @@ class ConnectionQuery:
             json_dict["start_stop_name"],
             json_dict["end_stop_name"]
         )
+
+    @staticmethod
+    def validate(posted_json):
+        try:
+            query = ConnectionQuery.from_dict(posted_json)
+            return True
+        except (KeyError, ValueError):
+            return False

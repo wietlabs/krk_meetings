@@ -6,7 +6,7 @@ from dataclasses import dataclass
 class MeetingQuery:
     query_id: int
     start_stop_names: list  # TODO: use class IPosition (Stop or Coordinates)?
-    metric: str
+    norm: str
 
     @staticmethod
     def from_json(meeting):
@@ -14,7 +14,7 @@ class MeetingQuery:
         return MeetingQuery(
             json_dict["query_id"],
             json_dict["start_stop_names"],
-            json_dict["metric"]
+            json_dict["norm"]
         )
 
     @staticmethod
@@ -22,5 +22,17 @@ class MeetingQuery:
         return MeetingQuery(
             0,
             json_dict["start_stop_names"],
-            json_dict["metric"]
+            json_dict["norm"]
         )
+
+    @staticmethod
+    def validate(posted_json):
+        try:
+            query = MeetingQuery.from_dict(posted_json)
+            if len(query.start_stop_names) > 100:
+                return False
+            return True
+        except (KeyError, ValueError):
+            return False
+
+
