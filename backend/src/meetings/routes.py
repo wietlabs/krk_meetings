@@ -1,6 +1,5 @@
-from sqlite3 import IntegrityError
-
 from flask import make_response
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import FlushError
 
 from src.meetings import app, limiter, db
