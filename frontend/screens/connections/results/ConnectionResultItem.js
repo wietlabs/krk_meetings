@@ -4,12 +4,7 @@ import { Card, Text } from "react-native-paper";
 import RouteButton from "./RouteChip";
 import WalkButton from "./WalkChip";
 import DelayText from "../../../components/DelayText";
-import {
-  parseDateTime,
-  formatTime,
-  addMinutes,
-  filterTransfers,
-} from "../../../utils";
+import { parseDateTime, formatTime, filterTransfers } from "../../../utils";
 
 function HourDelayStop({ time, delay, stop }) {
   return (
@@ -23,32 +18,21 @@ function HourDelayStop({ time, delay, stop }) {
 
 export default function ConnectionResultItem({ connection, onPress }) {
   const actions = connection.actions;
-  const transfers = filterTransfers(actions);
 
-  let startDateTime,
-    endDateTime,
-    startDelay,
-    endDelay,
-    startStopName,
-    endStopName;
+  const startStopName = connection.start_stop_name;
+  const endStopName = connection.end_stop_name;
+  const startDateTime = parseDateTime(connection.start_datetime);
+  const endDateTime = parseDateTime(connection.end_datetime);
 
+  let startDelay, endDelay;
   if (connection.walking_only) {
-    const action = actions[0];
-    startDateTime = new Date();
-    endDateTime = addMinutes(startDateTime, action.duration_in_minutes);
-    startDelay = null;
-    endDelay = null;
-    startStopName = action.start_stop_name;
-    endStopName = action.end_stop_name;
+    startDelay = endDelay = null;
   } else {
+    const transfers = filterTransfers(actions);
     const first_transfer = transfers[0];
     const last_transfer = transfers[transfers.length - 1];
-    startDateTime = parseDateTime(first_transfer.start_datetime);
-    endDateTime = parseDateTime(last_transfer.end_datetime);
     startDelay = first_transfer.delay;
-    endDelay = first_transfer.delay;
-    startStopName = first_transfer.start_stop_name;
-    endStopName = last_transfer.end_stop_name;
+    endDelay = last_transfer.delay;
   }
 
   return (
