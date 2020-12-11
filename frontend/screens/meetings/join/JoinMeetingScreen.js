@@ -133,6 +133,7 @@ export default function JoinMeetingScreen({ navigation, route }) {
             users={users}
             selected={userUuid}
             onChange={setUserUuid}
+            color="deepskyblue"
           />
           {/* <TextInput
             value={nickname}
