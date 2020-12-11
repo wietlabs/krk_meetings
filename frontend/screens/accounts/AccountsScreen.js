@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Alert, Clipboard, RefreshControl, ScrollView } from "react-native";
+import { Alert, RefreshControl, ScrollView } from "react-native";
 import { Divider, FAB, IconButton, List } from "react-native-paper";
 import Placeholder from "../../components/Placeholder";
 import { loadUsers, addUser, deleteUser } from "../../UserManager";
@@ -9,6 +9,7 @@ import { createUser } from "../../api/MeetingsApi";
 
 export default function AccountsScreen({ navigation }) {
   const [users, setUsers] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
   const [refreshing, setRefreshing] = React.useState(false);
   const [open, setOpen] = React.useState(false);
 
@@ -16,6 +17,7 @@ export default function AccountsScreen({ navigation }) {
     setRefreshing(true);
     const users = await loadUsers();
     setUsers(users);
+    setLoading(false);
     setRefreshing(false);
   };
 
@@ -104,7 +106,7 @@ export default function AccountsScreen({ navigation }) {
           </React.Fragment>
         ))}
       </ScrollView>
-      {users.length > 0 || (
+      {!loading && !users.length && (
         <Placeholder icon="account" text="Brak tożsamości" />
       )}
       <FAB.Group
@@ -128,7 +130,6 @@ export default function AccountsScreen({ navigation }) {
           },
         ]}
         onStateChange={({ open }) => setOpen(open)}
-        onPress={() => {}}
         fabStyle={{ backgroundColor: "deepskyblue" }}
       />
     </>
