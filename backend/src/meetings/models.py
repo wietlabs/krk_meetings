@@ -1,6 +1,7 @@
 import uuid
 
-from sqlalchemy import CHAR, func
+from sqlalchemy import CHAR, event, func
+from sqlalchemy.engine import Engine
 
 from src.meetings import db
 
@@ -8,6 +9,12 @@ MEETING_NAME_MAX_LENGTH = 50
 MEETING_DESCRIPTION_MAX_LENGTH = 500
 NICKNAME_MAX_LENGTH = 50
 STOP_NAME_MAX_LENGTH = 100
+
+@event.listens_for(Engine, "connect")
+def set_sqlite_pragma(dbapi_connection, connection_record):
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.close()
 
 
 class User(db.Model):
@@ -30,12 +37,12 @@ class Meeting(db.Model):
 
     owner = db.relationship('User')
     users = db.relationship('Membership', back_populates='meeting',
-                            order_by='Membership.joined_at', cascade='all, delete-orphan')
+                            order_by='Membership.joined_at', cascade='all, delete')
 
 
 class Membership(db.Model):
     __tablename__ = 'memberships'
-    meeting_uuid = db.Column(CHAR(36), db.ForeignKey('meetings.uuid'), primary_key=True)
+    meeting_uuid = db.Column(CHAR(36), db.ForeignKey('meetings.uuid', ondelete='CASCADE'), primary_key=True)
     user_uuid = db.Column(CHAR(36), db.ForeignKey('users.uuid'), primary_key=True)
     nickname = db.Column(db.String(NICKNAME_MAX_LENGTH))
     stop_name = db.Column(db.String(STOP_NAME_MAX_LENGTH), nullable=True)
