@@ -25,10 +25,6 @@ export function formatTime(time) {
   return time.toISOString().slice(11, 16);
 }
 
-export function addMinutes(date, minutes) {
-  return new Date(date.getTime() + minutes * 60 * 1000);
-}
-
 export const makeDateTime = (date, time) => {
   const dt = new Date(
     date.getFullYear(),
