@@ -1,29 +1,31 @@
 import * as React from "react";
-import { Alert, View } from "react-native";
+import { Alert, KeyboardAvoidingView, View } from "react-native";
 import { Button, TextInput } from "react-native-paper";
-import { getNickname } from "../../../UserManager";
+import { loadUsers, getNickname } from "../../../UserManager";
 import { createMeeting } from "../../../api/MeetingsApi";
+import SelectAccount from "../../../components/SelectAccount";
+import { ScrollView } from "react-native-gesture-handler";
 
 export default function CreateMeetingScreen({ navigation, route }) {
-  const userUuid = route.params.userUuid;
-
   const [name, setName] = React.useState("");
-  const [nickname, setNickname] = React.useState("");
+  const [users, setUsers] = React.useState([]);
+  const [userUuid, setUserUuid] = React.useState(route.params.userUuid);
   const [submitting, setSubmitting] = React.useState(false);
 
   const nameRef = React.useRef();
   const nicknameRef = React.useRef();
 
+  React.useEffect(() => {
+    refreshUsers();
+  }, []);
+
   navigation.addListener("focus", () => {
     nameRef.current.focus();
-    suggestNickname();
   });
 
-  const suggestNickname = async () => {
-    if (!nickname) {
-      const nickname = await getNickname(userUuid);
-      setNickname(nickname);
-    }
+  const refreshUsers = async () => {
+    const users = await loadUsers();
+    setUsers(users);
   };
 
   const showError = (message, fieldRef) => {
@@ -35,10 +37,6 @@ export default function CreateMeetingScreen({ navigation, route }) {
   const validate = () => {
     if (!name) {
       showError("Proszę wpisać nazwę spotkania", nameRef);
-      return false;
-    }
-    if (!nickname) {
-      showError("Proszę wpisać pseudonim", nicknameRef);
       return false;
     }
     return true;
@@ -53,36 +51,51 @@ export default function CreateMeetingScreen({ navigation, route }) {
       return;
     }
 
+    const nickname = await getNickname(userUuid);
+
     const { uuid: meetingUuid } = await createMeeting({
       userUuid,
       nickname,
       name,
     });
 
-    navigation.replace("MeetingDetails", { userUuid, meetingUuid });
+    navigation.pop();
+    navigation.replace("Meetings", { userUuid });
+    navigation.push("MeetingDetails", { userUuid, meetingUuid });
   };
 
   return (
-    <View style={{ padding: 16 }}>
+    <KeyboardAvoidingView
+      style={{ flex: 1, justifyContent: "flex-start", padding: 16 }}
+    >
       <TextInput
         ref={nameRef}
         label="Nazwa spotkania"
         value={name}
         left={<TextInput.Icon name="calendar-text-outline" />}
-        onChangeText={(name) => setName(name)}
-        style={{ backgroundColor: "white", marginBottom: 16 }}
+        onChangeText={setName}
+        style={{ backgroundColor: "white" }}
       />
-      <TextInput
-        ref={nicknameRef}
-        label="Pseudonim"
-        value={nickname}
-        left={<TextInput.Icon name="account-outline" />}
-        onChangeText={(nickname) => setNickname(nickname)}
-        style={{ backgroundColor: "white", marginBottom: 16 }}
-      />
-      <Button mode="contained" loading={submitting} onPress={handleSubmit}>
+      <ScrollView>
+        <SelectAccount
+          users={users}
+          selected={userUuid}
+          onChange={setUserUuid}
+          color="#0088ff"
+          style={{ marginVertical: 8 }}
+        />
+      </ScrollView>
+      <Button
+        mode="contained"
+        icon="plus"
+        color="#0088ff"
+        // disabled={!name.length}
+        loading={submitting}
+        onPress={handleSubmit}
+      >
         Utwórz spotkanie
       </Button>
-    </View>
+      <View style={{ flex: 9999 }}></View>
+    </KeyboardAvoidingView>
   );
 }

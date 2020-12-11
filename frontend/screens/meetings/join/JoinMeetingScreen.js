@@ -1,17 +1,14 @@
 import * as React from "react";
-import { Alert, ScrollView, RefreshControl, View, Text } from "react-native";
-import { Card, Chip, List, RadioButton, Button } from "react-native-paper";
-import {
-  validateUuid,
-  generateRandomNickname,
-  censorUuid,
-} from "../../../utils";
+import { Alert, ScrollView, RefreshControl, View } from "react-native";
+import { Card, Chip, Button } from "react-native-paper";
+import { validateUuid, generateRandomNickname } from "../../../utils";
 import {
   checkIfMeetingExists,
   getMeetingJoinInfo,
   joinMeeting,
 } from "../../../api/MeetingsApi";
 import Placeholder from "../../../components/Placeholder";
+import SelectAccount from "../../../components/SelectAccount";
 import { loadUsers, getNickname } from "../../../UserManager";
 
 export default function JoinMeetingScreen({ navigation, route }) {
@@ -132,22 +129,12 @@ export default function JoinMeetingScreen({ navigation, route }) {
               <Chip icon="crown">{meeting.owner_nickname}</Chip>
             </Card.Content>
           </Card>
-          <RadioButton.Group value={userUuid} onValueChange={setUserUuid}>
-            {users.map(({ uuid, nickname }) => (
-              <List.Item
-                key={uuid}
-                onPress={() => setUserUuid(uuid)}
-                title={nickname === null ? "Tożsamość bez nazwy" : nickname}
-                titleStyle={nickname === null ? { opacity: 0.2 } : null}
-                description={censorUuid(uuid)}
-                left={(props) => (
-                  <View style={{ marginTop: 8 }}>
-                    <RadioButton {...props} value={uuid} color="deepskyblue" />
-                  </View>
-                )}
-              />
-            ))}
-          </RadioButton.Group>
+          <SelectAccount
+            users={users}
+            selected={userUuid}
+            onChange={setUserUuid}
+            color="deepskyblue"
+          />
           {/* <TextInput
             value={nickname}
             ref={nicknameRef}
