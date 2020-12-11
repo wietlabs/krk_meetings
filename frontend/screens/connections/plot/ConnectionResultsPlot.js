@@ -39,14 +39,15 @@ export default function ConnectionResultsPlot({
       const actions = connection.actions;
       if (connection.walking_only) {
         return actions[0].duration_in_minutes;
+      } else {
+        const transfers = filterTransfers(actions);
+        const lastTransfer = transfers[transfers.length - 1];
+        const endDateTime = parseDateTime(lastTransfer.end_datetime);
+        const durationMillis = endDateTime - startDateTime;
+        const durationMinutes = durationMillis / 1000 / 60;
+        const delayMinutes = (lastTransfer.delay || 0) / 60;
+        return durationMinutes + delayMinutes;
       }
-      const transfers = filterTransfers(actions);
-      const lastTransfer = transfers[transfers.length - 1];
-      const endDateTime = parseDateTime(lastTransfer.end_datetime);
-      const durationMillis = endDateTime - startDateTime;
-      const durationMinutes = durationMillis / 1000 / 60;
-      const delayMinutes = (lastTransfer.delay || 0) / 60;
-      return durationMinutes + delayMinutes;
     },
     [startDateTime]
   );
