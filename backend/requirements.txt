@@ -4,13 +4,14 @@ numpy==1.19.3
 matplotlib
 seaborn
 requests
+pika
+openrouteservice
+gtfs-realtime-bindings
 flask
 Flask-Limiter
 flask_sqlalchemy
 sqlalchemy
 pytest
 pytest-freezegun
-pika
-openrouteservice
 ddt
-gtfs-realtime-bindings
+setuptools
