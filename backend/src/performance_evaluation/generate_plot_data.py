@@ -116,35 +116,6 @@ def generate_connection_path_pickle(samples):
     pd.to_pickle(df, 'data/connection_solver_path_performance.pickle')
 
 
-def generate_connection_path_sum_pickle(samples):
-    solver = ConnectionSolver()
-    solver.data_manager.update_data()
-    solver.update_data()
-    stops_df = load_pickle(FloydDataPaths.stops_df.value)
-
-    def gen():
-        for _ in range(samples):
-            sample = stops_df.sample(2)
-            start_stop_id, end_stop_id = list(sample.index)
-            start_stop_name = get_stop_name_by_id(start_stop_id, stops_df)
-            end_stop_name = get_stop_name_by_id(end_stop_id, stops_df)
-            connection_query = ConnectionQuery(0, datetime.strptime("2020-05-24 12:00:00", DATETIME_FORMAT), start_stop_name,
-                            end_stop_name)
-
-            start_time = time.perf_counter_ns()
-            result = solver.find_connections(connection_query)
-            end_time = time.perf_counter_ns()
-
-            paths = solver.get_paths(start_stop_id, end_stop_id)
-            transfer_count = reduce(lambda x, y: x+len(y)-1, paths, 0)
-            execution_time = (end_time - start_time) * 1e-9
-            yield transfer_count, execution_time
-
-            time.sleep(0.001)
-    df = pd.DataFrame(gen(), columns=['transfer_count', 'execution_time'])
-    pd.to_pickle(df, 'data/connection_solver_path_sum_performance.pickle')
-
-
 if __name__ == "__main__":
     Path('data').mkdir(parents=True, exist_ok=True)
     set_priority()
@@ -152,4 +123,3 @@ if __name__ == "__main__":
     # generate_sequence_pickle(10)
     # generate_connection_path_pickle(10)
     # generate_connection_pickle(10)
-    generate_connection_path_sum_pickle(1000)
