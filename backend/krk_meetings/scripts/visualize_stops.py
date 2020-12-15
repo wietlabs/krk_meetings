@@ -26,7 +26,7 @@ if __name__ == '__main__':
         border = pickle.load(f)
 
     fig, ax = plt.subplots(figsize=(10, 7))
-    fig.tight_layout()
+    fig.subplots_adjust(left=-0.06, right=1.06, top=1.02, bottom=-0.03)
     ax.set_aspect(1 / cos(radians(50)))
 
     stops_df = merged_data.stops_df
@@ -43,6 +43,6 @@ if __name__ == '__main__':
     lats, lons = zip(*border)
 
     plt.fill(lons, lats, color='lightgray', zorder=0)
-    nx.draw(G, pos, ax, node_size=2, node_color='black', width=1, edge_color='gray')
+    nx.draw(G, pos, ax, node_size=3, node_color='black', width=0.8, edge_color='gray')
 
     fig.savefig('map.pdf')
