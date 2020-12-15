@@ -22,7 +22,12 @@ export default function SelectAccount({
             description={censorUuid(uuid)}
             left={(props) => (
               <View style={{ marginTop: 8 }}>
-                <RadioButton {...props} value={uuid} color={color} />
+                <RadioButton
+                  {...props}
+                  value={uuid}
+                  color={color}
+                  onPress={() => onChange(uuid)}
+                />
               </View>
             )}
           />
