@@ -32,7 +32,8 @@ class RmqConnectionSolver:
         try:
             connection_results = self.connection_solver.find_connections(query)
             self.results_producer.send_msg(connection_results)
-        except:
+        except Exception as e:
+            print(f"Error while searching for connections {e}")
             self.results_producer.send_msg(
                 ConnectionResults(query.query_id, ErrorCodes.INTERNAL_SERVER_ERROR.value, []))
 

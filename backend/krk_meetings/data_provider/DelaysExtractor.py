@@ -14,4 +14,5 @@ class DelaysExtractor:
         delays_df = delays_df[delays_df['delay'] > -600]
         delays_df.reset_index(['stop_sequence'], inplace=True)
         delays_df = delays_df[['delay']]
+        delays_df['registered'] = True
         return delays_df
