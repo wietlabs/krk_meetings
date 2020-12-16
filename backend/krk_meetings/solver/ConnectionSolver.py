@@ -1,4 +1,3 @@
-import sys
 from copy import copy
 from queue import PriorityQueue
 from typing import List
