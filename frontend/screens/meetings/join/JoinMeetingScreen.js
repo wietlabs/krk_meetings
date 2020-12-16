@@ -94,7 +94,7 @@ export default function JoinMeetingScreen({ navigation, route }) {
       return;
     }
 
-    navigation.pop(2);
+    navigation.pop(3);
     navigation.push("Meetings", { userUuid: userUuid });
     navigation.navigate("MeetingDetails", {
       userUuid: userUuid,
