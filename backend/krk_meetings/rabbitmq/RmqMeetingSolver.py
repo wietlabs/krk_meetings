@@ -5,6 +5,9 @@ from krk_meetings.data_classes.MeetingQuery import MeetingQuery
 from krk_meetings.rabbitmq.RmqConsumer import RmqConsumer
 from krk_meetings.rabbitmq.RmqProducer import RmqProducer
 from krk_meetings.solver.MeetingSolver import MeetingSolver
+from krk_meetings.logger import get_logger
+
+LOG = get_logger(__name__)
 
 
 def start_meeting_solver():
@@ -32,7 +35,8 @@ class RmqMeetingSolver:
         try:
             meeting = self.meeting_solver.find_meeting_points(query)
             self.results_producer.send_msg(meeting)
-        except:
+        except Exception as e:
+            LOG.error(f"MeetingSolver({id(self.meeting_solver)}) Error while searching for meeting points {e}")
             self.results_producer.send_msg(
             MeetingResults(query.query_id, ErrorCodes.INTERNAL_SERVER_ERROR.value, []))
 

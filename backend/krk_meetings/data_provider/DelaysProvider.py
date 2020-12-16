@@ -10,6 +10,9 @@ from krk_meetings.exchanges import EXCHANGES, MESSAGES
 from krk_meetings.config import FloydDataPaths
 import socket
 import pandas as pd
+from krk_meetings.logger import get_logger
+
+LOG = get_logger(__name__)
 
 
 def start_delays_provider():
@@ -28,7 +31,7 @@ class DelaysProvider:
 
     def start(self):
         self.delays_producer.start()
-        print("DelaysProvider: has started.")
+        LOG.info("DelaysProvider: has started.")
         while True:
             try:
                 vehicle_positions_pb_T, vehicle_positions_pb_A = self.downloader.download_vehicle_positions()
@@ -43,7 +46,7 @@ class DelaysProvider:
 
                 delays_df.to_pickle(self.data_path.delays_df.value)
                 self.delays_producer.send_msg(MESSAGES.DELAYS_UPDATED.value, lost_stream_msg="Solvers are down.")
-                print("DelaysProvider: delays updated")
+                LOG.info("DelaysProvider: delays updated")
                 time.sleep(120)
             except socket.gaierror:
                 time.sleep(30)

@@ -5,6 +5,9 @@ from krk_meetings.data_classes.ConnectionQuery import ConnectionQuery
 from krk_meetings.rabbitmq.RmqConsumer import RmqConsumer
 from krk_meetings.rabbitmq.RmqProducer import RmqProducer
 from krk_meetings.solver.ConnectionSolver import ConnectionSolver
+from krk_meetings.logger import get_logger
+
+LOG = get_logger(__name__)
 
 
 def start_connection_solver():
@@ -33,7 +36,7 @@ class RmqConnectionSolver:
             connection_results = self.connection_solver.find_connections(query)
             self.results_producer.send_msg(connection_results)
         except Exception as e:
-            print(f"Error while searching for connections {e}")
+            LOG.error(f"ConnectionSolver({id(self.connection_solver)}) Error while searching for connections {e}")
             self.results_producer.send_msg(
                 ConnectionResults(query.query_id, ErrorCodes.INTERNAL_SERVER_ERROR.value, []))
 
