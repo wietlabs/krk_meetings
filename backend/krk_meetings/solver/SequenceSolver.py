@@ -8,7 +8,7 @@ from krk_meetings.solver.interfaces.ISequenceSolver import ISequenceSolver
 from krk_meetings.data_managers.SequenceDataManager import SequenceDataManager
 from krk_meetings.logger import get_logger
 
-LOG = get_logger(__name__)
+logger = get_logger(__name__)
 
 
 class SequenceSolver(ISequenceSolver):
@@ -22,7 +22,7 @@ class SequenceSolver(ISequenceSolver):
     def start(self):
         self.data_manager.start()
         self.update_data()
-        LOG.info(f"SequenceSolver({id(self)}): started.")
+        logger.info(f"SequenceSolver({id(self)}): started.")
 
     def update_data(self):
         data = self.data_manager.get_updated_data()
@@ -32,7 +32,7 @@ class SequenceSolver(ISequenceSolver):
         self.last_data_update = self.data_manager.last_data_update
 
     def find_best_sequence(self, query: SequenceQuery) -> SequenceResults:
-        LOG.info(f"SequenceSolver({id(self)}): finding best sequence.")
+        logger.info(f"SequenceSolver({id(self)}): finding best sequence.")
         if self.last_data_update is None or self.last_data_update < self.data_manager.last_data_update:
             self.update_data()
 

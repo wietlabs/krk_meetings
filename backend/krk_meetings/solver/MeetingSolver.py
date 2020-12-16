@@ -7,7 +7,7 @@ from krk_meetings.data_managers.MeetingDataManager import MeetingDataManager
 from krk_meetings.solver.solver_utils import meeting_stop_data
 from krk_meetings.logger import get_logger
 
-LOG = get_logger(__name__)
+logger = get_logger(__name__)
 
 
 class MeetingSolver(IMeetingSolver):
@@ -21,7 +21,7 @@ class MeetingSolver(IMeetingSolver):
     def start(self):
         self.data_manager.start()
         self.update_data()
-        LOG.info(f"MeetingSolver({id(self)}): started.")
+        logger.info(f"MeetingSolver({id(self)}): started.")
 
     def update_data(self):
         data = self.data_manager.get_updated_data()
@@ -31,7 +31,7 @@ class MeetingSolver(IMeetingSolver):
         self.last_data_update = self.data_manager.last_data_update
 
     def find_meeting_points(self, query: MeetingQuery) -> MeetingResults:
-        LOG.info(f"MeetingSolver({id(self)}): finding meeting points.")
+        logger.info(f"MeetingSolver({id(self)}): finding meeting points.")
         if self.last_data_update is None or self.last_data_update < self.data_manager.last_data_update:
             self.update_data()
         start_stop_ids = [solver_utils.get_stop_id_by_name(stop_name, self.stops_df_by_name) for stop_name in query.start_stop_names]

@@ -1,4 +1,3 @@
-from krk_meetings.config import FloydDataPaths
 import pandas as pd
 
 

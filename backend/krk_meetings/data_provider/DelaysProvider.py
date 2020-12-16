@@ -12,7 +12,7 @@ import socket
 import pandas as pd
 from krk_meetings.logger import get_logger
 
-LOG = get_logger(__name__)
+logger = get_logger(__name__)
 
 
 def start_delays_provider():
@@ -31,7 +31,7 @@ class DelaysProvider:
 
     def start(self):
         self.delays_producer.start()
-        LOG.info("DelaysProvider: has started.")
+        logger.info("DelaysProvider: has started.")
         while True:
             try:
                 vehicle_positions_pb_T, vehicle_positions_pb_A = self.downloader.download_vehicle_positions()
@@ -46,7 +46,7 @@ class DelaysProvider:
 
                 delays_df.to_pickle(self.data_path.delays_df.value)
                 self.delays_producer.send_msg(MESSAGES.DELAYS_UPDATED.value, lost_stream_msg="Solvers are down.")
-                LOG.info("DelaysProvider: delays updated")
+                logger.info("DelaysProvider: delays updated")
                 time.sleep(120)
             except socket.gaierror:
                 time.sleep(30)

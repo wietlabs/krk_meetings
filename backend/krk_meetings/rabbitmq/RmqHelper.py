@@ -6,7 +6,7 @@ import time
 import json
 from krk_meetings.logger import get_logger
 
-LOG = get_logger(__name__)
+logger = get_logger(__name__)
 
 HEARTBEAT_MSG = "HEARTBEAT"
 
@@ -29,7 +29,7 @@ class RmqHelper:
         try:
             self.channel.basic_publish(exchange=self.exchange_name, routing_key=self.routing_key, body=self.to_json(message))
         except pika.exceptions.StreamLostError:
-            LOG.warn(f"{lost_stream_msg} {self.routing_key}")
+            logger.warn(f"{lost_stream_msg} {self.routing_key}")
         finally:
             self.lock.release()
 
@@ -40,7 +40,7 @@ class RmqHelper:
                                        body=json.dumps(HEARTBEAT_MSG))
             self.lock.release()
         except pika.exceptions.StreamLostError:
-            LOG.warn(f"{lost_stream_msg} HEARTBEAT on {self.routing_key}")
+            logger.warn(f"{lost_stream_msg} HEARTBEAT on {self.routing_key}")
 
     @staticmethod
     def is_heartbeat(message):

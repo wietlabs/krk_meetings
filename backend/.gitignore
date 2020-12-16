@@ -1,5 +1,5 @@
 krk_meetings/data/config.json
-krk_meetings/krk_meet_log.txt
+krk_meetings/krk_meetings.log
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

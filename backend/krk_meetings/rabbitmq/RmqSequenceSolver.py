@@ -7,7 +7,7 @@ from krk_meetings.rabbitmq.RmqProducer import RmqProducer
 from krk_meetings.solver.SequenceSolver import SequenceSolver
 from krk_meetings.logger import get_logger
 
-LOG = get_logger(__name__)
+logger = get_logger(__name__)
 
 
 def start_sequence_solver():
@@ -36,7 +36,7 @@ class RmqSequenceSolver:
             sequence = self.sequence_solver.find_best_sequence(query)
             self.results_producer.send_msg(sequence)
         except Exception as e:
-            LOG.error(f"SequenceSolver({id(self.sequence_solver)}) Error while searching for meeting points {e}")
+            logger.error(f"SequenceSolver({id(self.sequence_solver)}) Error while searching for meeting points {e}")
             self.results_producer.send_msg(
                 SequenceResults(query.query_id, ErrorCodes.INTERNAL_SERVER_ERROR.value, []))
 
