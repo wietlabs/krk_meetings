@@ -14,6 +14,7 @@ import {
   getMembershipDetails,
   updateMeetingDateTime,
   leaveMeeting,
+  deleteMeeting,
 } from "../../../api/MeetingsApi";
 import { createMeetingLink } from "../../../LinkManager";
 import { getNickname } from "../../../UserManager";
@@ -133,19 +134,26 @@ export default function MeetingDetailsScreen({ navigation, route }) {
     navigation.navigate("SelectEndStop", { meetingUuid, userUuid });
   };
 
-  const handleLeave = () => {
-    leaveMeeting({ meetingUuid, userUuid });
+  const handleLeave = async () => {
+    await leaveMeeting({ meetingUuid, userUuid });
     navigation.pop();
   };
 
   const handleConfirmLeave = () => {
-    if (isMeetingOwner) {
-      Alert.alert("Wystąpił błąd", "Organizator nie może opuścić spotkania.");
-      return;
-    }
-
     Alert.alert("Potwierdzenie", `Czy na pewno chcesz opuścić spotkanie?`, [
       { text: "Tak", style: "destructive", onPress: () => handleLeave() },
+      { text: "Nie", style: "cancel" },
+    ]);
+  };
+
+  const handleDelete = async () => {
+    await deleteMeeting({ meetingUuid, userUuid });
+    navigation.pop();
+  };
+
+  const handleConfirmDelete = () => {
+    Alert.alert("Potwierdzenie", `Czy na pewno chcesz usunąć spotkanie?`, [
+      { text: "Tak", style: "destructive", onPress: () => handleDelete() },
       { text: "Nie", style: "cancel" },
     ]);
   };
@@ -260,20 +268,37 @@ export default function MeetingDetailsScreen({ navigation, route }) {
             style={{ backgroundColor: "white" }}
           />
         ))}
-        <Button
-          mode="contained"
-          icon="account-remove"
-          style={{
-            marginLeft: 16,
-            marginRight: 16,
-            marginTop: 12,
-            marginBottom: 8,
-          }}
-          color="red"
-          onPress={handleConfirmLeave}
-        >
-          Opuść spotkanie
-        </Button>
+        {isMeetingOwner ? (
+          <Button
+            mode="contained"
+            icon="calendar-remove"
+            style={{
+              marginLeft: 16,
+              marginRight: 16,
+              marginTop: 12,
+              marginBottom: 8,
+            }}
+            color="red"
+            onPress={handleConfirmDelete}
+          >
+            Usuń spotkanie
+          </Button>
+        ) : (
+          <Button
+            mode="contained"
+            icon="account-remove"
+            style={{
+              marginLeft: 16,
+              marginRight: 16,
+              marginTop: 12,
+              marginBottom: 8,
+            }}
+            color="red"
+            onPress={handleConfirmLeave}
+          >
+            Opuść spotkanie
+          </Button>
+        )}
         <List.Subheader>Zaproś znajomych</List.Subheader>
         <List.Item
           title={meetingUrl}
