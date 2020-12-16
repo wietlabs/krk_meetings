@@ -102,3 +102,9 @@ export const leaveMeeting = async ({ meetingUuid, userUuid }) => {
   const url = `${baseUrl}/api/v1/memberships/${meetingUuid}/${userUuid}`;
   await axios.delete(url);
 };
+
+export const deleteMeeting = async ({ meetingUuid, userUuid }) => {
+  const url = `${baseUrl}/api/v1/meetings/${meetingUuid}`;
+  const params = { owner_uuid: userUuid };
+  await axios.delete(url, { data: params });
+};
