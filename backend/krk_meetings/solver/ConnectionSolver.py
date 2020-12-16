@@ -18,6 +18,9 @@ from krk_meetings.solver.interfaces.IConnectionSolver import IConnectionSolver
 from krk_meetings.data_classes.Transfer import Transfer
 from krk_meetings.data_classes.ConnectionQuery import ConnectionQuery
 from krk_meetings.config import ErrorCodes, DEFAULT_CONNECTION_SOLVER_CONFIGURATION, FloydDataPaths
+from krk_meetings.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class ConnectionTask:
@@ -53,7 +56,7 @@ class ConnectionSolver(IConnectionSolver):
     def start(self):
         self.data_manager.start()
         self.update_data()
-        print(f"ConnectionSolver {id(self)}: started.")
+        logger.info(f"ConnectionSolver({id(self)}): started.")
 
     def update_data(self):
         data = self.data_manager.get_updated_data()
@@ -80,7 +83,7 @@ class ConnectionSolver(IConnectionSolver):
         self.last_delay_update = self.data_manager.last_delay_update
 
     def find_connections(self, query: ConnectionQuery) -> ConnectionResults:
-        print(f"ConnectionSolver {id(self)}: finding connections")
+        logger.info(f"ConnectionSolver({id(self)}): finding connections")
         if self.last_data_update is None or self.last_data_update < self.data_manager.last_data_update:
             self.update_data()
         if self.last_delay_update is None or self.last_delay_update < self.data_manager.last_delay_update:
@@ -89,11 +92,11 @@ class ConnectionSolver(IConnectionSolver):
         current_time = time_to_int(current_datetime.time())
         start_stop_id = solver_utils.get_stop_id_by_name(query.start_stop_name, self.stops_df_by_name)
         if start_stop_id is None:
-            print(f"ConnectionSolver {id(self)}: Start stop not found")
+            logger.debug(f"ConnectionSolver({id(self)}): Start stop not found({query.start_stop_name})")
             return ConnectionResults(query.query_id, ErrorCodes.BAD_START_STOP_NAME.value, [])
         end_stop_id = solver_utils.get_stop_id_by_name(query.end_stop_name, self.stops_df_by_name)
         if end_stop_id is None:
-            print(f"ConnectionSolver {id(self)}: End stop not found")
+            logger.debug(f"ConnectionSolver({id(self)}): End stop not found({query.end_stop_name})")
             return ConnectionResults(query.query_id, ErrorCodes.BAD_END_STOP_NAME.value, [])
 
         paths = self.get_paths(start_stop_id, end_stop_id)
@@ -110,7 +113,7 @@ class ConnectionSolver(IConnectionSolver):
             if len(connection_task.connections) >= self.configuration.number_of_connections_returned:
                 break
             first_partition = False
-        print(f"ConnectionSolver {id(self)}: connections found.")
+        logger.info(f"ConnectionSolver({id(self)}): connections found.")
         return ConnectionResults(query.query_id, ErrorCodes.OK.value,
                                  connection_task.connections[0: self.configuration.number_of_connections_returned])
 
@@ -254,16 +257,16 @@ class ConnectionSolver(IConnectionSolver):
         return df
 
     def get_paths(self, start_node, end_node):
-        print(f"ConnectionSolver {id(self)}: getting paths")
+        logger.info(f"ConnectionSolver({id(self)}): getting paths")
         if start_node == end_node:
             return []
         if end_node not in self.paths[start_node]:
             self.paths[start_node][end_node] = self.calculate_paths(start_node, end_node)
-        print(f"ConnectionSolver {id(self)}: got paths: {self.paths[start_node][end_node]}")
+        logger.info(f"ConnectionSolver({id(self)}): got paths: {self.paths[start_node][end_node]}")
         return self.paths[start_node][end_node]
 
     def calculate_paths(self, start_node_id: int, end_node_id: int):
-        print(f"ConnectionSolver {id(self)}: calculating paths")
+        logger.info(f"ConnectionSolver({id(self)}): calculating paths")
         calculation_start_time = time.time()
 
         def get_max_priority(prior):

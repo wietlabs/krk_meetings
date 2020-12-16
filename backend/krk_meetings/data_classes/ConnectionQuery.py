@@ -1,7 +1,10 @@
 import json
-from datetime import time, date, datetime
+from datetime import datetime
 from dataclasses import dataclass
 from krk_meetings.config import DATETIME_FORMAT
+from krk_meetings.logger import get_logger
+
+logger = get_logger(__name__)
 
 @dataclass
 class ConnectionQuery:
@@ -35,4 +38,5 @@ class ConnectionQuery:
             query = ConnectionQuery.from_dict(posted_json)
             return True
         except (KeyError, ValueError):
+            logger.debug(f"Bad format of json for ConnectionQuery {posted_json}")
             return False

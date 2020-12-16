@@ -8,6 +8,9 @@ from krk_meetings.data_classes.ParsedData import ParsedData
 from krk_meetings.data_provider.data_provider_utils import is_nightly, get_walking_time, load_property_from_config_json
 from krk_meetings.config import DEFAULT_EXTRACTOR_CONFIGURATION, FloydDataPaths
 from krk_meetings.utils import load_pickle
+from krk_meetings.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 class Extractor:
@@ -315,6 +318,9 @@ class Extractor:
             walking_distances_pickle = load_pickle(FloydDataPaths.api_walking_distances.value)
         except FileNotFoundError:
             walking_distances_pickle = {'distances': {}, 'stop_list': []}
+            logger.warn("api_walking_distances pickle not found, walking time would be calculate"
+                     "from distance in a straight line. To create api_walking_distances pickle"
+                     "run krk_meetings/scripts/reparse_walking_distances.py")
         api_walking_distances = walking_distances_pickle['distances']
         api_stop_list = walking_distances_pickle['stop_list']
         stops_df = stops_df[['stop_name', 'stop_lon', 'stop_lat']]

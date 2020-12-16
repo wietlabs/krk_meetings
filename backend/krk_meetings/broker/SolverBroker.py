@@ -14,6 +14,9 @@ from krk_meetings.data_classes.ConnectionQuery import ConnectionQuery
 from krk_meetings.config import ErrorCodes
 from krk_meetings.data_classes.MeetingQuery import MeetingQuery
 from krk_meetings.data_classes.SequenceQuery import SequenceQuery
+from krk_meetings.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 def start_flask_server():
@@ -78,7 +81,7 @@ class SolverBroker:
         self.add_endpoint('/result/<query_id>', 'results', self.handle_get_query, ['GET'])
         self.add_endpoint(f'/stops', 'stops', self.handle_get_stops, ['GET'])
 
-        print('FlaskServer: started')
+        logger.info('SolverBroker: started')
         self.run()
 
     def consume_rabbit_results(self, result):

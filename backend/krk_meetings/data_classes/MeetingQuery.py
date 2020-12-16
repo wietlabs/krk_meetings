@@ -1,6 +1,8 @@
 import json
 from dataclasses import dataclass
+from krk_meetings.logger import get_logger
 
+logger = get_logger(__name__)
 
 @dataclass
 class MeetingQuery:
@@ -30,9 +32,11 @@ class MeetingQuery:
         try:
             query = MeetingQuery.from_dict(posted_json)
             if len(query.start_stop_names) > 100:
+                logger.debug(f"To many start_stop_names. Amount of stops must be 100 or less.")
                 return False
             return True
         except (KeyError, ValueError):
+            logger.debug(f"Bad format of json for MeetingQuery {posted_json}")
             return False
 
 

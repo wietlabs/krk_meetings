@@ -10,6 +10,9 @@ from krk_meetings.data_provider.gtfs_static.Parser import Parser
 from krk_meetings.data_provider.data_provider_utils import save_property_to_config_json, load_property_from_config_json
 from krk_meetings.rabbitmq.RmqProducer import RmqProducer
 from krk_meetings.exchanges import EXCHANGES, MESSAGES
+from krk_meetings.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 def start_data_provider():
@@ -31,7 +34,7 @@ class DataProvider:
     def start(self):
         self.floyd_data_producer.start()
         self.alive = True
-        print("DataProvider: has started.")
+        logger.info("DataProvider: has started.")
         while self.alive:
             try:
                 new_update_date = self.downloader.get_last_update_time()
@@ -41,7 +44,7 @@ class DataProvider:
                     save_property_to_config_json("update_date", new_update_date.strftime("%Y-%m-%d %H:%M:%S"))
                     self.floyd_data_producer.send_msg(MESSAGES.DATA_UPDATED.value, lost_stream_msg="Solvers are down.")
             except socket.gaierror:
-                print("DataProvider: internet connection lost")
+                logger.warn("DataProvider: internet connection lost")
             time.sleep(3600)
 
     def stop(self):
@@ -53,26 +56,26 @@ class DataProvider:
         load_property_from_config_json("update_date")
 
     def process_data(self):
-        print("DataProvider: updating data")
+        logger.info("DataProvider: updating data")
         gtfs_zip_T, gtfs_zip_A = self.downloader.download_gtfs_static_data()
         parsed_data_T = self.parser.parse(gtfs_zip_T)
         parsed_data_A = self.parser.parse(gtfs_zip_A)
-        print("DataProvider: data parsed")
+        logger.info("DataProvider: data parsed")
 
         merged_data, service_id_offset = self.merger.merge(parsed_data_T, parsed_data_A)
-        print("DataProvider: data merged")
+        logger.info("DataProvider: data merged")
 
         corrected_data = self.corrector.correct(merged_data)
-        print("DataProvider: data corrected")
+        logger.info("DataProvider: data corrected")
 
         save_property_to_config_json("services", [list(parsed_data_T.calendar_df.index),
                                                   list(parsed_data_A.calendar_df.index + service_id_offset)])
 
         extracted_data = self.extractor.extract(corrected_data)
-        print("DataProvider: data extracted")
+        logger.info("DataProvider: data extracted")
 
         extracted_data.save(self.data_path)
-        print("DataProvider: data saved")
+        logger.info("DataProvider: data saved")
 
 
 if __name__ == "__main__":
