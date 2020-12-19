@@ -20,7 +20,7 @@ logger = get_logger(__name__)
 
 
 def start_flask_server():
-    flask_server = RequestBroker('SolverBroker')
+    flask_server = RequestBroker('RequestBroker')
     flask_server.start()
 
 
