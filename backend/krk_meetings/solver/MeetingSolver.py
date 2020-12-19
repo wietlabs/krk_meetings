@@ -20,8 +20,17 @@ class MeetingSolver(IMeetingSolver):
 
     def start(self):
         self.data_manager.start()
-        self.update_data()
+        if self.data_is_loaded():
+            self.update_data()
         logger.info(f"MeetingSolver({id(self)}): started.")
+
+    def data_is_loaded(self):
+        if self.data_manager.data_loaded:
+            return True
+        else:
+            logger.warn(f"MeetingSolver({id(self)}): Some pickles in data directory are missing this service won't "
+                        f"work without them. Wait for DataProvider to finish processing GTFS files.")
+            return False
 
     def update_data(self):
         data = self.data_manager.get_updated_data()
@@ -32,6 +41,8 @@ class MeetingSolver(IMeetingSolver):
 
     def find_meeting_points(self, query: MeetingQuery) -> MeetingResults:
         logger.info(f"MeetingSolver({id(self)}): finding meeting points.")
+        if not self.data_is_loaded():
+            return MeetingResults(query.query_id, ErrorCodes.INTERNAL_DATA_NOT_LOADED.value, [])
         if self.last_data_update is None or self.last_data_update < self.data_manager.last_data_update:
             self.update_data()
         start_stop_ids = [solver_utils.get_stop_id_by_name(stop_name, self.stops_df_by_name) for stop_name in query.start_stop_names]

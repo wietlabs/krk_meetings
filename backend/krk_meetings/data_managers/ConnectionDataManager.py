@@ -43,7 +43,10 @@ class ConnectionDataManager(DataManager):
         return data
 
     def update_delays_df(self):
-        self.delays_df = load_pickle(self.data_path.delays_df.value)
+        with self.lock:
+            self.delays_df = load_pickle(self.data_path.delays_df.value)
+            self.last_delay_update = time.time()
 
     def get_delays_df(self):
-        return self.delays_df
+        with self.lock:
+            return self.delays_df

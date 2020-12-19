@@ -4,6 +4,8 @@ import pika
 import sched
 import time
 import json
+
+from krk_meetings.exchanges import Exchange
 from krk_meetings.logger import get_logger
 
 logger = get_logger(__name__)
@@ -12,8 +14,8 @@ HEARTBEAT_MSG = "HEARTBEAT"
 
 
 class RmqHelper:
-    def __init__(self, exchange):
-        self.exchange_name, self.exchange_type, self.routing_key, self.to_json, self.from_json = exchange
+    def __init__(self, exchange: Exchange):
+        self.exchange = exchange
         self.connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost', heartbeat=600))
         self.channel = self.connection.channel()
         self.alive = True
@@ -27,20 +29,20 @@ class RmqHelper:
     def send_msg(self, message, lost_stream_msg="Rabbitmq error: Stream connection lost"):
         self.lock.acquire()
         try:
-            self.channel.basic_publish(exchange=self.exchange_name, routing_key=self.routing_key, body=self.to_json(message))
+            self.channel.basic_publish(exchange=self.exchange.name, routing_key=self.exchange.key, body=self.exchange.to_json(message))
         except pika.exceptions.StreamLostError:
-            logger.warn(f"{lost_stream_msg} {self.routing_key}")
+            logger.warn(f"{lost_stream_msg} {self.exchange.key}")
         finally:
             self.lock.release()
 
     def send_heartbeat(self, lost_stream_msg="Rabbitmq error: Stream connection lost on"):
         try:
             self.lock.acquire()
-            self.channel.basic_publish(exchange=self.exchange_name, routing_key=self.routing_key,
+            self.channel.basic_publish(exchange=self.exchange.name, routing_key=self.exchange.key,
                                        body=json.dumps(HEARTBEAT_MSG))
             self.lock.release()
         except pika.exceptions.StreamLostError:
-            logger.warn(f"{lost_stream_msg} HEARTBEAT on {self.routing_key}")
+            logger.warn(f"{lost_stream_msg} HEARTBEAT on {self.exchange.key}")
 
     @staticmethod
     def is_heartbeat(message):
