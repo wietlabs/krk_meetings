@@ -55,8 +55,17 @@ class ConnectionSolver(IConnectionSolver):
 
     def start(self):
         self.data_manager.start()
-        self.update_data()
+        if self.data_is_loaded():
+            self.update_data()
         logger.info(f"ConnectionSolver({id(self)}): started.")
+
+    def data_is_loaded(self):
+        if self.data_manager.data_loaded:
+            return True
+        else:
+            logger.warn(f"ConnectionSolver({id(self)}): Some pickles in data directory are missing this service won't "
+                        f"work without them. Wait for DataProvider to finish processing GTFS files.")
+            return False
 
     def update_data(self):
         data = self.data_manager.get_updated_data()
@@ -84,6 +93,8 @@ class ConnectionSolver(IConnectionSolver):
 
     def find_connections(self, query: ConnectionQuery) -> ConnectionResults:
         logger.info(f"ConnectionSolver({id(self)}): finding connections")
+        if not self.data_is_loaded():
+            return ConnectionResults(query.query_id, ErrorCodes.INTERNAL_DATA_NOT_LOADED.value, [])
         if self.last_data_update is None or self.last_data_update < self.data_manager.last_data_update:
             self.update_data()
         if self.last_delay_update is None or self.last_delay_update < self.data_manager.last_delay_update:
@@ -360,6 +371,10 @@ class ConnectionSolver(IConnectionSolver):
         return False
 
     def add_delays_to_stop_times(self, st_df: pd.DataFrame, connection_task: ConnectionTask) -> pd.DataFrame:
+        if self.delays_df is None:
+            st_df['delay'] = 0
+            st_df['registered'] = False
+            return st_df
         if datetime.now() - timedelta(hours=12) < connection_task.query.start_datetime < datetime.now() + timedelta(hours=2):
             st_df = pd.merge(st_df, self.delays_df, on=['service_id', 'block_id', 'trip_num'],
                              how="outer", indicator=True)

@@ -20,11 +20,11 @@ logger = get_logger(__name__)
 
 
 def start_flask_server():
-    flask_server = SolverBroker('SolverBroker')
+    flask_server = RequestBroker('RequestBroker')
     flask_server.start()
 
 
-class SolverBroker:
+class RequestBroker:
     app = None
 
     def __init__(self, name):
@@ -65,8 +65,8 @@ class SolverBroker:
 
     def start(self):
         self.data_manager.start()
-        self.data_manager.update_data()
-        self.update_data()
+        if self.data_is_loaded():
+            self.update_data()
 
         self.connection_producer.start()
         self.meeting_producer.start()
@@ -99,12 +99,14 @@ class SolverBroker:
             return jsonify(ErrorCodes.BAD_QUERY_ID_VALUE.value), 400
 
         if result["result"]["is_done"] and result["error"] != ErrorCodes.OK.value:
-            if result["error"] == ErrorCodes.INTERNAL_SERVER_ERROR:
+            if result["error"] in [ErrorCodes.INTERNAL_SERVER_ERROR.value, ErrorCodes.INTERNAL_DATA_NOT_LOADED.value]:
                 return jsonify(result["error"]), 500
             return jsonify(result["error"]), 400
         return jsonify(result["result"]), 202
 
     def handle_get_stops(self):
+        if not self.data_is_loaded():
+            return jsonify(ErrorCodes.INTERNAL_DATA_NOT_LOADED.value), 500
         if self.last_update_date < self.data_manager.last_data_update:
             self.update_data()
         return jsonify(self.stops), 202
@@ -137,6 +139,14 @@ class SolverBroker:
         producer.send_msg(request_json)
         self.cache[query_id] = {"result": {"is_done": False}}
         return jsonify({"query_id": query_id}), 202
+
+    def data_is_loaded(self):
+        if self.data_manager.data_loaded:
+            return True
+        else:
+            logger.warn(f"RequestBroker: Some pickles in data directory are missing this service won't "
+                        f"work without them. Wait for DataProvider to finish processing GTFS files.")
+            return False
 
 
 if __name__ == '__main__':

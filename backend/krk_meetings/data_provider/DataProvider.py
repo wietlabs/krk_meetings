@@ -1,7 +1,8 @@
 import socket
 import time
+from datetime import datetime
 
-from krk_meetings.config import FloydDataPaths, DEFAULT_EXTRACTOR_CONFIGURATION
+from krk_meetings.config import FloydDataPaths, DEFAULT_EXTRACTOR_CONFIGURATION, DATETIME_FORMAT
 from krk_meetings.data_provider.Downloader import Downloader
 from krk_meetings.data_provider.Extractor import Extractor
 from krk_meetings.data_provider.gtfs_static.Corrector import Corrector
@@ -53,7 +54,7 @@ class DataProvider:
 
     @staticmethod
     def load_update_date():
-        load_property_from_config_json("update_date")
+        return datetime.strptime(load_property_from_config_json("update_date"), DATETIME_FORMAT)
 
     def process_data(self):
         logger.info("DataProvider: updating data")

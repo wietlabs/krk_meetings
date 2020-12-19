@@ -1,6 +1,6 @@
 from krk_meetings.data_provider.DelaysProvider import start_delays_provider
 from krk_meetings.data_provider.DataProvider import start_data_provider
-from krk_meetings.broker.SolverBroker import start_flask_server
+from krk_meetings.broker.RequestBroker import start_flask_server
 from krk_meetings.rabbitmq.RmqConnectionSolver import start_connection_solver
 from krk_meetings.rabbitmq.RmqMeetingSolver import start_meeting_solver
 from krk_meetings.rabbitmq.RmqSequenceSolver import start_sequence_solver
