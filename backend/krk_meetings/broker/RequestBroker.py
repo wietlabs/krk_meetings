@@ -107,7 +107,7 @@ class RequestBroker:
     def handle_get_stops(self):
         if not self.data_is_loaded():
             return jsonify(ErrorCodes.INTERNAL_DATA_NOT_LOADED.value), 500
-        if self.last_update_date < self.data_manager.last_data_update:
+        if self.last_update_date is None or self.last_update_date < self.data_manager.last_data_update:
             self.update_data()
         return jsonify(self.stops), 202
 
