@@ -54,7 +54,10 @@ class DataProvider:
 
     @staticmethod
     def load_update_date():
-        return datetime.strptime(load_property_from_config_json("update_date"), DATETIME_FORMAT)
+        last_update = load_property_from_config_json("update_date")
+        if last_update is None:
+            return None
+        return datetime.strptime(last_update, DATETIME_FORMAT)
 
     def process_data(self):
         logger.info("DataProvider: updating data")
