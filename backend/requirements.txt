@@ -9,9 +9,6 @@ openrouteservice
 gtfs-realtime-bindings
 flask
 Flask-Limiter
-flask_sqlalchemy
-sqlalchemy
 pytest
-pytest-freezegun
 ddt
 setuptools

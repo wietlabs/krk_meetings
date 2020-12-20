@@ -4,9 +4,9 @@ from typing import Optional
 import pytest
 from sqlalchemy.orm import Session
 
-from krk_meetings.meetings import app, db
-from krk_meetings.meetings.models import User, Meeting, Membership
-from krk_meetings.meetings.scripts import delete_outdated_meetings
+from app import app, db
+from models import User, Meeting, Membership
+from scripts import delete_outdated_meetings
 
 example_uuid1 = '11111111-1111-1111-1111-111111111111'
 example_uuid2 = '22222222-2222-2222-2222-222222222222'

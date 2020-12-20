@@ -11,4 +11,6 @@ db = SQLAlchemy(app)
 
 limiter = Limiter(app, key_func=get_remote_address, default_limits=["100 per minute"])
 
-from krk_meetings.meetings import routes  # noqa: E402, F401
+from routes import *  # noqa: E402, F401
+
+db.create_all()

@@ -1,6 +1,3 @@
-krk_meetings/data/config.json
-krk_meetings/krk_meetings.log
-
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -132,5 +129,4 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
-*.pickle
-*.gpickle
+*.sqlite
