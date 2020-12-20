@@ -2,7 +2,7 @@ language: python
 python:
   - "3.8"
 install:
-  - cd backend
-  - pip install -r requirements.txt
+  - pip install -r backend/requirements.txt
+  - pip install -r meetings/requirements.txt
 script:
-  - python -m pytest
+  - pytest
