@@ -3,12 +3,13 @@ import uuid
 from sqlalchemy import CHAR, event, func
 from sqlalchemy.engine import Engine
 
-from krk_meetings.meetings import db
+from app import db
 
 MEETING_NAME_MAX_LENGTH = 50
 MEETING_DESCRIPTION_MAX_LENGTH = 500
 NICKNAME_MAX_LENGTH = 50
 STOP_NAME_MAX_LENGTH = 100
+
 
 @event.listens_for(Engine, "connect")
 def set_sqlite_pragma(dbapi_connection, connection_record):

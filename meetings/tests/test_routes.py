@@ -4,8 +4,8 @@ import pytest
 from flask.testing import FlaskClient
 from sqlalchemy.testing import mock
 
-from krk_meetings.meetings import app, db
-from krk_meetings.meetings.models import User, Meeting, Membership
+from app import app, db
+from models import User, Meeting, Membership
 
 example_uuid1 = '11111111-1111-1111-1111-111111111111'
 example_uuid2 = '22222222-2222-2222-2222-222222222222'

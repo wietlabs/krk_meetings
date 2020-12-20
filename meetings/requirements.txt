@@ -1,0 +1,6 @@
+flask
+Flask-Limiter
+flask_sqlalchemy
+sqlalchemy
+pytest
+pytest-freezegun

@@ -2,7 +2,7 @@ from datetime import timedelta, datetime
 
 from sqlalchemy.orm import Session
 
-from krk_meetings.meetings.models import Meeting
+from models import Meeting
 
 
 def delete_outdated_meetings(session: Session, expiration_interval: timedelta = timedelta(days=30)) -> None:

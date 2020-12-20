@@ -2,10 +2,10 @@ from flask import make_response
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import FlushError
 
-from krk_meetings.meetings import app, limiter, db
-from krk_meetings.meetings.exceptions import ApiException
-from krk_meetings.meetings.models import User, Meeting, Membership
-from krk_meetings.meetings.utils import validate_user_uuid, find_user, format_datetime, check_json_data, get_owner_uuid, \
+from app import app, limiter, db
+from exceptions import ApiException
+from models import User, Meeting, Membership
+from utils import validate_user_uuid, find_user, format_datetime, check_json_data, get_owner_uuid, \
     get_meeting_description, get_meeting_name, get_datetime, get_nickname, validate_meeting_uuid, find_meeting, \
     get_meeting_owner_nickname, get_stop_name, must_be_meeting_owner, find_membership, is_owner
 

@@ -4,8 +4,8 @@ from typing import Optional
 
 from flask import request
 
-from krk_meetings.meetings.exceptions import ApiException
-from krk_meetings.meetings.models import MEETING_NAME_MAX_LENGTH, MEETING_DESCRIPTION_MAX_LENGTH, STOP_NAME_MAX_LENGTH, \
+from exceptions import ApiException
+from models import MEETING_NAME_MAX_LENGTH, MEETING_DESCRIPTION_MAX_LENGTH, STOP_NAME_MAX_LENGTH, \
     NICKNAME_MAX_LENGTH, User, Meeting, Membership
 
 
