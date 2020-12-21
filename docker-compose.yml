@@ -4,17 +4,18 @@ services:
   rabbitmq:
     image: rabbitmq:3-management-alpine
     container_name: krk_meetings_rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
     volumes:
       - ./.docker/rabbitmq/etc/:/etc/rabbitmq/
       - ./.docker/rabbitmq/data/:/var/lib/rabbitmq/
       - ./.docker/rabbitmq/logs/:/var/log/rabbitmq/
+    env_file:
+      - ./.env
     environment:
-      RABBITMQ_ERLANG_COOKIE: cookie
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
-    ports:
-      - 5672:5672
-      - 15672:15672
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
 
   backend:
     container_name: krk_meetings_backend
@@ -25,6 +26,8 @@ services:
       - 5000:5000
     volumes:
       - backend_data:/code/krk_meetings/data
+    env_file:
+      - ./.env
     restart: on-failure
     depends_on:
       - rabbitmq
