@@ -5,6 +5,7 @@ from krk_meetings.rabbitmq.RmqConnectionSolver import start_connection_solver
 from krk_meetings.rabbitmq.RmqMeetingSolver import start_meeting_solver
 from krk_meetings.rabbitmq.RmqSequenceSolver import start_sequence_solver
 import multiprocessing
+from time import sleep
 
 
 def run(connection_solver_instances=1, meeting_solver_instances=1, sequence_solver_instances=1):
@@ -30,4 +31,5 @@ def run(connection_solver_instances=1, meeting_solver_instances=1, sequence_solv
 
 
 if __name__ == "__main__":
+    sleep(10)
     run()

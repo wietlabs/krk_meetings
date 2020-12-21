@@ -16,7 +16,7 @@ HEARTBEAT_MSG = "HEARTBEAT"
 class RmqHelper:
     def __init__(self, exchange: Exchange):
         self.exchange = exchange
-        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost', heartbeat=600))
+        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host='10.0.0.20', heartbeat=600))
         self.channel = self.connection.channel()
         self.alive = True
         self.lock = Lock()
