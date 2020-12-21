@@ -47,15 +47,18 @@ class DelaysProvider:
                 delays_df.to_pickle(self.data_path.delays_df.value)
                 self.delays_producer.send_msg(MESSAGES.DELAYS_UPDATED.value, lost_stream_msg="Solvers are down.")
                 logger.info("DelaysProvider: delays updated")
-                time.sleep(120)
+                time.sleep(60)
             except socket.gaierror:
-                time.sleep(30)
+                logger.warn("DelaysProvider: Can't download data: Internet connection lost.")
+                time.sleep(60)
+            except TimeoutError:
+                logger.warn("DelaysProvider: Connection timeout while trying to download data.")
+                time.sleep(60)
             except (TypeError, FileNotFoundError):
                 logger.warn(
                     f"Delays provider: Some pickles in data directory are missing this service won't "
                     f"work without them. Wait for DataProvider to finish processing GTFS files.")
-                time.sleep(30)
-                continue
+                time.sleep(60)
 
 
 
