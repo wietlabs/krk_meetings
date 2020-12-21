@@ -49,12 +49,15 @@ class DelaysProvider:
                 logger.info("DelaysProvider: delays updated")
                 time.sleep(120)
             except socket.gaierror:
-                time.sleep(30)
+                logger.warn("DelaysProvider: Can't download data: Internet connection lost.")
+                time.sleep(60)
+            except TimeoutError:
+                logger.warn("DelaysProvider: Connection timeout while trying to download data.")
             except (TypeError, FileNotFoundError):
                 logger.warn(
                     f"Delays provider: Some pickles in data directory are missing this service won't "
                     f"work without them. Wait for DataProvider to finish processing GTFS files.")
-                time.sleep(30)
+                time.sleep(60)
                 continue
 
 
