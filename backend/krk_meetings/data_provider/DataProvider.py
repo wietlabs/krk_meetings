@@ -44,7 +44,7 @@ class DataProvider:
                     self.process_data()
                     save_property_to_config_json("update_date", new_update_date.strftime("%Y-%m-%d %H:%M:%S"))
                     self.floyd_data_producer.send_msg(MESSAGES.DATA_UPDATED.value, lost_stream_msg="Solvers are down.")
-                    time.sleep(60)
+                time.sleep(60)
             except socket.gaierror:
                 time.sleep(60)
                 logger.warn("DataProvider: Can't download data: Internet connection lost.")
