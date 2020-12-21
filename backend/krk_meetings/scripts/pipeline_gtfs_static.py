@@ -20,6 +20,3 @@ if __name__ == '__main__':
 
     corrector = Corrector()
     corrected_data = corrector.correct(merged_data)
-
-    stops_df = corrected_data.stops_df.sort_values(by='stop_name')
-    perons_df = corrected_data.perons_df.sort_values(by='peron_name')
