@@ -1,0 +1,6 @@
+requests
+openrouteservice
+matplotlib
+seaborn
+pytest
+ddt

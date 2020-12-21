@@ -1,8 +1,9 @@
+import Constants from "expo-constants";
 import { formatDateTime } from "../utils";
 
 const axios = require("axios");
 
-const baseUrl = "http://10.0.0.6:8000";
+const baseUrl = Constants.manifest.extra.meetingsApiBaseUrl;
 
 export const createUser = async () => {
   const url = `${baseUrl}/api/v1/users`;

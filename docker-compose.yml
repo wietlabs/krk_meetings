@@ -1,0 +1,49 @@
+version: "3.8"
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: krk_meetings_rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes:
+      - ./.docker/rabbitmq/etc/:/etc/rabbitmq/
+      - ./.docker/rabbitmq/data/:/var/lib/rabbitmq/
+      - ./.docker/rabbitmq/logs/:/var/log/rabbitmq/
+    env_file:
+      - ./.env
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USERNAME}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+
+  backend:
+    container_name: krk_meetings_backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - 5000:5000
+    volumes:
+      - backend_data:/code/krk_meetings/data
+    env_file:
+      - ./.env
+    restart: on-failure
+    depends_on:
+      - rabbitmq
+    links:
+      - rabbitmq
+
+  meetings:
+    container_name: krk_meetings_meetings
+    build:
+      context: ./meetings
+      dockerfile: Dockerfile
+    ports:
+      - 8000:8000
+    volumes:
+      - meetings_db:/code/db
+
+volumes:
+  meetings_db:
+  backend_data:

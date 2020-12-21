@@ -1,5 +1,6 @@
 from threading import Lock
 
+import os
 import pika
 import sched
 import time
@@ -15,8 +16,13 @@ HEARTBEAT_MSG = "HEARTBEAT"
 
 class RmqHelper:
     def __init__(self, exchange: Exchange):
+        host = os.environ.get("RABBITMQ_HOST", "localhost")
+        username = os.environ.get("RABBITMQ_USERNAME", "guest")
+        password = os.environ.get("RABBITMQ_PASSWORD", "guest")
+        credentials = pika.PlainCredentials(username, password)
+
         self.exchange = exchange
-        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host='localhost', heartbeat=600))
+        self.connection = pika.BlockingConnection(pika.ConnectionParameters(host=host, credentials=credentials, heartbeat=600))
         self.channel = self.connection.channel()
         self.alive = True
         self.lock = Lock()

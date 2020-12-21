@@ -1,8 +1,10 @@
 import { formatDateTime, sleep } from "../utils";
 
+import Constants from "expo-constants";
+
 const axios = require("axios");
 
-const baseUrl = "http://10.0.0.6:5000";
+const baseUrl = Constants.manifest.extra.backendApiBaseUrl;
 
 export const getStops = async () => {
   const url = `${baseUrl}/stops`;

@@ -1,14 +1,8 @@
+numpy==1.19.3
 pandas
 networkx
-numpy==1.19.3
-matplotlib
-seaborn
-requests
 pika
-openrouteservice
 gtfs-realtime-bindings
 flask
 Flask-Limiter
-pytest
-ddt
 setuptools

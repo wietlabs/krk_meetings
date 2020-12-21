@@ -316,11 +316,12 @@ class Extractor:
     def get_adjacent_stops_dict(self, stops_df: pd.DataFrame) -> dict:
         try:
             walking_distances_pickle = load_pickle(FloydDataPaths.api_walking_distances.value)
+            logger.info("api_walking_distances.pickle found")
         except FileNotFoundError:
             walking_distances_pickle = {'distances': {}, 'stop_list': []}
-            logger.warn("api_walking_distances pickle not found, walking time would be calculate"
-                     "from distance in a straight line. To create api_walking_distances pickle"
-                     "run krk_meetings/scripts/reparse_walking_distances.py")
+            logger.warn("api_walking_distances.pickle not found, walking time will be calculated "
+                        "from distance in a straight line. To create api_walking_distances.pickle, "
+                        "run krk_meetings/scripts/reparse_walking_distances.py")
         api_walking_distances = walking_distances_pickle['distances']
         api_stop_list = walking_distances_pickle['stop_list']
         stops_df = stops_df[['stop_name', 'stop_lon', 'stop_lat']]

@@ -34,3 +34,45 @@ Krk Meetings is being developed as an engineer's project with much pair programm
 <img src="docs/screenshots/JoinMeetingScreeen.jpg" alt="" width="250" />
 <img src="docs/screenshots/SelectStartStopScreen.jpg" alt="" width="250" />
 <img src="docs/screenshots/SelectEndStopScreen.jpg" alt="" width="250" />
+
+# Production
+
+```sh
+docker-compose up
+```
+
+# Development
+
+## Frontend
+
+```sh
+cd frontend
+npm install --global expo-cli
+expo start
+```
+
+## Backend
+
+```sh
+cd backend
+python -m venv .venv_backend
+source .venv_backend/bin/activate
+pip install -r requirements.txt -r requirements-dev.txt -e .
+python krk_meetings/run.py
+```
+
+## Meetings
+
+```sh
+cd meetings
+python -m venv .venv_meetings
+source .venv_meetings/bin/activate
+pip install -r requirements.txt -r requirements-dev.txt
+python run.py
+```
+
+## Testing
+
+```sh
+pytest
+```
