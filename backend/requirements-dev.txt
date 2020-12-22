@@ -1,5 +1,6 @@
 requests
 openrouteservice
+scipy
 matplotlib
 seaborn
 pytest
