@@ -56,7 +56,7 @@ def validate_stop_name(stop_name: str) -> None:
 
 
 def validate_nickname(nickname: str) -> None:
-    if len(nickname) > NICKNAME_MAX_LENGTH:
+    if nickname is not None and len(nickname) > NICKNAME_MAX_LENGTH:
         raise ApiException('Nickname too long', 400)
 
 
