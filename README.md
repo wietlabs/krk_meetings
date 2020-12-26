@@ -35,6 +35,9 @@ Krk Meetings is being developed as an engineer's project with much pair programm
 <img src="docs/screenshots/SelectStartStopScreen.jpg" alt="" width="250" />
 <img src="docs/screenshots/SelectEndStopScreen.jpg" alt="" width="250" />
 
+<img src="docs/screenshots/FindSequenceScreen.jpg" alt="" width="250" />
+<img src="docs/screenshots/SequenceResultScreen.jpg" alt="" width="250" />
+
 # Production
 
 ```sh
