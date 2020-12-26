@@ -10,13 +10,15 @@ export default function StopsInputList({
   disabled,
 }) {
   const inputRefs = React.useRef([]);
-  const [focused, setFocused] = React.useState(0);
+  const [focused, setFocused] = React.useState(null);
 
   const canAddStop = max === null || stops.length < max;
   const canDeleteStop = min === null || stops.length > min;
 
   React.useEffect(() => {
-    inputRefs.current[focused].focus();
+    if (focused !== null) {
+      inputRefs.current[focused].focus();
+    }
   }, [focused, stops.length]);
 
   const setNthStop = (n) => {
