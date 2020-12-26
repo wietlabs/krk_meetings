@@ -199,8 +199,9 @@ export default function HomeScreen({ navigation, route }) {
       } else {
         showError(error);
       }
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const showError = (message) => {
