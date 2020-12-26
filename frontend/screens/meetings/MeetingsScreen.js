@@ -13,7 +13,6 @@ export default function MeetingsScreen({ navigation, route }) {
   const [nickname, setNickname] = React.useState(null);
   const [loading, setLoading] = React.useState(true);
   const [refreshing, setRefreshing] = React.useState(false);
-  const [open, setOpen] = React.useState(false);
 
   const refresh = async () => {
     setRefreshing(true);
@@ -91,19 +90,17 @@ export default function MeetingsScreen({ navigation, route }) {
       {meetings.length > 0 || (
         <Placeholder icon="account-multiple" text="Brak spotkań" />
       )}
-      <FAB.Group
-        open={open}
-        icon={open ? "arrow-left" : "plus"}
-        actions={[
-          {
-            icon: "calendar-plus",
-            label: "Utwórz nowe spotkanie",
-            onPress: handleCreate,
-          },
-        ]}
-        onStateChange={({ open }) => setOpen(open)}
-        onPress={() => {}}
-        fabStyle={{ backgroundColor: "chartreuse" }}
+      <FAB
+        icon={"calendar-plus"}
+        onPress={handleCreate}
+        style={{
+          position: "absolute",
+          margin: 16,
+          right: 0,
+          bottom: 0,
+          backgroundColor: "chartreuse",
+          zIndex: 10,
+        }}
       />
     </>
   );

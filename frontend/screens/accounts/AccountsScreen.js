@@ -124,7 +124,7 @@ export default function AccountsScreen({ navigation }) {
             onPress: handleScanQR,
           },
           {
-            icon: "textbox",
+            icon: "form-textbox",
             label: "Wpisz identyfikator tożsamości",
             onPress: handleAdd,
           },
