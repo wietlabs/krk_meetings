@@ -5,6 +5,7 @@ import { DefaultTheme, Provider as PaperProvider } from "react-native-paper";
 import { registerLinkingHandler } from "./LinkManager";
 import MeetingsStack from "./stacks/MeetingsStack";
 import ConnectionsStack from "./stacks/ConnectionsStack";
+import SequenceStack from "./stacks/SequenceStack";
 import TimetableStack from "./stacks/TimetableStack";
 
 const Tab = createMaterialBottomTabNavigator();
@@ -34,6 +35,14 @@ export default function App() {
           lazy={false}
         >
           <Tab.Screen
+            name="ConnectionsStack"
+            component={ConnectionsStack}
+            options={{
+              tabBarLabel: "Połączenia",
+              tabBarIcon: "map-search-outline",
+            }}
+          />
+          <Tab.Screen
             name="MeetingsStack"
             component={MeetingsStack}
             options={{
@@ -42,11 +51,11 @@ export default function App() {
             }}
           />
           <Tab.Screen
-            name="ConnectionsStack"
-            component={ConnectionsStack}
+            name="SequenceStack"
+            component={SequenceStack}
             options={{
-              tabBarLabel: "Wyszukiwarka",
-              tabBarIcon: "map-search-outline",
+              tabBarLabel: "Sekwencja",
+              tabBarIcon: "format-list-numbered",
             }}
           />
           <Tab.Screen
