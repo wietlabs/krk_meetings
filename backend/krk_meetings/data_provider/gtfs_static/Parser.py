@@ -22,8 +22,11 @@ class Parser:
             with zipfile.open('calendar.txt') as f:
                 calendar_df = self.parse_calendar_df(f)
 
-            with zipfile.open('calendar_dates.txt') as f:
-                calendar_dates_df = self.parse_calendar_dates_df(f)
+            try:
+                with zipfile.open('calendar_dates.txt') as f:
+                    calendar_dates_df = self.parse_calendar_dates_df(f)
+            except KeyError:
+                calendar_dates_df = pd.DataFrame(columns=['service_id', 'date', 'exception_type'])
 
             with zipfile.open('routes.txt') as f:
                 routes_df = self.parse_routes_df(f)
