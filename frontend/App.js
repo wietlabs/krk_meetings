@@ -30,24 +30,24 @@ export default function App() {
       <NavigationContainer ref={navigationRef}>
         <Tab.Navigator
           initialRouteName="ConnectionsStack"
-          inactiveColor="lightgray"
+          inactiveColor="#bbb"
           barStyle={{ backgroundColor: "whitesmoke" }}
           lazy={false}
         >
-          <Tab.Screen
-            name="ConnectionsStack"
-            component={ConnectionsStack}
-            options={{
-              tabBarLabel: "Połączenia",
-              tabBarIcon: "map-search-outline",
-            }}
-          />
           <Tab.Screen
             name="MeetingsStack"
             component={MeetingsStack}
             options={{
               tabBarLabel: "Spotkania",
               tabBarIcon: "account-multiple",
+            }}
+          />
+          <Tab.Screen
+            name="ConnectionsStack"
+            component={ConnectionsStack}
+            options={{
+              tabBarLabel: "Połączenia",
+              tabBarIcon: "map-search-outline",
             }}
           />
           <Tab.Screen
@@ -58,14 +58,14 @@ export default function App() {
               tabBarIcon: "format-list-numbered",
             }}
           />
-          <Tab.Screen
+          {/* <Tab.Screen
             name="TimetableStack"
             component={TimetableStack}
             options={{
               tabBarLabel: "Rozkłady jazdy",
               tabBarIcon: "bus-clock",
             }}
-          />
+          /> */}
         </Tab.Navigator>
       </NavigationContainer>
     </PaperProvider>

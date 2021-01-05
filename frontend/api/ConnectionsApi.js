@@ -17,7 +17,7 @@ export const findConnections = async (
   { startDateTime, startStopName, endStopName },
   first_interval = 500,
   next_interval = 500,
-  retries = 20
+  retries = 40
 ) => {
   const url = `${baseUrl}/connection`;
   const params = {
