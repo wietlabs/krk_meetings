@@ -262,10 +262,10 @@ export default function HomeScreen({ navigation, route }) {
         <Button
           mode="outlined"
           onPress={date === null ? handlePickDate : handleClearDate}
-          color={date === null ? "lightgray" : "black"}
+          color={date === null ? "gray" : "black"}
           style={{
             flex: 0.5,
-            borderColor: date === null ? "lightgray" : "black",
+            borderColor: date === null ? "gray" : "black",
           }}
         >
           {date === null ? "Dzisiaj" : formatDate(date)}
@@ -275,10 +275,10 @@ export default function HomeScreen({ navigation, route }) {
           mode="outlined"
           onLongPress={handleClearTime}
           onPress={time === null ? handlePickTime : handleClearTime}
-          color={time === null ? "lightgray" : "black"}
+          color={time === null ? "gray" : "black"}
           style={{
             flex: 0.5,
-            borderColor: time === null ? "lightgray" : "black",
+            borderColor: time === null ? "gray" : "black",
           }}
         >
           {time === null ? "Teraz" : formatTime(time)}

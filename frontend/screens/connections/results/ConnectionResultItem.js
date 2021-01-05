@@ -36,7 +36,7 @@ export default function ConnectionResultItem({ connection, onPress }) {
   }
 
   return (
-    <Card onPress={onPress} style={{ marginTop: 12, marginBottom: 16 }}>
+    <Card onPress={onPress} style={{ marginTop: 14, marginBottom: 16 }}>
       <Card.Content
         style={{
           flex: 1,
